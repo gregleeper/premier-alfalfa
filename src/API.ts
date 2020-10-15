@@ -452,6 +452,22 @@ export type ModelTicketFilterInput = {
   not?: ModelTicketFilterInput | null,
 };
 
+export type ModelStringKeyConditionInput = {
+  eq?: string | null,
+  le?: string | null,
+  lt?: string | null,
+  ge?: string | null,
+  gt?: string | null,
+  between?: Array< string | null > | null,
+  beginsWith?: string | null,
+};
+
+export enum ModelSortDirection {
+  ASC = "ASC",
+  DESC = "DESC",
+}
+
+
 export type BatchAddVendorsMutationVariables = {
   vendors?: Array< CreateVendorInput | null > | null,
 };
@@ -1694,6 +1710,62 @@ export type ListTicketsQueryVariables = {
 
 export type ListTicketsQuery = {
   listTickets:  {
+    __typename: "ModelTicketConnection",
+    items:  Array< {
+      __typename: "Ticket",
+      id: string,
+      contractId: string,
+      contract:  {
+        __typename: "Contract",
+        id: string,
+        contractNumber: string,
+        contractType: ContractType,
+        contractState: ContractState,
+        vendorId: string,
+        commodityId: string,
+        quantity: number,
+        price: number,
+        terms: string | null,
+        weights: string | null,
+        basis: string | null,
+        remarks: string | null,
+        beginDate: string,
+        endDate: string,
+        dateSigned: string | null,
+        purchasedFrom: string | null,
+        soldTo: string | null,
+        createdAt: string,
+        updatedAt: string,
+      },
+      ticketDate: string,
+      fieldNum: string | null,
+      baleCount: number | null,
+      ticketNumber: string | null,
+      ladingNumber: string | null,
+      driver: string | null,
+      truckNumber: string | null,
+      grossWeight: number | null,
+      tareWeight: number | null,
+      netWeight: number | null,
+      netTons: number | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken: string | null,
+  } | null,
+};
+
+export type TicketsByContractIdQueryVariables = {
+  contractId?: string | null,
+  ticketDate?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelTicketFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type TicketsByContractIdQuery = {
+  ticketsByContractId:  {
     __typename: "ModelTicketConnection",
     items:  Array< {
       __typename: "Ticket",

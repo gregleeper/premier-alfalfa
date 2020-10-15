@@ -26,7 +26,11 @@ const Nav = () => {
               <a>Commodities</a>
             </Link>
           </li>
-          <li>Reports</li>
+          <li>
+            <Link href="/reports">
+              <a>Reports</a>
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>

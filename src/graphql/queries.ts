@@ -353,6 +353,69 @@ export const listTickets = /* GraphQL */ `
           contractState
           vendorId
           commodityId
+          commodity {
+            name
+            id
+          }
+          quantity
+          price
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
+          createdAt
+          updatedAt
+        }
+        ticketDate
+        fieldNum
+        baleCount
+        ticketNumber
+        ladingNumber
+        driver
+        truckNumber
+        grossWeight
+        tareWeight
+        netWeight
+        netTons
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const ticketsByContractId = /* GraphQL */ `
+  query TicketsByContractId(
+    $contractId: ID
+    $ticketDate: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelTicketFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    ticketsByContractId(
+      contractId: $contractId
+      ticketDate: $ticketDate
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        contractId
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
           quantity
           price
           terms

@@ -115,7 +115,7 @@ function Table({ columns, data }) {
       initialState: {
         sortBy: [
           {
-            id: "createdAt",
+            id: "weekAvgTons",
             desc: true,
           },
           {

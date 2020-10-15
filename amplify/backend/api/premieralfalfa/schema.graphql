@@ -59,7 +59,13 @@ type Contract @model {
   commodity: Commodity! @connection(fields: ["commodityId"])
 }
 
-type Ticket @model {
+type Ticket
+  @model
+  @key(
+    name: "ticketsByContractByTicketDate"
+    fields: ["contractId", "ticketDate"]
+    queryField: "ticketsByContract"
+  ) {
   id: ID!
   contractId: ID!
   contract: Contract! @connection(fields: ["contractId"])
