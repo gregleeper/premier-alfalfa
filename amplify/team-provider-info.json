@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-premieralfalfa-dev-90143-authRole",
+      "UnauthRoleArn": "arn:aws:iam::110023552828:role/amplify-premieralfalfa-dev-90143-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::110023552828:role/amplify-premieralfalfa-dev-90143-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-premieralfalfa-dev-90143-deployment",
+      "UnauthRoleName": "amplify-premieralfalfa-dev-90143-unauthRole",
+      "StackName": "amplify-premieralfalfa-dev-90143",
+      "StackId": "arn:aws:cloudformation:us-east-1:110023552828:stack/amplify-premieralfalfa-dev-90143/4dff92a0-0713-11eb-bf80-1263ebc1f863",
+      "AmplifyAppId": "d1iyoqyd83a0g1"
+    },
+    "categories": {
+      "auth": {
+        "premieralfalfa291ddaa1": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,145 @@
+type CompanyInfo @model {
+  id: ID!
+  companyName: String!
+  additionalName: String
+  address1: String!
+  address2: String
+  city: String!
+  state: String!
+  zipCode: Int!
+  federalId: String
+  telephoneNum: String
+  faxNum: String
+}
+
+type Commodity @model {
+  id: ID!
+  name: String!
+  calculateCode: Int!
+  billingCode: Int!
+  poundsPerBushel: Int
+  contracts: [Contract]! @connection(fields: ["id"])
+}
+
+type Vendor @model {
+  id: ID!
+  vendorNumber: String!
+  companyReportName: String
+  companyListingName: String!
+  address1: String
+  address2: String
+  city: String
+  state: String
+  zipCode: String
+  telephoneNum: String
+  attention: String
+  prepayment: Boolean!
+  prepaymentAmt: Float!
+}
+
+type Contract @model {
+  id: ID!
+  contractNumber: String!
+  contractType: ContractType!
+  contractState: ContractState!
+  vendorId: ID!
+  commodityId: ID!
+  contractTo: Vendor! @connection(fields: ["vendorId"])
+  quantity: Float!
+  price: Float!
+  terms: String
+  weights: String
+  basis: String
+  remarks: String
+  beginDate: AWSDateTime!
+  endDate: AWSDateTime!
+  dateSigned: AWSDateTime
+  purchasedFrom: String
+  soldTo: String
+  commodity: Commodity! @connection(fields: ["commodityId"])
+}
+
+type Ticket @model {
+  id: ID!
+  contractId: ID!
+  contract: Contract! @connection(fields: ["contractId"])
+  ticketDate: AWSDateTime!
+  fieldNum: String
+  baleCount: Float
+  ticketNumber: String
+  ladingNumber: String
+  driver: String
+  truckNumber: String
+  grossWeight: Float
+  tareWeight: Float
+  netWeight: Float
+  netTons: Float
+}
+
+enum ContractType {
+  SALE
+  PURCHASE
+}
+
+enum ContractState {
+  ACTIVE
+  CLOSED
+}
+
+input CreateVendorInput {
+  id: ID
+  vendorNumber: String!
+  companyReportName: String!
+  companyListingName: String!
+  address1: String
+  address2: String
+  city: String
+  state: String
+  zipCode: String
+  telephoneNum: String
+  attention: String
+  prepayment: Boolean!
+  prepaymentAmt: Float!
+}
+
+type Mutation {
+  batchAddVendors(vendors: [CreateVendorInput]): [Vendor]
+  batchAddContracts(contracts: [CreateContractInput]): [Contract]
+  batchAddTickets(tickets: [CreateTicketInput]): [Ticket]
+}
+
+input CreateContractInput {
+  id: ID
+  contractNumber: String!
+  contractType: ContractType!
+  contractState: ContractState!
+  vendorId: ID!
+  commodityId: ID!
+  quantity: Float!
+  price: Float!
+  terms: String
+  weights: String
+  basis: String
+  remarks: String
+  beginDate: AWSDateTime!
+  endDate: AWSDateTime!
+  dateSigned: AWSDateTime
+  purchasedFrom: String
+  soldTo: String
+}
+
+input CreateTicketInput {
+  id: ID
+  contractId: ID!
+  ticketDate: AWSDateTime!
+  fieldNum: String
+  baleCount: Float
+  ticketNumber: String
+  ladingNumber: String
+  driver: String
+  truckNumber: String
+  grossWeight: Float
+  tareWeight: Float
+  netWeight: Float
+  netTons: Float
+}
