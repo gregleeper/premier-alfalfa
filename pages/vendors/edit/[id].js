@@ -1,7 +1,7 @@
-import Layout from "../../components/layout";
+import Layout from "../../../components/layout";
 import { useRouter } from "next/router";
-import { getVendor } from "../../src/graphql/queries.ts";
-import { updateVendor } from "../../src/graphql/mutations.ts";
+import { getVendor } from "../../../src/graphql/queries.ts";
+import { updateVendor } from "../../../src/graphql/mutations.ts";
 import { API } from "aws-amplify";
 import { useEffect, useState } from "react";
 import { Formik, Form, Field } from "formik";
