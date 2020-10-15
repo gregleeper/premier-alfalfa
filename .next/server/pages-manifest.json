@@ -1,22 +1,6 @@
 {
   "/_app": "pages/_app.js",
-  "/commodities/create": "pages/commodities/create.html",
-  "/commodities/edit/[id]": "pages/commodities/edit/[id].html",
-  "/commodities": "pages/commodities.html",
-  "/contracts/bulk-create": "pages/contracts/bulk-create.html",
-  "/contracts/create": "pages/contracts/create.js",
-  "/contracts/edit/[id]": "pages/contracts/edit/[id].html",
-  "/contracts": "pages/contracts.html",
-  "/": "pages/index.html",
-  "/tickets/bulk-create": "pages/tickets/bulk-create.html",
-  "/tickets/create": "pages/tickets/create.html",
-  "/tickets/edit/[id]": "pages/tickets/edit/[id].html",
-  "/tickets": "pages/tickets.html",
-  "/vendors/bulk-create": "pages/vendors/bulk-create.html",
-  "/vendors/create": "pages/vendors/create.html",
-  "/vendors/edit/[id]": "pages/vendors/edit/[id].html",
-  "/vendors": "pages/vendors.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/404": "pages/404.html"
+  "/tickets": "pages/tickets.js"
 }
