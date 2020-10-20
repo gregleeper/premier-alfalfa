@@ -76,7 +76,8 @@ export const onCreateCommodity = /* GraphQL */ `
           vendorId
           commodityId
           quantity
-          price
+          contractPrice
+          salePrice
           terms
           weights
           basis
@@ -113,7 +114,8 @@ export const onUpdateCommodity = /* GraphQL */ `
           vendorId
           commodityId
           quantity
-          price
+          contractPrice
+          salePrice
           terms
           weights
           basis
@@ -150,7 +152,8 @@ export const onDeleteCommodity = /* GraphQL */ `
           vendorId
           commodityId
           quantity
-          price
+          contractPrice
+          salePrice
           terms
           weights
           basis
@@ -260,7 +263,8 @@ export const onCreateContract = /* GraphQL */ `
         updatedAt
       }
       quantity
-      price
+      contractPrice
+      salePrice
       terms
       weights
       basis
@@ -314,7 +318,8 @@ export const onUpdateContract = /* GraphQL */ `
         updatedAt
       }
       quantity
-      price
+      contractPrice
+      salePrice
       terms
       weights
       basis
@@ -368,7 +373,8 @@ export const onDeleteContract = /* GraphQL */ `
         updatedAt
       }
       quantity
-      price
+      contractPrice
+      salePrice
       terms
       weights
       basis
@@ -425,7 +431,8 @@ export const onCreateTicket = /* GraphQL */ `
           updatedAt
         }
         quantity
-        price
+        contractPrice
+        salePrice
         terms
         weights
         basis
@@ -493,7 +500,8 @@ export const onUpdateTicket = /* GraphQL */ `
           updatedAt
         }
         quantity
-        price
+        contractPrice
+        salePrice
         terms
         weights
         basis
@@ -561,7 +569,8 @@ export const onDeleteTicket = /* GraphQL */ `
           updatedAt
         }
         quantity
-        price
+        contractPrice
+        salePrice
         terms
         weights
         basis

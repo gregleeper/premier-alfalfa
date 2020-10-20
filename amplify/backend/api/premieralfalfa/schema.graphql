@@ -37,7 +37,28 @@ type Vendor @model {
   prepaymentAmt: Float!
 }
 
-type Contract @model {
+type Contract
+  @model
+  @key(
+    name: "byStatus"
+    fields: ["contractState", "contractType", "endDate"]
+    queryField: "contractsByStatus"
+  )
+  @key(
+    name: "byVendor"
+    fields: ["vendorId", "endDate"]
+    queryField: "contractsByVendor"
+  )
+  @key(
+    name: "byCommodity"
+    fields: ["commodityId", "endDate"]
+    queryField: "contractsByCommodity"
+  )
+  @key(
+    name: "byContractType"
+    fields: ["contractType", "endDate"]
+    queryField: "contractsByType"
+  ) {
   id: ID!
   contractNumber: String!
   contractType: ContractType!
@@ -46,7 +67,8 @@ type Contract @model {
   commodityId: ID!
   contractTo: Vendor! @connection(fields: ["vendorId"])
   quantity: Float!
-  price: Float!
+  contractPrice: Float!
+  salePrice: Float
   terms: String
   weights: String
   basis: String
@@ -122,7 +144,8 @@ input CreateContractInput {
   vendorId: ID!
   commodityId: ID!
   quantity: Float!
-  price: Float!
+  contractPrice: Float!
+  salePrice: Float
   terms: String
   weights: String
   basis: String

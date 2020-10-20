@@ -70,7 +70,7 @@ const BulkCreateContracts = () => {
   };
 
   const findNonStringKeys = (obj) => {
-    const nonStringKeys = ["quantity", "price"];
+    const nonStringKeys = ["quantity", "contractPrice", "salePrice"];
     Object.keys(obj).forEach((key) => {
       if (obj[key] === "") {
         delete obj[key];

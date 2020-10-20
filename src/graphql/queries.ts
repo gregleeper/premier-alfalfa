@@ -64,7 +64,8 @@ export const getCommodity = /* GraphQL */ `
           vendorId
           commodityId
           quantity
-          price
+          contractPrice
+          salePrice
           terms
           weights
           basis
@@ -183,7 +184,8 @@ export const getContract = /* GraphQL */ `
         updatedAt
       }
       quantity
-      price
+      contractPrice
+      salePrice
       terms
       weights
       basis
@@ -242,7 +244,8 @@ export const listContracts = /* GraphQL */ `
           updatedAt
         }
         quantity
-        price
+        contractPrice
+        salePrice
         terms
         weights
         basis
@@ -298,7 +301,8 @@ export const getTicket = /* GraphQL */ `
           updatedAt
         }
         quantity
-        price
+        contractPrice
+        salePrice
         terms
         weights
         basis
@@ -353,12 +357,9 @@ export const listTickets = /* GraphQL */ `
           contractState
           vendorId
           commodityId
-          commodity {
-            name
-            id
-          }
           quantity
-          price
+          contractPrice
+          salePrice
           terms
           weights
           basis
@@ -389,8 +390,284 @@ export const listTickets = /* GraphQL */ `
     }
   }
 `;
-export const ticketsByContractId = /* GraphQL */ `
-  query TicketsByContractId(
+export const contractsByStatus = /* GraphQL */ `
+  query ContractsByStatus(
+    $contractState: ContractState
+    $contractTypeEndDate: ModelContractByStatusCompositeKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelContractFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    contractsByStatus(
+      contractState: $contractState
+      contractTypeEndDate: $contractTypeEndDate
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const contractsByVendor = /* GraphQL */ `
+  query ContractsByVendor(
+    $vendorId: ID
+    $endDate: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelContractFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    contractsByVendor(
+      vendorId: $vendorId
+      endDate: $endDate
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const contractsByCommodity = /* GraphQL */ `
+  query ContractsByCommodity(
+    $commodityId: ID
+    $endDate: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelContractFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    contractsByCommodity(
+      commodityId: $commodityId
+      endDate: $endDate
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const contractsByType = /* GraphQL */ `
+  query ContractsByType(
+    $contractType: ContractType
+    $endDate: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelContractFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    contractsByType(
+      contractType: $contractType
+      endDate: $endDate
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const ticketsByContract = /* GraphQL */ `
+  query TicketsByContract(
     $contractId: ID
     $ticketDate: ModelStringKeyConditionInput
     $sortDirection: ModelSortDirection
@@ -398,7 +675,7 @@ export const ticketsByContractId = /* GraphQL */ `
     $limit: Int
     $nextToken: String
   ) {
-    ticketsByContractId(
+    ticketsByContract(
       contractId: $contractId
       ticketDate: $ticketDate
       sortDirection: $sortDirection
@@ -417,7 +694,8 @@ export const ticketsByContractId = /* GraphQL */ `
           vendorId
           commodityId
           quantity
-          price
+          contractPrice
+          salePrice
           terms
           weights
           basis

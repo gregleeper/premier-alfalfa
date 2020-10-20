@@ -50,7 +50,8 @@ export const batchAddContracts = /* GraphQL */ `
         updatedAt
       }
       quantity
-      price
+      contractPrice
+      salePrice
       terms
       weights
       basis
@@ -107,7 +108,8 @@ export const batchAddTickets = /* GraphQL */ `
           updatedAt
         }
         quantity
-        price
+        contractPrice
+        salePrice
         terms
         weights
         basis
@@ -231,7 +233,8 @@ export const createCommodity = /* GraphQL */ `
           vendorId
           commodityId
           quantity
-          price
+          contractPrice
+          salePrice
           terms
           weights
           basis
@@ -271,7 +274,8 @@ export const updateCommodity = /* GraphQL */ `
           vendorId
           commodityId
           quantity
-          price
+          contractPrice
+          salePrice
           terms
           weights
           basis
@@ -311,7 +315,8 @@ export const deleteCommodity = /* GraphQL */ `
           vendorId
           commodityId
           quantity
-          price
+          contractPrice
+          salePrice
           terms
           weights
           basis
@@ -433,7 +438,8 @@ export const createContract = /* GraphQL */ `
         updatedAt
       }
       quantity
-      price
+      contractPrice
+      salePrice
       terms
       weights
       basis
@@ -490,7 +496,8 @@ export const updateContract = /* GraphQL */ `
         updatedAt
       }
       quantity
-      price
+      contractPrice
+      salePrice
       terms
       weights
       basis
@@ -547,7 +554,8 @@ export const deleteContract = /* GraphQL */ `
         updatedAt
       }
       quantity
-      price
+      contractPrice
+      salePrice
       terms
       weights
       basis
@@ -607,7 +615,8 @@ export const createTicket = /* GraphQL */ `
           updatedAt
         }
         quantity
-        price
+        contractPrice
+        salePrice
         terms
         weights
         basis
@@ -678,7 +687,8 @@ export const updateTicket = /* GraphQL */ `
           updatedAt
         }
         quantity
-        price
+        contractPrice
+        salePrice
         terms
         weights
         basis
@@ -749,7 +759,8 @@ export const deleteTicket = /* GraphQL */ `
           updatedAt
         }
         quantity
-        price
+        contractPrice
+        salePrice
         terms
         weights
         basis

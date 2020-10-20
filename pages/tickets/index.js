@@ -17,7 +17,7 @@ const Tickets = () => {
     const myTickets = await API.graphql({
       query: listTickets,
       variables: {
-        limit: 30000,
+        limit: 3000,
       },
     });
     setTickets(myTickets.data.listTickets.items);

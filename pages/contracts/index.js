@@ -66,16 +66,30 @@ const Contracts = () => {
         accessor: "quantity",
       },
       {
-        Header: "Price",
-        accessor: "price",
+        Header: "Contract Price",
+        accessor: "contractPrice",
         Cell: ({ value }) => <span>{formatMoney.format(value)}</span>,
       },
       {
-        Header: "Contract Value",
+        Header: "Sale Price",
+        accessor: "salePrice",
+        Cell: ({ value }) => <span>{formatMoney.format(value)}</span>,
+      },
+      {
+        Header: "Contract Purchase Value",
         accessor: "",
         Cell: (row) => (
           <span>
-            {formatMoney.format(row.row.values.quantity * row.row.values.price)}
+            {formatMoney.format(row.row.values.quantity * row.row.values.contractPrice)}
+          </span>
+        ),
+      },
+      {
+        Header: "Contract Sale Value",
+        accessor: "",
+        Cell: (row) => (
+          <span>
+            {formatMoney.format(row.row.values.quantity * row.row.values.salePrice)}
           </span>
         ),
       },

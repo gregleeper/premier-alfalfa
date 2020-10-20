@@ -21,3 +21,65 @@ export function groupBy(list, keyGetter) {
   });
   return map;
 }
+
+export function computeAvgNetTons(group) {
+  let sum = 0;
+  let itemsFound = 0;
+  const len = group && group.length;
+  let item = null;
+  for (let i = 0; i < len; i++) {
+    item = group[i];
+    if (item) {
+      sum = item.netTons + sum;
+      itemsFound++;
+    }
+    return sum / itemsFound;
+  }
+}
+
+export function computeAvgContractPrice(group) {
+  let sum = 0;
+  let itemsFound = 0
+  const len = group && group.length
+  let item = null
+  for(let i = 0; i < len; i++){
+    item = group[i].contract
+    if(item){
+      sum = item.contractPrice + sum
+      itemsFound++
+    }
+    return sum/itemsFound
+  }
+}
+export function computeAvgSalePrice(group) {
+  
+  let sum = 0;
+  let itemsFound = 0
+  const len = group && group.length
+  let item = null
+  for(let i = 0; i < len; i++){
+    item = group[i].contract
+    
+    if(item){
+
+      sum = item.salePrice + sum
+      itemsFound++
+      
+    }
+    console.log('sum: ', sum, 'itemsFound: ', itemsFound)
+    return sum/itemsFound
+  }
+}
+
+export function computeSum(group) {
+  let sum = 0
+  let item = null
+  let len = group && group.length
+  for(let i = 0; i < len; i++){
+    item = group[i]
+    if(item){
+      sum = item.netTons + sum
+    }
+  }
+  return sum
+}

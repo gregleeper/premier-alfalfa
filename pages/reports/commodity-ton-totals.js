@@ -2,7 +2,7 @@ import { API } from "aws-amplify";
 import Table from "../../components/table";
 import { useEffect, useState, useMemo } from "react";
 import DatePicker from "react-datepicker";
-import { groupBy } from "../../utils";
+import { computeAvgNetTons, groupBy } from "../../utils";
 import moment from "moment";
 import Layout from "../../components/layout";
 import { listTickets, listCommoditys } from "../../src/graphql/queries.ts";
@@ -18,6 +18,7 @@ const CommodityTotals = () => {
     const myCommodities = await API.graphql({
       query: listCommoditys,
     });
+    getYearToDateTickets();
     setCommodities(myCommodities.data.listCommoditys.items);
   };
 
@@ -54,6 +55,10 @@ const CommodityTotals = () => {
   };
 
   const computeTotals = () => {
+    const groupedYTD = groupBy(
+      ytdTickets,
+      (ticket) => ticket.contract.commodity.name
+    );
     const grouped = groupBy(
       tickets,
       (ticket) => ticket.contract.commodity.name
@@ -62,23 +67,15 @@ const CommodityTotals = () => {
     commodities.map((c) => {
       let commodityTotal = {};
       const group = grouped.get(c.name);
+      const ytdGroup = groupedYTD.get(c.name);
       commodityTotal.commodity = c.name;
-      console.log(group);
+
       commodityTotal.weekNumLoads = group ? group.length : 0;
-      commodityTotal.yearNumLoads = 0;
-      let sumOfNetTons = 0;
-      let itemsFound = 0;
-      const len = group && group.length;
-      let item = null;
-      for (let i = 0; i < len; i++) {
-        item = group[i];
-        if (item) {
-          sumOfNetTons = item.netTons + sumOfNetTons;
-          itemsFound++;
-        }
-      }
-      const avg = sumOfNetTons / itemsFound;
-      commodityTotal.weekAvgTons = group ? avg : 0;
+      commodityTotal.yearNumLoads = ytdGroup ? ytdGroup.length : 0;
+
+      commodityTotal.weekAvgTons = group ? computeAvgNetTons(group) : 0;
+      commodityTotal.yearAvgTons = ytdGroup ? computeAvgNetTons(ytdGroup) : 0;
+
       array.push(commodityTotal);
     });
     setTotals(array);
@@ -111,6 +108,10 @@ const CommodityTotals = () => {
       {
         Header: "Week Avg Tons",
         accessor: "weekAvgTons",
+      },
+      {
+        Header: "YTD Avg Tons",
+        accessor: "yearAvgTons",
       },
     ],
     []
