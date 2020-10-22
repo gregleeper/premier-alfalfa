@@ -161,38 +161,38 @@ const StatusReport = () => {
     {
       Header: "Amount",
       accessor: "amount",
-    Cell: ({value}) => <span>{formatMoney.format(value)}</span>,
-    Footer: ({rows}) => {
-      const total = useMemo(
-        () => rows.reduce((sum, row) => row.values.amount + sum, 0),
-        [rows]
-      );
-      return (
-        <div className="py-2 text-center flex justify-around items-center border-t-4 border-gray-900">
-          <div>
-            <span className="text-gray-600">Total:</span>{" "}
+      Cell: ({value}) => <span>{formatMoney.format(value)}</span>,
+      Footer: ({rows}) => {
+        const total = useMemo(
+          () => rows.reduce((sum, row) => row.values.amount + sum, 0),
+          [rows]
+        );
+        return (
+          <div className="py-2 text-center flex justify-around items-center border-t-4 border-gray-900">
+            <div>
+              <span className="text-gray-600">Total:</span>{" "}
+            </div>
+            <div>
+              <span className="text-lg font-bold">
+                {formatMoney.format(total)}
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="text-lg font-bold">
-              {formatMoney.format(total)}
-            </span>
-          </div>
-        </div>
-      );
-    }
+        );
+      }
     }
   ])
 
 
   return (
     <Layout>
-      <div>
-      <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
+      <div className="px-12"> 
+        <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
           <h3>Status Report - Purchases</h3>
         </div>
         <div>
         <div>
-          <button onClick={() => computeTotals()}>Generate Report</button>
+          <button className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white" onClick={() => computeTotals()}>Generate Report</button>
         </div>
           <div className="px-12 pt-12">
             {summary.map((c, i) => (

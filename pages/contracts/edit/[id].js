@@ -11,20 +11,18 @@ import {
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import { useRouter } from "next/router";
+import {useQuery} from 'react-query'
+import {FormikSelect} from '../../../components/formikSelect'
 
 const EditContract = () => {
   const router = useRouter();
   const { id } = router.query;
   const [contract, setContract] = useState();
   const [commodities, setCommodities] = useState([]);
-  const [vendors, setVendors] = useState([]);
   const [dateSigned, setDateSigned] = useState(new Date());
   const [beginDate, setBeginDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-
-  useEffect(() => {
-    getMyContract();
-  }, [id]);
+  const [vendorOptions, setVendorOptions] = useState([])
 
   useEffect(() => {
     if (contract) {
@@ -33,6 +31,31 @@ const EditContract = () => {
       setEndDate(new Date(contract.endDate));
     }
   }, [contract]);
+
+  const {data: commoditysData} = useQuery('commodities', async () => {
+    const {
+      data: {
+        listCommoditys: commoditiesData,
+      },
+    } = await API.graphql({
+      query: listCommoditys,
+    });
+    return commoditiesData
+  })
+
+  const {data: vendorsData} = useQuery('vendors', async () => {
+    const {
+      data: {
+        listVendors: myVendors,
+      },
+    } = await API.graphql({
+      query: listVendors,
+      variables: {
+        limit: 3000
+      }
+    });
+    return myVendors
+  })
 
   const getMyContract = async () => {
     const {
@@ -46,32 +69,29 @@ const EditContract = () => {
     setContract(myContract);
   };
 
-  const getAllCommodities = async () => {
-    const {
-      data: {
-        listCommoditys: { items: allCommodities },
-      },
-    } = await API.graphql({
-      query: listCommoditys,
+  const initVendorOptions = () => {
+    const options = vendorsData.items.map((v) => {
+      return { value: v.id, label: v.companyReportName };
     });
-    setCommodities(allCommodities);
-  };
-
-  const getAllVendors = async () => {
-    const {
-      data: {
-        listVendors: { items: allVendors },
-      },
-    } = await API.graphql({
-      query: listVendors,
-    });
-    setVendors(allVendors);
+    setVendorOptions(options);
   };
 
   useEffect(() => {
-    getAllCommodities();
-    getAllVendors();
-  }, []);
+    if(commoditysData){
+      setCommodities(commoditysData.items)
+    }
+    
+  }, [ commoditysData]);
+
+  useEffect(() => {
+    if (vendorsData) {
+      initVendorOptions();
+    }
+  }, [vendorsData]);
+
+  useEffect(() => {
+    getMyContract();
+  }, [id]);
 
   return (
     <Layout>
@@ -86,7 +106,7 @@ const EditContract = () => {
                 contractNumber: (contract && contract.contractNumber) || "",
                 contractType: (contract && contract.contractType) || "",
                 contractState: (contract && contract.contractState) || "",
-                vendorId: (contract && contract.vendorId) || "",
+                vendorId: (contract.vendorId) || "",
                 commodityId: (contract && contract.commodityId) || "",
                 quantity: (contract && contract.quantity) || "",
                 price: (contract && contract.price) || "",
@@ -125,7 +145,9 @@ const EditContract = () => {
               }}
             >
               {({ isSubmitting }) => (
+                
                 <Form>
+                  {console.log(contract.vendorId)}
                   <div className="w-7/12 mx-auto">
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -230,16 +252,11 @@ const EditContract = () => {
                       <Field
                         className="form-select w-full"
                         name="vendorId"
+                        component={FormikSelect}
                         as="select"
+                        options={vendorOptions}
                       >
-                        {" "}
-                        <option value="">Choose One:</option>
-                        {vendors.length > 0 &&
-                          vendors.map((v) => (
-                            <option key={v.id} value={v.id}>
-                              {v.companyListingName}
-                            </option>
-                          ))}
+                        
                       </Field>
                     </div>
                     <div className="flex justify-between items-center mb-4">

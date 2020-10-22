@@ -186,13 +186,13 @@ const StatusReport = () => {
 
   return (
     <Layout>
-      <div>
+      <div className="px-12">
         <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
           <h3>Status Report - Sales</h3>
         </div>
         <div>
         <div>
-          <button onClick={() => computeTotals()}>Generate Report</button>
+          <button className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white" onClick={() => computeTotals()}>Generate Report</button>
         </div>
           <div className="px-12 pt-12">
             {summary.map((c, i) => (

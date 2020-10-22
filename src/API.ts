@@ -54,6 +54,7 @@ export enum ContractState {
 export type CreateTicketInput = {
   id?: string | null,
   contractId: string,
+  type: string,
   ticketDate: string,
   fieldNum?: string | null,
   baleCount?: number | null,
@@ -330,6 +331,7 @@ export type DeleteContractInput = {
 
 export type ModelTicketConditionInput = {
   contractId?: ModelIDInput | null,
+  type?: ModelStringInput | null,
   ticketDate?: ModelStringInput | null,
   fieldNum?: ModelStringInput | null,
   baleCount?: ModelFloatInput | null,
@@ -349,6 +351,7 @@ export type ModelTicketConditionInput = {
 export type UpdateTicketInput = {
   id: string,
   contractId?: string | null,
+  type?: string | null,
   ticketDate?: string | null,
   fieldNum?: string | null,
   baleCount?: number | null,
@@ -440,6 +443,7 @@ export type ModelContractFilterInput = {
 export type ModelTicketFilterInput = {
   id?: ModelIDInput | null,
   contractId?: ModelIDInput | null,
+  type?: ModelStringInput | null,
   ticketDate?: ModelStringInput | null,
   fieldNum?: ModelStringInput | null,
   baleCount?: ModelFloatInput | null,
@@ -583,6 +587,7 @@ export type BatchAddTicketsMutation = {
     __typename: "Ticket",
     id: string,
     contractId: string,
+    type: string,
     contract:  {
       __typename: "Contract",
       id: string,
@@ -1134,6 +1139,7 @@ export type CreateTicketMutation = {
     __typename: "Ticket",
     id: string,
     contractId: string,
+    type: string,
     contract:  {
       __typename: "Contract",
       id: string,
@@ -1211,6 +1217,7 @@ export type UpdateTicketMutation = {
     __typename: "Ticket",
     id: string,
     contractId: string,
+    type: string,
     contract:  {
       __typename: "Contract",
       id: string,
@@ -1288,6 +1295,7 @@ export type DeleteTicketMutation = {
     __typename: "Ticket",
     id: string,
     contractId: string,
+    type: string,
     contract:  {
       __typename: "Contract",
       id: string,
@@ -1669,6 +1677,7 @@ export type GetTicketQuery = {
     __typename: "Ticket",
     id: string,
     contractId: string,
+    type: string,
     contract:  {
       __typename: "Contract",
       id: string,
@@ -1749,6 +1758,7 @@ export type ListTicketsQuery = {
       __typename: "Ticket",
       id: string,
       contractId: string,
+      type: string,
       contract:  {
         __typename: "Contract",
         id: string,
@@ -2074,6 +2084,65 @@ export type TicketsByContractQuery = {
       __typename: "Ticket",
       id: string,
       contractId: string,
+      type: string,
+      contract:  {
+        __typename: "Contract",
+        id: string,
+        contractNumber: string,
+        contractType: ContractType,
+        contractState: ContractState,
+        vendorId: string,
+        commodityId: string,
+        quantity: number,
+        contractPrice: number,
+        salePrice: number | null,
+        terms: string | null,
+        weights: string | null,
+        basis: string | null,
+        remarks: string | null,
+        beginDate: string,
+        endDate: string,
+        dateSigned: string | null,
+        purchasedFrom: string | null,
+        soldTo: string | null,
+        createdAt: string,
+        updatedAt: string,
+      },
+      ticketDate: string,
+      fieldNum: string | null,
+      baleCount: number | null,
+      ticketNumber: string | null,
+      ladingNumber: string | null,
+      driver: string | null,
+      truckNumber: string | null,
+      grossWeight: number | null,
+      tareWeight: number | null,
+      netWeight: number | null,
+      netTons: number | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken: string | null,
+  } | null,
+};
+
+export type TicketsByDateQueryVariables = {
+  type?: string | null,
+  ticketDate?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelTicketFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type TicketsByDateQuery = {
+  ticketsByDate:  {
+    __typename: "ModelTicketConnection",
+    items:  Array< {
+      __typename: "Ticket",
+      id: string,
+      contractId: string,
+      type: string,
       contract:  {
         __typename: "Contract",
         id: string,
@@ -2534,6 +2603,7 @@ export type OnCreateTicketSubscription = {
     __typename: "Ticket",
     id: string,
     contractId: string,
+    type: string,
     contract:  {
       __typename: "Contract",
       id: string,
@@ -2606,6 +2676,7 @@ export type OnUpdateTicketSubscription = {
     __typename: "Ticket",
     id: string,
     contractId: string,
+    type: string,
     contract:  {
       __typename: "Contract",
       id: string,
@@ -2678,6 +2749,7 @@ export type OnDeleteTicketSubscription = {
     __typename: "Ticket",
     id: string,
     contractId: string,
+    type: string,
     contract:  {
       __typename: "Contract",
       id: string,

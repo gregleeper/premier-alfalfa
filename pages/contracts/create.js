@@ -7,7 +7,7 @@ import { listVendors, listCommoditys } from "../../src/graphql/queries.ts";
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import { FormikSelect } from "../../components/formikSelect";
-
+import {useQuery} from 'react-query'
 const CreateContract = ({ allVendors }) => {
   const [commodities, setCommodities] = useState([]);
   const [dateSigned, setDateSigned] = useState(new Date());
@@ -16,32 +16,48 @@ const CreateContract = ({ allVendors }) => {
   const [vendorOptions, setVendorOptions] = useState([]);
 
   const initVendorOptions = () => {
-    const options = allVendors.map((v) => {
+    const options = vendorsData.items.map((v) => {
       return { value: v.id, label: v.companyReportName };
     });
     setVendorOptions(options);
   };
 
-  const getAllCommodities = async () => {
-    const {
-      data: {
-        listCommoditys: { items: allCommodities },
-      },
-    } = await API.graphql({
+  const {data: vendorsData} = useQuery('vendors', async ( ) => {
+    const {data: {listVendors: vendorsData}} = await API.graphql({
+      query: listVendors,
+      variables: {
+
+        limit: 3000
+      }
+    })
+    return vendorsData
+  },
+  {
+    cacheTime: 1000 * 60 * 60
+  }
+  )
+
+  const {data: commoditysData} = useQuery('commodities', async () => {
+    const {data: {listCommoditys: commoditiesData}} = await API.graphql({
       query: listCommoditys,
-    });
-    setCommodities(allCommodities);
-  };
+      variables: {
+        limit: 3000
+      }
+    })
+    return commoditiesData
+  })
 
   useEffect(() => {
-    getAllCommodities();
-  }, []);
+    if(commoditysData){
+      setCommodities(commoditysData.items)
+    }
+  }, [commoditysData, vendorsData]);
 
   useEffect(() => {
-    if (allVendors) {
+    if (vendorsData) {
       initVendorOptions();
     }
-  }, [allVendors]);
+  }, [vendorsData]);
 
   return (
     <Layout>

@@ -5,25 +5,34 @@ import { API } from "aws-amplify";
 import { createTicket } from "../../src/graphql/mutations.ts";
 import { listContracts } from "../../src/graphql/queries.ts";
 import DatePicker from "react-datepicker";
+import {QueryCache, useQuery} from 'react-query'
 
 const CreateTicket = () => {
+  const queryCache = new QueryCache()
   const [contracts, setContracts] = useState([]);
   const [ticketDate, setTicketDate] = useState(new Date());
 
-  const getAllContracts = async () => {
-    const {
-      data: {
-        listContracts: { items: allContracts },
-      },
-    } = await API.graphql({
+  const {data } = useQuery('contracts', async () => {
+    const {data: {listContracts: contractsData}} = await API.graphql({
       query: listContracts,
-    });
-    setContracts(allContracts);
-  };
+      variables:{
+        limit: 3000
+      }
+    })
+    return contractsData
+  },
+  {
+    cacheTime: 1000 * 60 * 20
+  })
 
+  
   useEffect(() => {
-    getAllContracts();
-  }, []);
+    if(data){
+      setContracts(data.items)
+    }
+  }, [data]);
+
+  
 
   return (
     <Layout>
@@ -48,7 +57,7 @@ const CreateTicket = () => {
               netTons: "",
             }}
             onSubmit={async (values, actions) => {
-              await API.graphql({
+              const {data: {createTicket: newTicket}} = await API.graphql({
                 query: createTicket,
                 variables: {
                   input: {
@@ -59,6 +68,7 @@ const CreateTicket = () => {
                     ticketNumber: values.ticketNumber,
                     ladingNumber: values.ladingNumber,
                     driver: values.driver,
+                    type: 'Ticket',
                     truckNumber: values.truckNumber,
                     grossWeight: values.grossWeight,
                     tareWeight: values.tareWeight,
@@ -67,6 +77,7 @@ const CreateTicket = () => {
                   },
                 },
               });
+              queryCache.setQueryData('tickets', newTicket)
               actions.resetForm();
             }}
           >

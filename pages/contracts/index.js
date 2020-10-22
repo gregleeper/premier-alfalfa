@@ -6,24 +6,28 @@ import Link from "next/link";
 import Table from "../../components/table";
 import moment from "moment";
 import { formatMoney } from "../../utils";
+import {useQuery, QueryCache} from 'react-query'
 
 const Contracts = () => {
   const [contracts, setContracts] = useState([]);
 
-  useEffect(() => {
-    getAllContracts();
-  }, []);
-
-  const getAllContracts = async () => {
-    const contracts = await API.graphql({
+  const{data} = useQuery('contracts', async () => {
+    const {data: {listContracts: contractsData}} = await API.graphql({
       query: listContracts,
       variables: {
-        limit: 2000,
-      },
-    });
+        limit: 3000
+      }
+    })
+    return contractsData
+  })
 
-    setContracts(contracts.data?.listContracts.items);
-  };
+
+
+  useEffect(() => {
+    if(data){
+      setContracts(data.items)
+    }
+  }, [data]);
 
   const columns = useMemo(
     () => [

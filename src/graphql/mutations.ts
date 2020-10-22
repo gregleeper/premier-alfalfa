@@ -83,6 +83,7 @@ export const batchAddTickets = /* GraphQL */ `
     batchAddTickets(tickets: $tickets) {
       id
       contractId
+      type
       contract {
         id
         contractNumber
@@ -590,6 +591,7 @@ export const createTicket = /* GraphQL */ `
     createTicket(input: $input, condition: $condition) {
       id
       contractId
+      type
       contract {
         id
         contractNumber
@@ -662,6 +664,7 @@ export const updateTicket = /* GraphQL */ `
     updateTicket(input: $input, condition: $condition) {
       id
       contractId
+      type
       contract {
         id
         contractNumber
@@ -734,6 +737,7 @@ export const deleteTicket = /* GraphQL */ `
     deleteTicket(input: $input, condition: $condition) {
       id
       contractId
+      type
       contract {
         id
         contractNumber

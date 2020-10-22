@@ -6,8 +6,10 @@ import { updateTicket } from "../../../src/graphql/mutations.ts";
 import { listContracts, getTicket } from "../../../src/graphql/queries.ts";
 import DatePicker from "react-datepicker";
 import { useRouter } from "next/router";
+import {QueryCache} from 'react-query'
 
 const EditTicket = () => {
+  const queryCache = new QueryCache()
   const [contracts, setContracts] = useState([]);
   const [ticketDate, setTicketDate] = useState(new Date());
   const [ticket, setTicket] = useState();
@@ -78,10 +80,12 @@ const EditTicket = () => {
                 netTons: (ticket && ticket.netTons) || "",
               }}
               onSubmit={async (values, actions) => {
-                await API.graphql({
+                console.log(values)
+                const {data: {updateTicket: updatedTicket}} = await API.graphql({
                   query: updateTicket,
                   variables: {
                     input: {
+                      id,
                       contractId: values.contractId,
                       ticketDate: values.ticketDate,
                       fieldNum: values.fieldNum,
@@ -89,6 +93,7 @@ const EditTicket = () => {
                       ticketNumber: values.ticketNumber,
                       ladingNumber: values.ladingNumber,
                       driver: values.driver,
+                      type: "Ticket",
                       truckNumber: values.truckNumber,
                       grossWeight: values.grossWeight,
                       tareWeight: values.tareWeight,
@@ -97,7 +102,8 @@ const EditTicket = () => {
                     },
                   },
                 });
-                actions.resetForm();
+                queryCache.setQueryData('tickets', updatedTicket)
+                router.push('/tickets');
               }}
             >
               {({ isSubmitting }) => (

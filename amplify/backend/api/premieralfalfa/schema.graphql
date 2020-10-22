@@ -87,9 +87,15 @@ type Ticket
     name: "ticketsByContractByTicketDate"
     fields: ["contractId", "ticketDate"]
     queryField: "ticketsByContract"
+  )
+  @key(
+    name: "ticketsByDate"
+    fields: ["type", "ticketDate"]
+    queryField: "ticketsByDate"
   ) {
   id: ID!
   contractId: ID!
+  type: String!
   contract: Contract! @connection(fields: ["contractId"])
   ticketDate: AWSDateTime!
   fieldNum: String
@@ -160,6 +166,7 @@ input CreateContractInput {
 input CreateTicketInput {
   id: ID
   contractId: ID!
+  type: String!
   ticketDate: AWSDateTime!
   fieldNum: String
   baleCount: Float

@@ -4,9 +4,26 @@ import { API } from "aws-amplify";
 import { listVendors } from "../../src/graphql/queries.ts";
 import Link from "next/link";
 import Table from "../../components/table";
-
+import { useQuery} from 'react-query'
+import {ReactQueryDevtools} from 'react-query-devtools'
 const Vendors = ({ vendors }) => {
   const [vendorsState, setVendorsState] = useState([]);
+  
+  const {data} = useQuery('vendors', async() => {
+    const {data: {listVendors: vendorData}} = await API.graphql({
+      query: listVendors,
+      variables: {
+        limit: 1000
+      }
+    })
+    return vendorData
+  }, 
+  {
+    initialData: vendors.data.listVendors, 
+    cacheTime: 1000 * 60 * 60
+  }
+  )
+
 
   useEffect(() => {
     if (vendors) {
@@ -97,6 +114,7 @@ const Vendors = ({ vendors }) => {
           <Table data={vendorsState} columns={columns} />
         </div>
       </div>
+      <ReactQueryDevtools/>
     </Layout>
   );
 };

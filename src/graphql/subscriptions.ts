@@ -406,6 +406,7 @@ export const onCreateTicket = /* GraphQL */ `
     onCreateTicket {
       id
       contractId
+      type
       contract {
         id
         contractNumber
@@ -475,6 +476,7 @@ export const onUpdateTicket = /* GraphQL */ `
     onUpdateTicket {
       id
       contractId
+      type
       contract {
         id
         contractNumber
@@ -544,6 +546,7 @@ export const onDeleteTicket = /* GraphQL */ `
     onDeleteTicket {
       id
       contractId
+      type
       contract {
         id
         contractNumber

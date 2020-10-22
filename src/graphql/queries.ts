@@ -276,6 +276,7 @@ export const getTicket = /* GraphQL */ `
     getTicket(id: $id) {
       id
       contractId
+      type
       contract {
         id
         contractNumber
@@ -350,6 +351,7 @@ export const listTickets = /* GraphQL */ `
       items {
         id
         contractId
+        type
         contract {
           id
           contractNumber
@@ -357,6 +359,14 @@ export const listTickets = /* GraphQL */ `
           contractState
           vendorId
           commodityId
+          commodity{
+            name
+            id
+          }
+          contractTo{
+            companyReportName
+            id
+          }
           quantity
           contractPrice
           salePrice
@@ -686,6 +696,68 @@ export const ticketsByContract = /* GraphQL */ `
       items {
         id
         contractId
+        type
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
+          createdAt
+          updatedAt
+        }
+        ticketDate
+        fieldNum
+        baleCount
+        ticketNumber
+        ladingNumber
+        driver
+        truckNumber
+        grossWeight
+        tareWeight
+        netWeight
+        netTons
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const ticketsByDate = /* GraphQL */ `
+  query TicketsByDate(
+    $type: String
+    $ticketDate: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelTicketFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    ticketsByDate(
+      type: $type
+      ticketDate: $ticketDate
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        contractId
+        type
         contract {
           id
           contractNumber
