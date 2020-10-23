@@ -2,9 +2,10 @@ import {useState, useEffect, useMemo} from 'react'
 import {API} from 'aws-amplify'
 import moment from 'moment'
 import Layout from '../../components/layout'
-import {listContracts, listCommoditys, listTickets} from '../../src/graphql/queries.ts'
+import {listContracts, listCommoditys, listTickets, contractsByType} from '../../src/graphql/queries.ts'
 import {groupBy, computeSum, computeAvgContractPrice, formatMoney} from '../../utils'
 import Table from '../../components/table'
+import {useQuery} from 'react-query'
 
 const StatusReport = () => {
   const [date, setDate] = useState(new Date())
@@ -15,21 +16,36 @@ const StatusReport = () => {
   const [commodities, setCommodities] = useState([])
   const [summary, setSummary ] = useState([])
 
-  const getActiveContracts = async () => {
-    const {data: {listContracts: {items: myActiveContracts}}} = await API.graphql({
-      query: listContracts,
+  // const getActiveContracts = async () => {
+  //   const {data: {listContracts: {items: myActiveContracts}}} = await API.graphql({
+  //     query: listContracts,
+  //     variables: {
+  //       filter: {
+  //         contractState: {eq: "ACTIVE"},
+  //         contractType: {eq: "PURCHASE"}
+  //       },
+  //       limit: 30000
+  //     }
+  //   })
+  //   setActiveContracts(myActiveContracts)
+  // }
+
+  const {data: activeContractsData} = useQuery('activeSalesContracts', async () => {
+    const {data: {contractsByType: contracts}} = await API.graphql({
+      query: contractsByType,
       variables: {
+        contractType: "PURCHASE",
         filter: {
-          contractState: {eq: "ACTIVE"},
-          contractType: {eq: "PURCHASE"}
+          contractState: {eq: "ACTIVE"}
         },
-        limit: 30000
+        limit:  3000,
       }
     })
-    setActiveContracts(myActiveContracts)
-  }
+    return contracts
+  })
 
-  const getTicketsForContracts = async () => {
+
+  const {data: ticketsData, refetch, isSuccess, isLoading, isFetched} = useQuery('ticketsForActivePurchaseContracts', async () => {
     let array = [...ticketsForContracts]
     activeContracts.map(async (contract) => {
       const {data: {listTickets: {items: contractTickets}}} = await API.graphql({
@@ -40,14 +56,44 @@ const StatusReport = () => {
               eq: contract.id
             }
           },
-          limit: 30000
+          limit: 50000
         }
       })
       array.push({contract, contractTickets})
-      setTicketsForContracts(array)
-    })
+    } )
+    return array
+    }, 
+    { 
+      enabled: false,
+      cacheTime: 1000 * 60 * 59,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchIntervalInBackground: false,
+      refetchOnReconnect: true,
+      forceFetchOnMount: false,
+      keepPreviousData: false
+    }
+  )
+
+  // const getTicketsForContracts = async () => {
+  //   let array = [...ticketsForContracts]
+  //   activeContracts.map(async (contract) => {
+  //     const {data: {listTickets: {items: contractTickets}}} = await API.graphql({
+  //       query: listTickets,
+  //       variables: {
+  //         filter: {
+  //           contractId: {
+  //             eq: contract.id
+  //           }
+  //         },
+  //         limit: 30000
+  //       }
+  //     })
+  //     array.push({contract, contractTickets})
+  //     setTicketsForContracts(array)
+  //   })
    
-  }
+  // }
   
 
   const computeTotals = () => {
@@ -87,14 +133,23 @@ const StatusReport = () => {
   }
 
   useEffect(() => {
-    getActiveContracts()
-  }, [])
+    if(activeContractsData){
+      setActiveContracts(activeContractsData.items)
+    }
+  }, [activeContractsData])
 
   useEffect(() => {
     if(activeContracts.length > 0){
-      getTicketsForContracts()
+      refetch()
     }
   }, [activeContracts])
+
+  useEffect(() => {
+    if(ticketsData && isSuccess ){
+      
+      setTicketsForContracts(ticketsData)
+    }
+  }, [ticketsData])
 
   const columns = useMemo(() => [
     {
@@ -192,7 +247,13 @@ const StatusReport = () => {
         </div>
         <div>
         <div>
-          <button className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white" onClick={() => computeTotals()}>Generate Report</button>
+        {!isFetched ? <p>Loading....</p> : <button 
+            className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:border-red-200" 
+            onClick={() => computeTotals()}
+            disabled={!isFetched}
+          >
+            Generate Report
+          </button>}
         </div>
           <div className="px-12 pt-12">
             {summary.map((c, i) => (

@@ -9,8 +9,9 @@ import { groupBy, computeSum } from "../../utils";
 import {useQuery, useInfiniteQuery, useQueryCache} from 'react-query'
 import {ReactQueryDevtools} from 'react-query-devtools'
 const TotalTonsHauled = () => {
-  const [beginDate, setBeginDate] = useState();
-  const [endDate, setEndDate] = useState();
+  const cache = useQueryCache()
+  const [beginDate, setBeginDate] = useState(cache.getQueryData('tthDates') ? cache.getQueryData('tthDates').beginDate : null);
+  const [endDate, setEndDate] = useState(cache.getQueryData('tthDates') ? cache.getQueryData('tthDates').endDate : null);
   const [beginningOfYear, setBeginningOfYear] = useState(moment().startOf('year'))
   const [activeContracts, setActiveContracts] = useState([])
   const [ticketsYTD, setTicketsYTD] = useState([])
@@ -19,46 +20,7 @@ const TotalTonsHauled = () => {
   const [commodityTotals, setCommodityTotals] = useState([])
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
-  const cache = useQueryCache()
-  
 
-  // const getTicketsFiltered = async () => {
-  //   const {
-  //     data: {
-  //       listTickets: { items: myTickets },
-  //     },
-  //   } = await API.graphql({
-  //     query: listTickets,
-  //     variables: {
-  //       filter: {
-  //         ticketDate: {
-  //           between: [beginDate, endDate],
-  //         },
-  //       },
-  //       limit: 60000
-  //     },
-  //   });
-  //   console.log('myTickets: ', myTickets)
-  //   getTicketsYTD()
-  //   setTickets(myTickets);
-  // };
-
-  // const getTicketsYTD = async () => {
-
-  //   const {data: {listTickets: {items: myTickets}}} = await API.graphql({
-  //     query: listTickets,
-  //     variables: {
-  //       filter: {
-  //         ticketDate: {
-  //           between: [beginningOfYear, endDate]
-  //         }
-  //       },
-  //       limit: 100000
-  //     }
-
-  //   })
-  //   setTicketsYTD(myTickets)
-  // }
 
   const {data: initTicketsData, refetch} = useQuery('totalTonsHauled', async() => {
     const{data: {listTickets: initTickets}} = await API.graphql({
@@ -67,7 +29,7 @@ const TotalTonsHauled = () => {
          limit: 3000,
          filter: {
            ticketDate: {
-             between: [beginDate, endDate]
+             between: [moment(beginDate).startOf('day'), moment(endDate).endOf('day')]
            }
          }
        }
@@ -83,7 +45,7 @@ const TotalTonsHauled = () => {
        refetchIntervalInBackground: false,
        refetchOnReconnect: true,
        forceFetchOnMount: false,
-       
+       keepPreviousData: false
      }
    )
  
@@ -103,7 +65,7 @@ const TotalTonsHauled = () => {
          limit: 3000,
          filter: {
            ticketDate: {
-            between: [beginDate, endDate]
+            between: [moment(beginDate).startOf('day'), moment(endDate).endOf('day')]
           },
          },
          nextToken,
@@ -116,14 +78,72 @@ const TotalTonsHauled = () => {
        getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
        cacheTime: 1000 * 60 * 60,
        refetchOnWindowFocus: false,
-       forceFetchOnMount: false
+       forceFetchOnMount: false,
+       keepPreviousData: false
      }
    )
 
-   useEffect(() => {
-    
-   }, [beginDate, endDate])
+   const {data: ytdTicketsData, refetch: refetchYTD} = useQuery('totalTonsHauledYTD', async() => {
 
+    const{data: {listTickets: initTickets}} = await API.graphql({
+       query: listTickets,
+       variables: {
+         limit: 3000,
+         filter: {
+           ticketDate: {
+             between: [moment().startOf('year'), moment(endDate).endOf('day')]
+           }
+         }
+       }
+     })
+    
+     return initTickets
+     },
+     {
+      enabled: false,
+       cacheTime: 1000 * 60 * 59,
+       refetchOnWindowFocus: false,
+       refetchOnMount: false,
+       refetchIntervalInBackground: false,
+       refetchOnReconnect: true,
+       forceFetchOnMount: false,
+       keepPreviousData: false
+       
+     }
+   )
+ 
+   const {
+     status: ytdStatus,
+     data: ytdData,
+     error: ytdError,
+     isFetching: ytdIsFetching,
+     isFetchingMore: ytdIsFetchingMore,
+     fetchMore: ytdFetchMore,
+     canFetchMore: ytdCanFetchMore,
+   }  = useInfiniteQuery('totalTonsHauledYTD', async (key, nextToken = cache.getQueryData('totalTonsHauledYTD').nextToken ) => {
+     const {data: {listTickets: ticketData}} = await API.graphql({
+       query: listTickets,
+       variables: {
+         limit: 3000,
+         filter: {
+           ticketDate: {
+            between: [moment().startOf('year'), moment(endDate).endOf('day')]
+          },
+         },
+         nextToken,
+       }
+     })
+     return ticketData
+     },
+     { 
+       enabled: false,
+       getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
+       cacheTime: 1000 * 60 * 60,
+       refetchOnWindowFocus: false,
+       forceFetchOnMount: false,
+       keepPreviousData: false
+     }
+   )
   const {data: activeContractsData} = useQuery('activeContracts', async () => {
     const {data: {listContracts: activeContracts}} = await API.graphql({
       query: listContracts,
@@ -136,21 +156,6 @@ const TotalTonsHauled = () => {
     })
     return activeContracts
   })
-
-  // const getActiveContracts = async () => {
-    
-  //   const {data: {listContracts: {items: myContracts}}} = await API.graphql({
-  //     query: listContracts,
-  //     variables: {
-  //       filter: {
-  //         contractState: {eq: "ACTIVE"}
-  //       },
-  //       limit: 30000
-  //     }
-  //   })
-
-  //   setActiveContracts(myContracts)
-  // }
   
   const computeTotals = () => {
     const byContract = groupBy(
@@ -183,7 +188,6 @@ const TotalTonsHauled = () => {
       let ticketTotals = {}
       const group = byContract.get(contract.id)
       const groupYTD = YTDbyContract.get(contract.id)
-      console.log(groupYTD)
       ticketTotals.commodity = contract.commodity.name
       ticketTotals.contractNumber = contract.contractNumber
       ticketTotals.contractName = contract.contractTo.companyReportName
@@ -198,14 +202,12 @@ const TotalTonsHauled = () => {
 
   }
 
-  console.log(cache.getQueryData('totalTonsHauled'))
-
   const compileData = () => {
     if(isInitialLoad){
       let array = [...tickets]
     
     data && data.map((group, i) => {
-     
+    
       group.items.map(item => array.push(item))
     })
     setTickets(array)
@@ -224,31 +226,77 @@ const TotalTonsHauled = () => {
   }
 
 
+  const compileDataYTD = () => {
+    if(isInitialLoad){
+      let array = [...ticketsYTD]
+      
+    ytdData && ytdData.map((group, i) => {
+      
+      group.items.map(item => array.push(item))
+    })
+    setTicketsYTD(array)
+    setIsInitialLoad(false)
+    }else{
+      
+      let array = []
+      ytdData && ytdData.map((group, i) => {
+     
+        group.items.map(item => array.push(item))
+      })
+      setTicketsYTD(array)
+    }
+  }
+
+  const handleFetchQueries = ( ) => {
+    setTickets([])
+    setTicketsYTD([])
+    setTotals([])
+    
+    refetch()
+    refetchYTD()
+  }
+
   useEffect(() => {
     if(activeContractsData){
       setActiveContracts(activeContractsData.items)
     }
   }, [activeContractsData])
+ 
+  useEffect(() => {
+    if(ytdTicketsData){
+      ytdFetchMore()
+    }
+    if(ytdCanFetchMore && !ytdIsFetching){
+      ytdFetchMore()
+    }
+    if(ytdTicketsData && ytdTicketsData.length && !ytdCanFetchMore){
+      compileDataYTD()
+    }
+  }, [ytdTicketsData])
 
   useEffect(() => {
     if(initTicketsData){
+      
       fetchMore()
     }
     if(initTicketsData && canFetchMore && !isFetchingMore) {
+    
       fetchMore()
     }
-    if(initTicketsData && initTicketsData.length && !canFetchMore){
+    
+    if(initTicketsData && initTicketsData.length && !canFetchMore ){
       compileData()
     }
     
   }, [initTicketsData])
 
   useEffect(() => {
-    if(tickets.length > 0){
+    if(tickets.length > 0 && ticketsYTD.length > 0){
 
       computeTotals()
+      cache.setQueryData('tthDates', {beginDate: beginDate, endDate: endDate})
     }
-  }, [tickets])
+  }, [tickets, ticketsYTD])
 
   const columns = useMemo(() => [
     {
@@ -313,7 +361,7 @@ const TotalTonsHauled = () => {
             <div>
               <button
                 className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
-                onClick={() => refetch()}
+                onClick={() => handleFetchQueries()}
               >
                 Submit
               </button>

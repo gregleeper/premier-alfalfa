@@ -66,7 +66,6 @@ export function computeAvgSalePrice(group) {
       itemsFound++
       
     }
-    console.log('sum: ', sum, 'itemsFound: ', itemsFound)
     return sum/itemsFound
   }
 }
@@ -81,5 +80,6 @@ export function computeSum(group) {
       sum = item.netTons + sum
     }
   }
-  return sum
+  
+  return Number.parseFloat(sum).toFixed(2)
 }

@@ -3,32 +3,32 @@ import Link from "next/link";
 const Nav = () => {
   return (
     <nav className="">
-      <div>
+      <div className="py-4">
         <ul className="flex justify-around">
           <li>Dashboard</li>
           <li>
             <Link href="/tickets">
-              <a>Tickets</a>
+              <a className="text-blue-700 underline hover:text-blue-600 hover:no-underline ">Tickets</a>
             </Link>
           </li>
           <li>
             <Link href="/vendors">
-              <a>Vendors</a>
+              <a className="text-blue-700 underline hover:text-blue-600 hover:no-underline">Vendors</a>
             </Link>
           </li>
           <li>
             <Link href="/contracts">
-              <a>Contracts</a>
+              <a className="text-blue-700 underline hover:text-blue-600 hover:no-underline">Contracts</a>
             </Link>
           </li>
           <li>
             <Link href="/commodities">
-              <a>Commodities</a>
+              <a className="text-blue-700 underline hover:text-blue-600 hover:no-underline">Commodities</a>
             </Link>
           </li>
           <li>
             <Link href="/reports">
-              <a>Reports</a>
+              <a className="text-blue-700 underline hover:text-blue-600 hover:no-underline">Reports</a>
             </Link>
           </li>
         </ul>

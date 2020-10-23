@@ -6,57 +6,152 @@ import { computeAvgNetTons, groupBy } from "../../utils";
 import moment from "moment";
 import Layout from "../../components/layout";
 import { listTickets, listCommoditys } from "../../src/graphql/queries.ts";
+import { useQuery, useInfiniteQuery, useQueryCache } from "react-query"
+import {ReactQueryDevtools} from 'react-query-devtools'
+
 const CommodityTotals = () => {
-  const [beginDate, setBeginDate] = useState();
-  const [endDate, setEndDate] = useState();
+  const cache = useQueryCache()
+  const [beginDate, setBeginDate] = useState(cache.getQueryData('cctDates') ? cache.getQueryData('cctDates').beginDate : null);
+  const [endDate, setEndDate] = useState( cache.getQueryData('cctDates') ? cache.getQueryData('cctDates').endDate : null);
   const [tickets, setTickets] = useState([]);
-  const [ytdTickets, setYtdTickets] = useState([]);
+  const [ticketsYTD, setTicketsYTD] = useState([]);
   const [commodities, setCommodities] = useState([]);
   const [totals, setTotals] = useState([]);
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
-  const getCommodities = async () => {
-    const myCommodities = await API.graphql({
-      query: listCommoditys,
-    });
-    getYearToDateTickets();
-    setCommodities(myCommodities.data.listCommoditys.items);
-  };
 
-  const getTickets = async () => {
-    const myTickets = await API.graphql({
+  const {data: commodityData} = useQuery('commodities', async() => {
+    const {data: {listCommoditys: myCommodities }} = await API.graphql({
+      query: listCommoditys
+    })
+    return myCommodities
+  })
+
+  const {data: initTicketsData, refetch} = useQuery('commodityTonTotals', async () => {
+    const{data: {listTickets: initTickets}} = await API.graphql({
       query: listTickets,
       variables: {
+        limit: 3000,
         filter: {
           ticketDate: {
-            between: [beginDate, endDate],
-          },
-        },
-        limit: 3000,
-      },
-    });
-    setTickets(myTickets.data.listTickets.items);
-  };
+            between: [moment(beginDate).startOf('day'), moment(endDate).endOf('day')]
+          }
+        }
+      }
+    })
+    return initTickets
+    },
+    {
+     enabled: false,
+      cacheTime: 1000 * 60 * 59,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchIntervalInBackground: false,
+      refetchOnReconnect: true,
+      forceFetchOnMount: false,
+      keepPreviousData: false
+    }
+  )
 
-  const getYearToDateTickets = async () => {
-    const firstOfYear = moment().startOf("year");
-    const today = new Date();
-    const myTickets = await API.graphql({
+  const {
+    status,
+    data: ticketsDataInfinite,
+    error,
+    isFetching,
+    isFetchingMore,
+    fetchMore,
+    canFetchMore,
+  }  = useInfiniteQuery('commodityTonTotals', async (key, nextToken = cache.getQueryData('commodityTonTotals').nextToken ) => {
+    
+    const {data: {listTickets: ticketData}} = await API.graphql({
       query: listTickets,
       variables: {
+        limit: 3000,
         filter: {
           ticketDate: {
-            between: [firstOfYear, today],
-          },
+           between: [moment(beginDate).startOf('day'), moment(endDate).endOf('day')]
+         },
         },
-        limit: 3000,
-      },
-    });
-    setYtdTickets(myTickets.data.listTickets.items);
-  };
+        nextToken,
+      }
+    })
+    return ticketData
+    },
+    { 
+      enabled: false,
+      getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
+      cacheTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: false,
+      forceFetchOnMount: false,
+      keepPreviousData: false
+    }
+  )
+
+  const {data: ytdTicketsData, refetch: refetchYTD} = useQuery('commodityTonTotalsYTD', async() => {
+
+    const{data: {listTickets: initTicketsYTD}} = await API.graphql({
+       query: listTickets,
+       variables: {
+         limit: 3000,
+         filter: {
+           ticketDate: {
+             between: [moment().startOf('year'), moment(endDate).endOf('day')]
+           }
+         }
+       }
+     })
+    
+     return initTicketsYTD
+     },
+     {
+      enabled: false,
+       cacheTime: 1000 * 60 * 59,
+       refetchOnWindowFocus: false,
+       refetchOnMount: false,
+       refetchIntervalInBackground: false,
+       refetchOnReconnect: true,
+       forceFetchOnMount: false,
+       keepPreviousData: false
+       
+     }
+   )
+ 
+   const {
+     status: ytdStatus,
+     data: ytdData,
+     error: ytdError,
+     isFetching: ytdIsFetching,
+     isFetchingMore: ytdIsFetchingMore,
+     fetchMore: ytdFetchMore,
+     canFetchMore: ytdCanFetchMore,
+   }  = useInfiniteQuery('commodityTonTotalsYTD', async (key, nextToken = cache.getQueryData('commodityTonTotalsYTD').nextToken ) => {
+     const {data: {listTickets: ticketData}} = await API.graphql({
+       query: listTickets,
+       variables: {
+         limit: 3000,
+         filter: {
+           ticketDate: {
+            between: [moment().startOf('year'), moment(endDate).endOf('day')]
+          },
+         },
+         nextToken,
+       }
+     })
+     return ticketData
+     },
+     { 
+       enabled: false,
+       getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
+       cacheTime: 1000 * 60 * 60,
+       refetchOnWindowFocus: false,
+       forceFetchOnMount: false,
+       keepPreviousData: false
+     }
+   )
 
   const computeTotals = () => {
     const groupedYTD = groupBy(
-      ytdTickets,
+      ticketsYTD,
       (ticket) => ticket.contract.commodity.name
     );
     const grouped = groupBy(
@@ -81,15 +176,99 @@ const CommodityTotals = () => {
     setTotals(array);
   };
 
-  console.log(totals);
+  useEffect(() => {
+    if(commodityData){
+      setCommodities(commodityData.items)
+    }
+  }, [commodityData])
 
   useEffect(() => {
-    getCommodities();
-  }, []);
+    if(ytdTicketsData){
+      ytdFetchMore()
+    }
+    if(ytdCanFetchMore && !ytdIsFetching){
+      ytdFetchMore()
+    }
+    if(ytdTicketsData && ytdTicketsData.length && !ytdCanFetchMore){
+      compileDataYTD()
+    }
+  }, [ytdTicketsData])
 
   useEffect(() => {
-    computeTotals();
-  }, [tickets]);
+    if(initTicketsData){
+      fetchMore()
+    }
+    if(initTicketsData && canFetchMore && !isFetchingMore) {
+    
+      fetchMore()
+    }
+    
+    if(initTicketsData && initTicketsData.length && !canFetchMore ){
+      compileData()
+    }
+    
+  }, [initTicketsData])
+
+  useEffect(() => {
+    if(tickets.length > 0 && ticketsYTD.length > 0){
+
+      computeTotals()
+      cache.setQueryData('cctDates', {beginDate: beginDate, endDate: endDate})
+    }
+  }, [tickets, ticketsYTD])
+
+  const handleFetchQueries = ( ) => {
+    setTickets([])
+    setTicketsYTD([])
+    setTotals([])
+    
+    refetch()
+    refetchYTD()
+  }
+
+  const compileData = () => {
+    if(isInitialLoad){
+      let array = [...tickets]
+    
+    ticketsDataInfinite && ticketsDataInfinite.map((group, i) => {
+    
+      group.items.map(item => array.push(item))
+    })
+    setTickets(array)
+    setIsInitialLoad(false)
+    }else{
+      
+      let array = []
+      ticketsDataInfinite && ticketsDataInfinite.map((group, i) => {
+     
+        group.items.map(item => array.push(item))
+      })
+      setTickets(array)
+     
+    }
+    
+  }
+
+  const compileDataYTD = () => {
+    if(isInitialLoad){
+      let array = [...ticketsYTD]
+      
+    ytdData && ytdData.map((group, i) => {
+      
+      group.items.map(item => array.push(item))
+    })
+    setTicketsYTD(array)
+    setIsInitialLoad(false)
+    }else{
+      
+      let array = []
+      ytdData && ytdData.map((group, i) => {
+     
+        group.items.map(item => array.push(item))
+      })
+      setTicketsYTD(array)
+    }
+  }
 
   const columns = useMemo(
     () => [
@@ -149,7 +328,7 @@ const CommodityTotals = () => {
             <div>
               <button
                 className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
-                onClick={() => getTickets()}
+                onClick={() => handleFetchQueries()}
               >
                 Submit
               </button>
@@ -158,15 +337,18 @@ const CommodityTotals = () => {
         </div>
         <div>
           <div>
-            <span>Beginning {moment(beginDate).format("MM/DD/YY")}</span>
+            <span className="text-gray-600 text-sm">Beginning Date: </span>
+            <span className="mx-1 text-base text-gray-900">{moment(beginDate).isValid() ? moment(beginDate).format("MM/DD/YY") : `Not Set`}</span>
           </div>
           <div>
-            <span>Ending {moment(endDate).format("MM/DD/YY")}</span>
+            <span className="text-gray-600 text-sm">End Date: </span>
+            <span className="mx-1 text-base text-gray-900 "> {moment(beginDate).isValid() ? moment(endDate).format("MM/DD/YY") : `Not Set`}</span>
           </div>
         </div>
         <div className="px-12">
           <Table columns={columns} data={totals} />
         </div>
+        <ReactQueryDevtools/>
       </div>
     </Layout>
   );
