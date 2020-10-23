@@ -16,6 +16,16 @@ const Tickets = () => {
   const [contracts, setContracts] = useState([])
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
+  const {data: contractsData} = useQuery('contracts', async () => {
+    const {data: {listContracts: myContracts}} = await API.graphql({
+      query: listContracts,
+      variables: {
+        limit: 2000
+      }
+    })
+    return myContracts
+  })
+
   const {data: initTicketsData} = useQuery('tickets', async() => {
    const{data: {listTickets: initTickets}} = await API.graphql({
       query: listTickets,
@@ -41,6 +51,7 @@ const Tickets = () => {
     error,
     isFetching,
     isFetchingMore,
+    isFetched,
     fetchMore,
     canFetchMore,
   }  = useInfiniteQuery('tickets', async (key, nextToken = cache.getQueryData('tickets').nextToken ) => {
@@ -88,26 +99,17 @@ const Tickets = () => {
   }, [data, initTicketsData])
 
   useEffect(() => {
-    getContracts()
-    //compileData()
-  }, []);
+    if(contractsData){
+      let options = []
+      contractsData.items.map(c => {
+        options.push({value: c.id, label: `${c.contractNumber} - ${c.contractTo.companyReportName} - ${c.contractType}`})
+      })
+      setContracts(options)
+    }
+  }, [contractsData])
 
 
 
-  const getContracts = async() => {
-    const {data: {listContracts: {items: myContracts}}} = await API.graphql({
-      query: listContracts,
-      variables: {
-        limit: 2000
-      }
-    })
-    let options = []
-    myContracts.map(c => {
-      options.push({value: c.id, label: `${c.contractNumber} - ${c.contractTo.companyReportName} - ${c.contractType}`})
-    })
-
-    setContracts(options)
-  }
 
   const compileData = () => {
     if(isInitialLoad){
@@ -229,7 +231,7 @@ const Tickets = () => {
         <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
           <h3>Tickets</h3>
         </div>
-        <div className="flex justify-around items-center">
+        <div className="flex justify-start items-center">
           <div className="my-6">
             <Link href="/tickets/create">
               <a className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white">
@@ -237,7 +239,7 @@ const Tickets = () => {
               </a>
             </Link>
           </div>
-          <div className="w-1/4">
+          {/* <div className="w-1/4">
             <label htmlFor="ticketsByContract">Filter By Contract</label>
             <ReactSelect
               name="ticketsByContract"
@@ -247,10 +249,14 @@ const Tickets = () => {
               isClearable
               
             />
-          </div>
+          </div> */}
         </div>
         <div>
-          <Table data={tickets} columns={columns} />
+          {isFetched && !isFetchingMore ? 
+            <Table data={tickets} columns={columns} /> 
+            : <p className="text-2xl text-gray-900">Loading... This could take a couple mintes while all the tickets are fetched.</p>
+          }
+          
         </div>
       </div>
       <ReactQueryDevtools />

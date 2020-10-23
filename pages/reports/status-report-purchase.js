@@ -30,7 +30,7 @@ const StatusReport = () => {
   //   setActiveContracts(myActiveContracts)
   // }
 
-  const {data: activeContractsData} = useQuery('activeSalesContracts', async () => {
+  const {data: activeContractsData} = useQuery('activePurchaseContracts', async () => {
     const {data: {contractsByType: contracts}} = await API.graphql({
       query: contractsByType,
       variables: {
