@@ -27,7 +27,7 @@ const CommodityTotals = () => {
     return myCommodities
   })
 
-  const {data: initTicketsData, refetch} = useQuery('commodityTonTotals', async () => {
+  const {data: initTicketsData, refetch, isFetched} = useQuery('commodityTonTotals', async () => {
     const{data: {listTickets: initTickets}} = await API.graphql({
       query: listTickets,
       variables: {
@@ -59,6 +59,7 @@ const CommodityTotals = () => {
     error,
     isFetching,
     isFetchingMore,
+    isSuccess,
     fetchMore,
     canFetchMore,
   }  = useInfiniteQuery('commodityTonTotals', async (key, nextToken = cache.getQueryData('commodityTonTotals').nextToken ) => {
@@ -124,6 +125,7 @@ const CommodityTotals = () => {
      isFetchingMore: ytdIsFetchingMore,
      fetchMore: ytdFetchMore,
      canFetchMore: ytdCanFetchMore,
+     isSuccess: ytdInfiniteIsSuccess
    }  = useInfiniteQuery('commodityTonTotalsYTD', async (key, nextToken = cache.getQueryData('commodityTonTotalsYTD').nextToken ) => {
      const {data: {listTickets: ticketData}} = await API.graphql({
        query: listTickets,
@@ -346,7 +348,14 @@ const CommodityTotals = () => {
           </div>
         </div>
         <div className="px-12">
-          <Table columns={columns} data={totals} />
+          
+        {!isFetched ? (
+            <p>Choose dates to generate report.</p>
+          ) : isSuccess && ytdInfiniteIsSuccess && !canFetchMore && !ytdCanFetchMore ? (
+            <Table data={totals} columns={columns} />
+          ) : (
+            <p>Loading...</p>
+          )}
         </div>
         <ReactQueryDevtools/>
       </div>

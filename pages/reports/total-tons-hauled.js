@@ -6,333 +6,359 @@ import Layout from "../../components/layout";
 import { listTickets, listContracts } from "../../src/graphql/queries";
 import Table from "../../components/table";
 import { groupBy, computeSum } from "../../utils";
-import {useQuery, useInfiniteQuery, useQueryCache} from 'react-query'
-import {ReactQueryDevtools} from 'react-query-devtools'
+import { useQuery, useInfiniteQuery, useQueryCache } from "react-query";
+import { ReactQueryDevtools } from "react-query-devtools";
 const TotalTonsHauled = () => {
-  const cache = useQueryCache()
-  const [beginDate, setBeginDate] = useState(cache.getQueryData('tthDates') ? cache.getQueryData('tthDates').beginDate : null);
-  const [endDate, setEndDate] = useState(cache.getQueryData('tthDates') ? cache.getQueryData('tthDates').endDate : null);
-  const [beginningOfYear, setBeginningOfYear] = useState(moment().startOf('year'))
-  const [activeContracts, setActiveContracts] = useState([])
-  const [ticketsYTD, setTicketsYTD] = useState([])
+  const cache = useQueryCache();
+  const [beginDate, setBeginDate] = useState(
+    cache.getQueryData("tthDates")
+      ? cache.getQueryData("tthDates").beginDate
+      : null
+  );
+  const [endDate, setEndDate] = useState(
+    cache.getQueryData("tthDates")
+      ? cache.getQueryData("tthDates").endDate
+      : null
+  );
+  const [beginningOfYear, setBeginningOfYear] = useState(
+    moment().startOf("year")
+  );
+  const [activeContracts, setActiveContracts] = useState([]);
+  const [ticketsYTD, setTicketsYTD] = useState([]);
   const [tickets, setTickets] = useState([]);
-  const [totals, setTotals] = useState([])
-  const [commodityTotals, setCommodityTotals] = useState([])
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [totals, setTotals] = useState([]);
+  const [commodityTotals, setCommodityTotals] = useState([]);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-
-
-  const {data: initTicketsData, refetch} = useQuery('totalTonsHauled', async() => {
-    const{data: {listTickets: initTickets}} = await API.graphql({
-       query: listTickets,
-       variables: {
-         limit: 3000,
-         filter: {
-           ticketDate: {
-             between: [moment(beginDate).startOf('day'), moment(endDate).endOf('day')]
-           }
-         }
-       }
-     })
-    
-     return initTickets
-     },
-     {
-      enabled: false,
-       cacheTime: 1000 * 60 * 59,
-       refetchOnWindowFocus: false,
-       refetchOnMount: false,
-       refetchIntervalInBackground: false,
-       refetchOnReconnect: true,
-       forceFetchOnMount: false,
-       keepPreviousData: false
-     }
-   )
- 
-   const {
-     status,
-     data,
-     error,
-     isFetching,
-     isFetchingMore,
-     fetchMore,
-     canFetchMore,
-   }  = useInfiniteQuery('totalTonsHauled', async (key, nextToken = cache.getQueryData('totalTonsHauled').nextToken ) => {
-     
-     const {data: {listTickets: ticketData}} = await API.graphql({
-       query: listTickets,
-       variables: {
-         limit: 3000,
-         filter: {
-           ticketDate: {
-            between: [moment(beginDate).startOf('day'), moment(endDate).endOf('day')]
+  const { data: initTicketsData, refetch, isFetched } = useQuery(
+    "totalTonsHauled",
+    async () => {
+      const {
+        data: { listTickets: initTickets },
+      } = await API.graphql({
+        query: listTickets,
+        variables: {
+          limit: 3000,
+          filter: {
+            ticketDate: {
+              between: [
+                moment(beginDate).startOf("day"),
+                moment(endDate).endOf("day"),
+              ],
+            },
           },
-         },
-         nextToken,
-       }
-     })
-     return ticketData
-     },
-     { 
-       enabled: false,
-       getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
-       cacheTime: 1000 * 60 * 60,
-       refetchOnWindowFocus: false,
-       forceFetchOnMount: false,
-       keepPreviousData: false
-     }
-   )
+        },
+      });
 
-   const {data: ytdTicketsData, refetch: refetchYTD} = useQuery('totalTonsHauledYTD', async() => {
-
-    const{data: {listTickets: initTickets}} = await API.graphql({
-       query: listTickets,
-       variables: {
-         limit: 3000,
-         filter: {
-           ticketDate: {
-             between: [moment().startOf('year'), moment(endDate).endOf('day')]
-           }
-         }
-       }
-     })
-    
-     return initTickets
-     },
-     {
+      return initTickets;
+    },
+    {
       enabled: false,
-       cacheTime: 1000 * 60 * 59,
-       refetchOnWindowFocus: false,
-       refetchOnMount: false,
-       refetchIntervalInBackground: false,
-       refetchOnReconnect: true,
-       forceFetchOnMount: false,
-       keepPreviousData: false
-       
-     }
-   )
- 
-   const {
-     status: ytdStatus,
-     data: ytdData,
-     error: ytdError,
-     isFetching: ytdIsFetching,
-     isFetchingMore: ytdIsFetchingMore,
-     fetchMore: ytdFetchMore,
-     canFetchMore: ytdCanFetchMore,
-   }  = useInfiniteQuery('totalTonsHauledYTD', async (key, nextToken = cache.getQueryData('totalTonsHauledYTD').nextToken ) => {
-     const {data: {listTickets: ticketData}} = await API.graphql({
-       query: listTickets,
-       variables: {
-         limit: 3000,
-         filter: {
-           ticketDate: {
-            between: [moment().startOf('year'), moment(endDate).endOf('day')]
+      cacheTime: 1000 * 60 * 59,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchIntervalInBackground: false,
+      refetchOnReconnect: true,
+      forceFetchOnMount: false,
+      keepPreviousData: false,
+    }
+  );
+
+  const {
+    status,
+    data,
+    error,
+    isFetching,
+    isFetchingMore,
+    fetchMore,
+    canFetchMore,
+  } = useInfiniteQuery(
+    "totalTonsHauled",
+    async (
+      key,
+      nextToken = cache.getQueryData("totalTonsHauled").nextToken
+    ) => {
+      const {
+        data: { listTickets: ticketData },
+      } = await API.graphql({
+        query: listTickets,
+        variables: {
+          limit: 3000,
+          filter: {
+            ticketDate: {
+              between: [
+                moment(beginDate).startOf("day"),
+                moment(endDate).endOf("day"),
+              ],
+            },
           },
-         },
-         nextToken,
-       }
-     })
-     return ticketData
-     },
-     { 
-       enabled: false,
-       getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
-       cacheTime: 1000 * 60 * 60,
-       refetchOnWindowFocus: false,
-       forceFetchOnMount: false,
-       keepPreviousData: false
-     }
-   )
-  const {data: activeContractsData} = useQuery('activeContracts', async () => {
-    const {data: {listContracts: activeContracts}} = await API.graphql({
-      query: listContracts,
-      variables: {
-        limit: 3000,
-        filter: {
-          contractState: {eq: "ACTIVE"}
-        }
-      }
-    })
-    return activeContracts
-  })
-  
+          nextToken,
+        },
+      });
+      return ticketData;
+    },
+    {
+      enabled: false,
+      getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
+      cacheTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: false,
+      forceFetchOnMount: false,
+      keepPreviousData: false,
+    }
+  );
+
+  const { data: ytdTicketsData, refetch: refetchYTD } = useQuery(
+    "totalTonsHauledYTD",
+    async () => {
+      const {
+        data: { listTickets: initTickets },
+      } = await API.graphql({
+        query: listTickets,
+        variables: {
+          limit: 3000,
+          filter: {
+            ticketDate: {
+              between: [moment().startOf("year"), moment(endDate).endOf("day")],
+            },
+          },
+        },
+      });
+
+      return initTickets;
+    },
+    {
+      enabled: false,
+      cacheTime: 1000 * 60 * 59,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchIntervalInBackground: false,
+      refetchOnReconnect: true,
+      forceFetchOnMount: false,
+      keepPreviousData: false,
+    }
+  );
+
+  const {
+    status: ytdStatus,
+    data: ytdData,
+    error: ytdError,
+    isFetching: ytdIsFetching,
+    isSuccess,
+    isFetchingMore: ytdIsFetchingMore,
+    fetchMore: ytdFetchMore,
+    canFetchMore: ytdCanFetchMore,
+  } = useInfiniteQuery(
+    "totalTonsHauledYTD",
+    async (
+      key,
+      nextToken = cache.getQueryData("totalTonsHauledYTD").nextToken
+    ) => {
+      const {
+        data: { listTickets: ticketData },
+      } = await API.graphql({
+        query: listTickets,
+        variables: {
+          limit: 3000,
+          filter: {
+            ticketDate: {
+              between: [moment().startOf("year"), moment(endDate).endOf("day")],
+            },
+          },
+          nextToken,
+        },
+      });
+      return ticketData;
+    },
+    {
+      enabled: false,
+      getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
+      cacheTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: false,
+      forceFetchOnMount: false,
+      keepPreviousData: false,
+    }
+  );
+  const { data: activeContractsData } = useQuery(
+    "activeContracts",
+    async () => {
+      const {
+        data: { listContracts: activeContracts },
+      } = await API.graphql({
+        query: listContracts,
+        variables: {
+          limit: 3000,
+          filter: {
+            contractState: { eq: "ACTIVE" },
+          },
+        },
+      });
+      return activeContracts;
+    }
+  );
+
   const computeTotals = () => {
-    const byContract = groupBy(
-      tickets,
-      (ticket) => ticket.contractId
-    )
+    const byContract = groupBy(tickets, (ticket) => ticket.contractId);
 
-    const YTDbyContract = groupBy(
-      ticketsYTD,
-      (ticket) => ticket.contractId
-    )
+    const YTDbyContract = groupBy(ticketsYTD, (ticket) => ticket.contractId);
 
     const byCommodity = groupBy(
       tickets,
       (ticket) => ticket.contract.commodity.name
-    )
-    let commoditiesHauled = []
-    byCommodity.forEach(i => {
-      let commodity = {}
-      
-      commodity.name = i[0].contract.commodity.name
-      const group = byCommodity.get(commodity.name)
-      commodity.weekTotal = computeSum(group)
-      commoditiesHauled.push(commodity)
-    })
-    setCommodityTotals(commoditiesHauled)
-    let array = []
-    
-    activeContracts.map(contract => {
-      let ticketTotals = {}
-      const group = byContract.get(contract.id)
-      const groupYTD = YTDbyContract.get(contract.id)
-      ticketTotals.commodity = contract.commodity.name
-      ticketTotals.contractNumber = contract.contractNumber
-      ticketTotals.contractName = contract.contractTo.companyReportName
-      
-      ticketTotals.weeklyHaul = computeSum(group)
-      ticketTotals.toDate = computeSum(groupYTD)
-      ticketTotals.totalContract = contract.quantity
-      ticketTotals.balanceDue = contract.quantity - ticketTotals.toDate
-      array.push(ticketTotals)
-    })
-    setTotals(array)
+    );
+    let commoditiesHauled = [];
+    byCommodity.forEach((i) => {
+      let commodity = {};
 
-  }
+      commodity.name = i[0].contract.commodity.name;
+      const group = byCommodity.get(commodity.name);
+      commodity.weekTotal = computeSum(group);
+      commoditiesHauled.push(commodity);
+    });
+    setCommodityTotals(commoditiesHauled);
+    let array = [];
+
+    activeContracts.map((contract) => {
+      let ticketTotals = {};
+      const group = byContract.get(contract.id);
+      const groupYTD = YTDbyContract.get(contract.id);
+      ticketTotals.commodity = contract.commodity.name;
+      ticketTotals.contractNumber = contract.contractNumber;
+      ticketTotals.contractName = contract.contractTo.companyReportName;
+
+      ticketTotals.weeklyHaul = computeSum(group);
+      ticketTotals.toDate = computeSum(groupYTD);
+      ticketTotals.totalContract = contract.quantity;
+      ticketTotals.balanceDue = contract.quantity - ticketTotals.toDate;
+      array.push(ticketTotals);
+    });
+    setTotals(array);
+  };
 
   const compileData = () => {
-    if(isInitialLoad){
-      let array = [...tickets]
-    
-    data && data.map((group, i) => {
-    
-      group.items.map(item => array.push(item))
-    })
-    setTickets(array)
-    setIsInitialLoad(false)
-    }else{
-      
-      let array = []
-      data && data.map((group, i) => {
-     
-        group.items.map(item => array.push(item))
-      })
-      setTickets(array)
-     
-    }
-    
-  }
+    if (isInitialLoad) {
+      let array = [...tickets];
 
+      data &&
+        data.map((group, i) => {
+          group.items.map((item) => array.push(item));
+        });
+      setTickets(array);
+      setIsInitialLoad(false);
+    } else {
+      let array = [];
+      data &&
+        data.map((group, i) => {
+          group.items.map((item) => array.push(item));
+        });
+      setTickets(array);
+    }
+  };
 
   const compileDataYTD = () => {
-    if(isInitialLoad){
-      let array = [...ticketsYTD]
-      
-    ytdData && ytdData.map((group, i) => {
-      
-      group.items.map(item => array.push(item))
-    })
-    setTicketsYTD(array)
-    setIsInitialLoad(false)
-    }else{
-      
-      let array = []
-      ytdData && ytdData.map((group, i) => {
-     
-        group.items.map(item => array.push(item))
-      })
-      setTicketsYTD(array)
-    }
-  }
+    if (isInitialLoad) {
+      let array = [...ticketsYTD];
 
-  const handleFetchQueries = ( ) => {
-    setTickets([])
-    setTicketsYTD([])
-    setTotals([])
-    
-    refetch()
-    refetchYTD()
-  }
+      ytdData &&
+        ytdData.map((group, i) => {
+          group.items.map((item) => array.push(item));
+        });
+      setTicketsYTD(array);
+      setIsInitialLoad(false);
+    } else {
+      let array = [];
+      ytdData &&
+        ytdData.map((group, i) => {
+          group.items.map((item) => array.push(item));
+        });
+      setTicketsYTD(array);
+    }
+  };
 
-  useEffect(() => {
-    if(activeContractsData){
-      setActiveContracts(activeContractsData.items)
-    }
-  }, [activeContractsData])
- 
-  useEffect(() => {
-    if(ytdTicketsData){
-      ytdFetchMore()
-    }
-    if(ytdCanFetchMore && !ytdIsFetching){
-      ytdFetchMore()
-    }
-    if(ytdTicketsData && ytdTicketsData.length && !ytdCanFetchMore){
-      compileDataYTD()
-    }
-  }, [ytdTicketsData])
+  const handleFetchQueries = () => {
+    setTickets([]);
+    setTicketsYTD([]);
+    setTotals([]);
+
+    refetch();
+    refetchYTD();
+  };
 
   useEffect(() => {
-    if(initTicketsData){
-      
-      fetchMore()
+    if (activeContractsData) {
+      setActiveContracts(activeContractsData.items);
     }
-    if(initTicketsData && canFetchMore && !isFetchingMore) {
-    
-      fetchMore()
-    }
-    
-    if(initTicketsData && initTicketsData.length && !canFetchMore ){
-      compileData()
-    }
-    
-  }, [initTicketsData])
+  }, [activeContractsData]);
 
   useEffect(() => {
-    if(tickets.length > 0 && ticketsYTD.length > 0){
-
-      computeTotals()
-      cache.setQueryData('tthDates', {beginDate: beginDate, endDate: endDate})
+    if (ytdTicketsData) {
+      ytdFetchMore();
     }
-  }, [tickets, ticketsYTD])
+    if (ytdCanFetchMore && !ytdIsFetching) {
+      ytdFetchMore();
+    }
+    if (ytdTicketsData && ytdTicketsData.length && !ytdCanFetchMore) {
+      compileDataYTD();
+    }
+  }, [ytdTicketsData]);
+
+  useEffect(() => {
+    if (initTicketsData) {
+      fetchMore();
+    }
+    if (initTicketsData && canFetchMore && !isFetchingMore) {
+      fetchMore();
+    }
+
+    if (initTicketsData && initTicketsData.length && !canFetchMore) {
+      compileData();
+    }
+  }, [initTicketsData]);
+
+  useEffect(() => {
+    if (tickets.length > 0 && ticketsYTD.length > 0) {
+      computeTotals();
+      cache.setQueryData("tthDates", {
+        beginDate: beginDate,
+        endDate: endDate,
+      });
+    }
+  }, [tickets, ticketsYTD]);
 
   const columns = useMemo(() => [
     {
       Header: "Commodity",
-      accessor: "commodity"
+      accessor: "commodity",
     },
     {
       Header: "Contract Number",
-      accessor: "contractNumber"
-    }, 
+      accessor: "contractNumber",
+    },
     {
       Header: "Contract Name",
-      accessor: "contractName"
-    }, 
+      accessor: "contractName",
+    },
     {
       Header: "Weekly Haul",
-      accessor: "weeklyHaul"
+      accessor: "weeklyHaul",
     },
     {
       Header: "To Date",
-      accessor: "toDate"
+      accessor: "toDate",
     },
     {
       Header: "Balance Due",
-      accessor: 'balanceDue'
+      accessor: "balanceDue",
     },
     {
       Header: "Total Contract",
-      accessor: 'totalContract'
-    }
-  ])
+      accessor: "totalContract",
+    },
+  ]);
 
   return (
     <Layout>
       <div>
-      <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
+        <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
           <h3>Total Tons Hauled</h3>
         </div>
         <div className="w-4/12 mx-auto">
@@ -369,14 +395,29 @@ const TotalTonsHauled = () => {
           </div>
         </div>
         <div className="px-12 mt-4">
-          <div className="w-5/12 mx-auto text-center"> 
-  <h6 className="text-gray-900 text-xl font-bold">Commodity Subtotals for the Period {moment(beginDate).format("MM/DD/YY")} - {moment(endDate).format("MM/DD/YY")}</h6>
-  {commodityTotals.map((c, i) => <div key={i} className="flex justify-between "><p className="mr-6 text-bold">{c.name}</p><p>{ c.weekTotal}</p></div>)}
+          <div className="w-5/12 mx-auto text-center">
+            <h6 className="text-gray-900 text-xl font-bold">
+              Commodity Subtotals for the Period{" "}
+              {moment(beginDate).isValid() ? moment(beginDate).format("MM/DD/YY") : <span>no date chosen</span>} -{" "}
+              {moment(endDate).isValid() ? moment(endDate).format("MM/DD/YY") : <span>no date chosen</span>}
+            </h6>
+            {commodityTotals.map((c, i) => (
+              <div key={i} className="flex justify-between ">
+                <p className="mr-6 text-bold">{c.name}</p>
+                <p>{c.weekTotal}</p>
+              </div>
+            ))}
           </div>
-          <Table data={totals} columns={columns}/>
+          {!isFetched ? (
+            <p>Choose dates to generate report.</p>
+          ) : isSuccess && !canFetchMore && !ytdCanFetchMore ? (
+            <Table data={totals} columns={columns} />
+          ) : (
+            <p>Loading...</p>
+          )}
         </div>
       </div>
-      <ReactQueryDevtools/>
+      <ReactQueryDevtools />
     </Layout>
   );
 };
