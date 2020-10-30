@@ -1,38 +1,72 @@
 import { Formik, Field, Form } from "formik";
 import { useState, useEffect } from "react";
+import { FormikSelect } from "../../components/formikSelect";
 import Layout from "../../components/layout";
 import { API } from "aws-amplify";
 import { createTicket } from "../../src/graphql/mutations.ts";
 import { listContracts } from "../../src/graphql/queries.ts";
 import DatePicker from "react-datepicker";
-import {QueryCache, useQuery} from 'react-query'
+import { useQuery, useMutation, useQueryCache } from "react-query";
+import { ReactQueryDevtools } from "react-query-devtools";
 
 const CreateTicket = () => {
-  const queryCache = new QueryCache()
+  const queryCache = useQueryCache();
   const [contracts, setContracts] = useState([]);
+  const [correspondingContracts, setCorrespondingContracts] = useState([]);
   const [ticketDate, setTicketDate] = useState(new Date());
-
-  const {data } = useQuery('contracts', async () => {
-    const {data: {listContracts: contractsData}} = await API.graphql({
-      query: listContracts,
-      variables:{
-        limit: 3000
-      }
-    })
-    return contractsData
-  },
-  {
-    cacheTime: 1000 * 60 * 20
-  })
-
-  
-  useEffect(() => {
-    if(data){
-      setContracts(data.items)
+  const [mutate, { data, error, isSuccess }] = useMutation(
+    async (input) => {
+      const { data: ticketData } = await API.graphql({
+        query: createTicket,
+        variables: {
+          input,
+        },
+      });
+      return ticketData;
+    },
+    {
+      onSuccess: ({ createTicket }) => {
+        const lengthOfGroups = queryCache.getQueryData("tickets").length;
+        const items = queryCache.getQueryData("tickets")[lengthOfGroups - 1]
+          .items;
+        let previousData = queryCache.getQueryData("tickets");
+        previousData[lengthOfGroups - 1].items.push(createTicket);
+        return () => queryCache.setQueryData("tickets", () => [previousData]);
+      },
     }
-  }, [data]);
+  );
 
-  
+  const { data: contractsData } = useQuery(
+    "contracts",
+    async () => {
+      const {
+        data: { listContracts: contractsData },
+      } = await API.graphql({
+        query: listContracts,
+        variables: {
+          limit: 3000,
+        },
+      });
+      return contractsData;
+    },
+    {
+      cacheTime: 1000 * 60 * 20,
+    }
+  );
+
+  useEffect(() => {
+    if (contractsData) {
+      let options = [];
+      contractsData.items.map((c) => {
+        options.push({
+          value: c.id,
+          label: `${c.contractNumber} - ${c.contractTo.companyReportName} - ${c.contractType}`,
+        });
+      });
+      setContracts(options);
+      setCorrespondingContracts(options);
+    }
+  }, [contractsData]);
 
   return (
     <Layout>
@@ -44,6 +78,7 @@ const CreateTicket = () => {
           <Formik
             initialValues={{
               contractId: "",
+              correspondingContractId: "",
               ticketDate: ticketDate,
               fieldNum: "",
               baleCount: "",
@@ -57,27 +92,43 @@ const CreateTicket = () => {
               netTons: "",
             }}
             onSubmit={async (values, actions) => {
-              const {data: {createTicket: newTicket}} = await API.graphql({
-                query: createTicket,
-                variables: {
-                  input: {
-                    contractId: values.contractId,
-                    ticketDate: values.ticketDate,
-                    fieldNum: values.fieldNum,
-                    baleCount: values.baleCount,
-                    ticketNumber: values.ticketNumber,
-                    ladingNumber: values.ladingNumber,
-                    driver: values.driver,
-                    type: 'Ticket',
-                    truckNumber: values.truckNumber,
-                    grossWeight: values.grossWeight,
-                    tareWeight: values.tareWeight,
-                    netWeight: values.netWeight,
-                    netTons: values.netTons,
-                  },
-                },
-              });
-              queryCache.setQueryData('tickets', newTicket)
+              const input1 = {
+                contractId: values.contractId,
+                correspondingContractId: values.correspondingContractId,
+                ticketDate: values.ticketDate,
+                fieldNum: values.fieldNum,
+                baleCount: values.baleCount,
+                ticketNumber: values.ticketNumber,
+                ladingNumber: values.ladingNumber,
+                driver: values.driver,
+                type: "Ticket",
+                truckNumber: values.truckNumber,
+                grossWeight: values.grossWeight,
+                tareWeight: values.tareWeight,
+                netWeight: values.netWeight,
+                netTons: values.netTons,
+              };
+
+              mutate(input1);
+
+              const input2 = {
+                contractId: values.correspondingContractId,
+                correspondingContractId: values.contractId,
+                ticketDate: values.ticketDate,
+                fieldNum: values.fieldNum,
+                baleCount: values.baleCount,
+                ticketNumber: values.ticketNumber,
+                ladingNumber: values.ladingNumber,
+                driver: values.driver,
+                type: "Ticket",
+                truckNumber: values.truckNumber,
+                grossWeight: values.grossWeight,
+                tareWeight: values.tareWeight,
+                netWeight: values.netWeight,
+                netTons: values.netTons,
+              };
+              mutate(input2);
+
               actions.resetForm();
             }}
           >
@@ -102,24 +153,31 @@ const CreateTicket = () => {
                       className="text-gray-900 w-1/4 md:w-1/2"
                       htmlFor="contractId"
                     >
-                      Contract Number
+                      Contract Number - Purchased From
                     </label>
                     <Field
                       className="form-select w-full"
+                      component={FormikSelect}
+                      options={contracts}
                       name="contractId"
-                      as="select"
                       placeholder="Contract Number"
-                    >
-                      <option value="">Choose One:</option>
-                      {contracts &&
-                        contracts.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {`${c.contractNumber} for ${c.contractTo.companyListingName}`}
-                          </option>
-                        ))}
-                    </Field>
+                    />
                   </div>
-
+                  <div className="flex justify-between items-center mb-4">
+                    <label
+                      className="text-gray-900 w-1/4 md:w-1/2"
+                      htmlFor="correspondingContractId"
+                    >
+                      Corresponding Contract Number - Sold To
+                    </label>
+                    <Field
+                      className="form-select w-full"
+                      component={FormikSelect}
+                      options={correspondingContracts}
+                      name="correspondingContractId"
+                      placeholder="Contract Number"
+                    />
+                  </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
                       className="text-gray-900 w-1/4 md:w-1/2"
@@ -160,6 +218,7 @@ const CreateTicket = () => {
                       className="form-input w-full"
                       name="baleCount"
                       placeholder="Bale Count"
+                      type="number"
                     />
                   </div>
                   <div className="flex justify-between items-center mb-4 w-full">
@@ -167,7 +226,7 @@ const CreateTicket = () => {
                       className="text-gray-900 w-1/4 md:w-1/2 pr-4"
                       name="ladingNumber"
                     >
-                      Vendor
+                      Lading Number
                     </label>
                     <Field
                       className="form-input w-full"
@@ -256,7 +315,7 @@ const CreateTicket = () => {
 
                   <div className="flex justify-center mt-12">
                     <button
-                      className="border border-blue-400 bg-blue-500 text-white py-2 px-4 rounded-lg"
+                      className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
                       type="submit"
                       disabled={isSubmitting}
                     >
@@ -267,6 +326,7 @@ const CreateTicket = () => {
               </Form>
             )}
           </Formik>
+          <ReactQueryDevtools />
         </div>
       </div>
     </Layout>

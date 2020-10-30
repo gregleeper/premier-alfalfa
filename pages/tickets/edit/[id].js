@@ -1,16 +1,18 @@
 import { Formik, Field, Form } from "formik";
 import { useState, useEffect } from "react";
 import Layout from "../../../components/layout";
+import { FormikSelect } from "../../../components/formikSelect";
 import { API } from "aws-amplify";
 import { updateTicket } from "../../../src/graphql/mutations.ts";
 import { listContracts, getTicket } from "../../../src/graphql/queries.ts";
 import DatePicker from "react-datepicker";
 import { useRouter } from "next/router";
-import {QueryCache} from 'react-query'
+import { QueryCache, useQuery, useQueryCache } from "react-query";
 
 const EditTicket = () => {
-  const queryCache = new QueryCache()
+  const queryCache = new QueryCache();
   const [contracts, setContracts] = useState([]);
+  const [correspondingContracts, setCorrespondingContracts] = useState([]);
   const [ticketDate, setTicketDate] = useState(new Date());
   const [ticket, setTicket] = useState();
 
@@ -29,16 +31,17 @@ const EditTicket = () => {
     setTicket(myTicket);
   };
 
-  const getAllContracts = async () => {
+  const { data: contractsData } = useQuery("contracts", async () => {
     const {
-      data: {
-        listContracts: { items: allContracts },
-      },
+      data: { listContracts: myContracs },
     } = await API.graphql({
       query: listContracts,
+      variables: {
+        limit: 3000,
+      },
     });
-    setContracts(allContracts);
-  };
+    return myContracs;
+  });
 
   useEffect(() => {
     if (id) {
@@ -47,8 +50,18 @@ const EditTicket = () => {
   }, [id]);
 
   useEffect(() => {
-    getAllContracts();
-  }, []);
+    if (contractsData) {
+      let options = [];
+      contractsData.items.map((c) => {
+        options.push({
+          value: c.id,
+          label: `${c.contractNumber} - ${c.contractTo.companyReportName} - ${c.contractType}`,
+        });
+      });
+      setContracts(options);
+      setCorrespondingContracts(options);
+    }
+  }, [contractsData]);
 
   useEffect(() => {
     if (ticket) {
@@ -67,6 +80,8 @@ const EditTicket = () => {
             <Formik
               initialValues={{
                 contractId: (ticket && ticket.contractId) || "",
+                correspondingContractId:
+                  (ticket && ticket.correspondingContractId) || "",
                 ticketDate: (ticket && ticket.ticketDate) || ticketDate,
                 fieldNum: (ticket && ticket.fieldNum) || "",
                 baleCount: (ticket && ticket.baleCount) || "",
@@ -80,13 +95,16 @@ const EditTicket = () => {
                 netTons: (ticket && ticket.netTons) || "",
               }}
               onSubmit={async (values, actions) => {
-                console.log(values)
-                const {data: {updateTicket: updatedTicket}} = await API.graphql({
+                console.log(values);
+                const {
+                  data: { updateTicket: updatedTicket },
+                } = await API.graphql({
                   query: updateTicket,
                   variables: {
                     input: {
                       id,
                       contractId: values.contractId,
+                      correspondingContractId: values.correspondingContractId,
                       ticketDate: values.ticketDate,
                       fieldNum: values.fieldNum,
                       baleCount: values.baleCount,
@@ -102,8 +120,8 @@ const EditTicket = () => {
                     },
                   },
                 });
-                queryCache.setQueryData('tickets', updatedTicket)
-                router.push('/tickets');
+                queryCache.setQueryData("tickets", updatedTicket);
+                router.push("/tickets");
               }}
             >
               {({ isSubmitting }) => (
@@ -131,20 +149,27 @@ const EditTicket = () => {
                       </label>
                       <Field
                         className="form-select w-full"
+                        component={FormikSelect}
+                        options={contracts}
                         name="contractId"
-                        as="select"
                         placeholder="Contract Number"
-                      >
-                        <option value="">Choose One:</option>
-                        {contracts &&
-                          contracts.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {`${c.contractNumber} for ${c.contractTo.companyListingName}`}
-                            </option>
-                          ))}
-                      </Field>
+                      />
                     </div>
-
+                    <div className="flex justify-between items-center mb-4">
+                      <label
+                        className="text-gray-900 w-1/4 md:w-1/2"
+                        htmlFor="correspondingContractId"
+                      >
+                        Corresponding Contract Number
+                      </label>
+                      <Field
+                        className="form-select w-full"
+                        component={FormikSelect}
+                        options={correspondingContracts}
+                        name="correspondingContractId"
+                        placeholder="Contract Number"
+                      />
+                    </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
                         className="text-gray-900 w-1/4 md:w-1/2"
@@ -279,9 +304,15 @@ const EditTicket = () => {
                       />
                     </div>
 
-                    <div className="flex justify-center mt-12">
+                    <div className="flex justify-center mt-12 pb-24">
                       <button
-                        className="border border-blue-400 bg-blue-500 text-white py-2 px-4 rounded-lg"
+                        className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+                        onClick={() => router.back()}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
                         type="submit"
                         disabled={isSubmitting}
                       >

@@ -2,7 +2,6 @@ import {
   useTable,
   useSortBy,
   useFilters,
-  useGlobalFilter,
   useAsyncDebounce,
   usePagination,
 } from "react-table";
@@ -23,7 +22,7 @@ export function GlobalFilter({
     <span>
       Search:{" "}
       <input
-        className="px-4 py-2 border-gray-400 shadow"
+        className="px-2 py-2 border-gray-400 shadow"
         value={value || ""}
         onChange={(e) => {
           setValue(e.target.value);
@@ -43,7 +42,7 @@ function DefaultColumnFilter({
 
   return (
     <input
-      className="px-2 py-1 border shadow-sm round-sm"
+      className="w-3/4 px-2 py-1 border shadow-sm round-sm"
       value={filterValue || ""}
       onChange={(e) => {
         setFilter(e.target.value || undefined); // Set undefined to remove the filter entirely
@@ -147,7 +146,7 @@ function Table({ columns, data }) {
         <thead className=" border-b-2 border-gray-400 ">
           {headers.map((column) => (
             <th
-              className="px-2 py-2 "
+              className=" py-2 px-1"
               {...column.getHeaderProps(column.getSortByToggleProps())}
             >
               <div className="flex justify-center items-center text-sm">
@@ -182,7 +181,7 @@ function Table({ columns, data }) {
                 {row.cells.map((cell) => {
                   return (
                     <td
-                      className="py-5 px-4 border-l border-r"
+                      className="py-5 px-1 text-sm border-l border-r"
                       {...cell.getCellProps()}
                     >
                       {cell.render("Cell")}
@@ -258,7 +257,7 @@ function Table({ columns, data }) {
             setPageSize(Number(e.target.value));
           }}
         >
-          {[10, 20, 30, 40, 50].map((pageSize) => (
+          {[10, 20, 30, 40, 50, 100, 200].map((pageSize) => (
             <option key={pageSize} value={pageSize}>
               Show {pageSize}
             </option>

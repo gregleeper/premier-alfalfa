@@ -1,49 +1,63 @@
 import Layout from "../../components/layout";
 import { useMemo, useEffect, useState } from "react";
 import { API } from "aws-amplify";
-import { listTickets, ticketsByContract, listContracts } from "../../src/graphql/queries.ts";
+import { ticketsByDate } from "../../src/graphql/customQueries";
+import { ticketsByContract, listContracts } from "../../src/graphql/queries.ts";
 import Link from "next/link";
 import Table from "../../components/table";
-import ReactSelect from 'react-select'
+import ReactSelect from "react-select";
 import moment from "moment";
-import {useQueryCache, useInfiniteQuery, useQuery} from 'react-query'
-import {ReactQueryDevtools} from 'react-query-devtools'
+import {
+  useQueryCache,
+  useInfiniteQuery,
+  useQuery,
+  queryCache,
+} from "react-query";
+import { ReactQueryDevtools } from "react-query-devtools";
 
 const Tickets = () => {
-  const cache = useQueryCache()
+  const cache = useQueryCache();
   const [tickets, setTickets] = useState([]);
-  const [contractFilter, setContractFilter] = useState()
-  const [contracts, setContracts] = useState([])
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [contractFilter, setContractFilter] = useState();
+  const [contracts, setContracts] = useState([]);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const {data: contractsData} = useQuery('contracts', async () => {
-    const {data: {listContracts: myContracts}} = await API.graphql({
+  const { data: contractsData } = useQuery("contracts", async () => {
+    const {
+      data: { listContracts: myContracts },
+    } = await API.graphql({
       query: listContracts,
       variables: {
-        limit: 2000
-      }
-    })
-    return myContracts
-  })
+        limit: 2000,
+      },
+    });
+    return myContracts;
+  });
 
-  const {data: initTicketsData} = useQuery('tickets', async() => {
-   const{data: {listTickets: initTickets}} = await API.graphql({
-      query: listTickets,
-      variables: {
-        limit: 10
-      }
-    })
-    return initTickets
+  const { data: initTicketsData, refetch } = useQuery(
+    "tickets",
+    async () => {
+      const {
+        data: { ticketsByDate: initTickets },
+      } = await API.graphql({
+        query: ticketsByDate,
+        variables: {
+          type: "Ticket",
+          sortDirection: "DESC",
+          limit: 10,
+        },
+      });
+      return initTickets;
     },
     {
+      enabled: false,
       cacheTime: 1000 * 60 * 59,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchIntervalInBackground: false,
       refetchOnReconnect: true,
-      
     }
-  )
+  );
 
   const {
     status,
@@ -54,88 +68,96 @@ const Tickets = () => {
     isFetched,
     fetchMore,
     canFetchMore,
-  }  = useInfiniteQuery('tickets', async (key, nextToken = cache.getQueryData('tickets').nextToken ) => {
-    // console.log(cache.getQuery('tickets'))
-    // if(!cache.getQuery('tickets')){
-    //   console.log('here')
-    //   const {data: {listTickets: ticketData}} = await API.graphql({
-    //     query: listTickets,
-    //     variables: {
-    //       limit: 5000
-    //     }
-    //   })
-    //   return ticketData
-    // } 
-    const {data: {listTickets: ticketData}} = await API.graphql({
-      query: listTickets,
-      variables: {
-        
-        limit: 5000,
-        nextToken,
-      }
-    })
-    return ticketData
+  } = useInfiniteQuery(
+    "tickets",
+    async (key, nextToken = cache.getQueryData("tickets").nextToken) => {
+      const {
+        data: { ticketsByDate: ticketData },
+      } = await API.graphql({
+        query: ticketsByDate,
+        variables: {
+          type: "Ticket",
+          limit: 3000,
+          nextToken,
+          sortDirection: "DESC",
+        },
+      });
+      return ticketData;
     },
     {
+      enabled: false,
       getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
       cacheTime: 1000 * 60 * 60,
-      refetchOnWindowFocus: false
+      refetchOnWindowFocus: false,
     }
-  )
-
-
+  );
 
   useEffect(() => {
-    if(initTicketsData){
-      fetchMore()
+    if (!queryCache.getQueryData("tickets")) {
+      refetch();
     }
-    if(initTicketsData && canFetchMore && !isFetchingMore) {
-      fetchMore()
-    }
-    if(data && data.length && !canFetchMore){
-      compileData()
-    }
-    
-  }, [data, initTicketsData])
+  }, []);
 
   useEffect(() => {
-    if(contractsData){
-      let options = []
-      contractsData.items.map(c => {
-        options.push({value: c.id, label: `${c.contractNumber} - ${c.contractTo.companyReportName} - ${c.contractType}`})
-      })
-      setContracts(options)
+    if (initTicketsData) {
+      fetchMore();
     }
-  }, [contractsData])
+    if (initTicketsData && canFetchMore && !isFetchingMore) {
+      fetchMore();
+    }
+    if (data && data.length && !canFetchMore) {
+      compileData();
+    }
+  }, [data, initTicketsData]);
 
-
-
+  useEffect(() => {
+    if (contractsData) {
+      let options = [];
+      contractsData.items.map((c) => {
+        options.push({
+          value: c.id,
+          label: `${c.contractNumber} - ${c.contractTo.companyReportName} - ${c.contractType}`,
+        });
+      });
+      setContracts(options);
+    }
+  }, [contractsData]);
 
   const compileData = () => {
-    if(isInitialLoad){
-      let array = [...tickets]
-    
-    data && data.map((group, i) => {
-     
-      group.items.map(item => array.push(item))
-    })
-    setTickets(array)
-    setIsInitialLoad(false)
-    }else{
-      
-      let array = []
-      data && data.map((group, i) => {
-     
-        group.items.map(item => array.push(item))
-      })
-      setTickets(array)
-     
+    if (isInitialLoad) {
+      let array = [...tickets];
+
+      data &&
+        data.map((group, i) => {
+          group.items.map((item) => array.push(item));
+        });
+      setTickets(array);
+      setIsInitialLoad(false);
+    } else {
+      let array = [];
+      data &&
+        data.map((group, i) => {
+          group.items.map((item) => array.push(item));
+        });
+      setTickets(array);
     }
-    
-  }
+  };
 
   const columns = useMemo(
     () => [
+      {
+        Header: "Edit",
+        accessor: "id",
+        disableFilters: true,
+        Cell: ({ value }) => (
+          <Link href="/tickets/edit/[id]" as={`/tickets/edit/${value}`}>
+            <a className="text-blue-800 underline hover:text-blue-800 hover:no-underline">
+              {" "}
+              Edit
+            </a>
+          </Link>
+        ),
+      },
       {
         Header: "Ticket #",
         accessor: "ticketNumber",
@@ -143,6 +165,20 @@ const Tickets = () => {
       {
         Header: "Contract #",
         accessor: "contract.contractNumber",
+        Cell: ({ row, value }) => (
+          <Link
+            href="/contracts/view/[id]"
+            as={`/contracts/view/${row.original.contractId}`}
+          >
+            <a className="text-blue-800 underline hover:text-blue-600 hover:no-underline ">
+              {value}
+            </a>
+          </Link>
+        ),
+      },
+      {
+        Header: "Company Name",
+        accessor: "contract.contractTo.companyReportName",
       },
       {
         Header: "Ticket Date",
@@ -152,42 +188,24 @@ const Tickets = () => {
         ),
       },
       {
-        Header: "Field #",
-        accessor: "fieldNum",
-      },
-      {
-        Header: "Bale Count",
-        accessor: "baleCount",
-      },
-      {
-        Header: "Lading #",
-        accessor: "ladingNumber",
-      },
-      {
-        Header: "Driver",
-        accessor: "driver",
-      },
-      {
-        Header: "Truck #",
-        accessor: "tuckNumber",
-      },
-      {
-        Header: "Gross Weight",
-        accessor: "grossWeight",
-      },
-      {
-        Header: "Tare Weight",
-        accessor: "tareWeight",
-      },
-      {
-        Header: "Net Weight",
-        accessor: "netWeight",
+        Header: "Corresponding Contract",
+        accessor: "corresondingContract.contractNumber",
+        Cell: ({ row, value }) => (
+          <Link
+            href="/contracts/view/[id]"
+            as={`/contracts/view/${row.original.correspondingContractId}`}
+          >
+            <a className="text-blue-800 underline hover:text-blue-600 hover:no-underline ">
+              {value}
+            </a>
+          </Link>
+        ),
       },
       {
         Header: "Net Tons",
         accessor: "netTons",
-        Footer: ({rows}) => {
-            
+        disableFilters: true,
+        Footer: ({ rows }) => {
           const total = useMemo(
             () => rows.reduce((sum, row) => row.values.netTons + sum, 0),
             [rows]
@@ -198,32 +216,15 @@ const Tickets = () => {
                 <span className="text-gray-600">Total:</span>{" "}
               </div>
               <div>
-                <span className="text-lg font-bold">
-                  {total}
-                </span>
+                <span className="text-lg font-bold">{total.toFixed(2)}</span>
               </div>
             </div>
           );
-        }
-
-      },
-      {
-        Header: "Edit",
-        accessor: "id",
-        Cell: ({ value }) => (
-          <Link href="/tickets/edit/[id]" as={`/tickets/edit/${value}`}>
-            <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline">
-              {" "}
-              View
-            </a>
-          </Link>
-        ),
+        },
       },
     ],
     []
   );
-
-  
 
   return (
     <Layout>
@@ -252,11 +253,14 @@ const Tickets = () => {
           </div> */}
         </div>
         <div>
-          {isFetched && !isFetchingMore ? 
-            <Table data={tickets} columns={columns} /> 
-            : <p className="text-2xl text-gray-900">Loading... This could take a couple mintes while all the tickets are fetched.</p>
-          }
-          
+          {isFetched && !isFetchingMore ? (
+            <Table data={tickets} columns={columns} />
+          ) : (
+            <p className="text-2xl text-gray-900">
+              Loading... This could take a couple minutes while all the tickets
+              are fetched.
+            </p>
+          )}
         </div>
       </div>
       <ReactQueryDevtools />

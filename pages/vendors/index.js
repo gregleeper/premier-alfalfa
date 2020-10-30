@@ -4,26 +4,29 @@ import { API } from "aws-amplify";
 import { listVendors } from "../../src/graphql/queries.ts";
 import Link from "next/link";
 import Table from "../../components/table";
-import { useQuery} from 'react-query'
-import {ReactQueryDevtools} from 'react-query-devtools'
+import { useQuery } from "react-query";
+import { ReactQueryDevtools } from "react-query-devtools";
 const Vendors = ({ vendors }) => {
   const [vendorsState, setVendorsState] = useState([]);
-  
-  const {data} = useQuery('vendors', async() => {
-    const {data: {listVendors: vendorData}} = await API.graphql({
-      query: listVendors,
-      variables: {
-        limit: 1000
-      }
-    })
-    return vendorData
-  }, 
-  {
-    initialData: vendors.data.listVendors, 
-    cacheTime: 1000 * 60 * 60
-  }
-  )
 
+  const { data } = useQuery(
+    "vendors",
+    async () => {
+      const {
+        data: { listVendors: vendorData },
+      } = await API.graphql({
+        query: listVendors,
+        variables: {
+          limit: 1000,
+        },
+      });
+      return vendorData;
+    },
+    {
+      initialData: vendors.data.listVendors,
+      cacheTime: 1000 * 60 * 60,
+    }
+  );
 
   useEffect(() => {
     if (vendors) {
@@ -34,24 +37,41 @@ const Vendors = ({ vendors }) => {
   const columns = useMemo(
     () => [
       {
+        Header: "Edit",
+        accessor: "id",
+        Cell: ({ value }) => (
+          <Link href="/vendors/edit/[id]" as={`/vendors/edit/${value}`}>
+            <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline">
+              {" "}
+              View
+            </a>
+          </Link>
+        ),
+        disableFilters: true,
+      },
+      {
         Header: "Vendor #",
         accessor: "vendorNumber",
       },
       {
         Header: "Company Report Name",
         accessor: "companyReportName",
+        disableFilters: true,
       },
       {
         Header: "Company Listing Name",
         accessor: "companyListingName",
+        disableFilters: true,
       },
       {
         Header: "Address 1",
         accessor: "address1",
+        disableFilters: true,
       },
       {
         Header: "Address 2",
         accessor: "address2",
+        disableFilters: true,
       },
       {
         Header: "City",
@@ -64,34 +84,12 @@ const Vendors = ({ vendors }) => {
       {
         Header: "Zip",
         accessor: "zipCode",
+        disableFilters: true,
       },
       {
         Header: "Phone",
         accessor: "telephoneNum",
-      },
-      {
-        Header: "Attention",
-        accessor: "attention",
-      },
-      {
-        Header: "Pre-Payment",
-        accessor: "prepayment",
-      },
-      {
-        Header: "Pre-Pay Amount",
-        accessor: "prepaymentAmt",
-      },
-      {
-        Header: "Edit",
-        accessor: "id",
-        Cell: ({ value }) => (
-          <Link href="/vendors/edit/[id]" as={`/vendors/edit/${value}`}>
-            <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline">
-              {" "}
-              View
-            </a>
-          </Link>
-        ),
+        disableFilters: true,
       },
     ],
     []
@@ -114,7 +112,7 @@ const Vendors = ({ vendors }) => {
           <Table data={vendorsState} columns={columns} />
         </div>
       </div>
-      <ReactQueryDevtools/>
+      <ReactQueryDevtools />
     </Layout>
   );
 };

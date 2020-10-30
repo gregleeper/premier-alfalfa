@@ -6,31 +6,44 @@ import Link from "next/link";
 import Table from "../../components/table";
 import moment from "moment";
 import { formatMoney } from "../../utils";
-import {useQuery, QueryCache} from 'react-query'
+import { useQuery, QueryCache } from "react-query";
 
 const Contracts = () => {
   const [contracts, setContracts] = useState([]);
 
-  const{data} = useQuery('contracts', async () => {
-    const {data: {listContracts: contractsData}} = await API.graphql({
+  const { data } = useQuery("contracts", async () => {
+    const {
+      data: { listContracts: contractsData },
+    } = await API.graphql({
       query: listContracts,
       variables: {
-        limit: 3000
-      }
-    })
-    return contractsData
-  })
-
-
+        limit: 3000,
+      },
+    });
+    return contractsData;
+  });
 
   useEffect(() => {
-    if(data){
-      setContracts(data.items)
+    if (data) {
+      setContracts(data.items);
     }
   }, [data]);
 
   const columns = useMemo(
     () => [
+      {
+        Header: "Edit",
+        accessor: "id",
+        Cell: ({ value }) => (
+          <Link href="/contracts/edit/[id]" as={`/contracts/edit/${value}`}>
+            <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline">
+              {" "}
+              View
+            </a>
+          </Link>
+        ),
+        disableFilters: true,
+      },
       {
         Header: "Contract #",
         accessor: "contractNumber",
@@ -68,47 +81,43 @@ const Contracts = () => {
       {
         Header: "Quantity in Tons",
         accessor: "quantity",
+        disableFilters: true,
       },
       {
         Header: "Contract Price",
         accessor: "contractPrice",
         Cell: ({ value }) => <span>{formatMoney.format(value)}</span>,
+        disableFilters: true,
       },
       {
         Header: "Sale Price",
         accessor: "salePrice",
         Cell: ({ value }) => <span>{formatMoney.format(value)}</span>,
+        disableFilters: true,
       },
       {
         Header: "Contract Purchase Value",
         accessor: "",
         Cell: (row) => (
           <span>
-            {formatMoney.format(row.row.values.quantity * row.row.values.contractPrice)}
+            {formatMoney.format(
+              row.row.values.quantity * row.row.values.contractPrice
+            )}
           </span>
         ),
+        disableFilters: true,
       },
       {
         Header: "Contract Sale Value",
         accessor: "",
         Cell: (row) => (
           <span>
-            {formatMoney.format(row.row.values.quantity * row.row.values.salePrice)}
+            {formatMoney.format(
+              row.row.values.quantity * row.row.values.salePrice
+            )}
           </span>
         ),
-      },
-
-      {
-        Header: "Edit",
-        accessor: "id",
-        Cell: ({ value }) => (
-          <Link href="/contracts/edit/[id]" as={`/contracts/edit/${value}`}>
-            <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline">
-              {" "}
-              View
-            </a>
-          </Link>
-        ),
+        disableFilters: true,
       },
     ],
     []

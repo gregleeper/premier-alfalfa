@@ -173,6 +173,177 @@ export const onDeleteCommodity = /* GraphQL */ `
     }
   }
 `;
+export const onCreateInvoice = /* GraphQL */ `
+  subscription OnCreateInvoice {
+    onCreateInvoice {
+      id
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      vendorId
+      vendor {
+        id
+        vendorNumber
+        companyReportName
+        companyListingName
+        address1
+        address2
+        city
+        state
+        zipCode
+        telephoneNum
+        attention
+        prepayment
+        prepaymentAmt
+        createdAt
+        updatedAt
+      }
+      amountOwed
+      beginDate
+      endDate
+      type
+      dueDate
+      paymentId
+      isPaid
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateInvoice = /* GraphQL */ `
+  subscription OnUpdateInvoice {
+    onUpdateInvoice {
+      id
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      vendorId
+      vendor {
+        id
+        vendorNumber
+        companyReportName
+        companyListingName
+        address1
+        address2
+        city
+        state
+        zipCode
+        telephoneNum
+        attention
+        prepayment
+        prepaymentAmt
+        createdAt
+        updatedAt
+      }
+      amountOwed
+      beginDate
+      endDate
+      type
+      dueDate
+      paymentId
+      isPaid
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteInvoice = /* GraphQL */ `
+  subscription OnDeleteInvoice {
+    onDeleteInvoice {
+      id
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      vendorId
+      vendor {
+        id
+        vendorNumber
+        companyReportName
+        companyListingName
+        address1
+        address2
+        city
+        state
+        zipCode
+        telephoneNum
+        attention
+        prepayment
+        prepaymentAmt
+        createdAt
+        updatedAt
+      }
+      amountOwed
+      beginDate
+      endDate
+      type
+      dueDate
+      paymentId
+      isPaid
+      createdAt
+      updatedAt
+    }
+  }
+`;
 export const onCreateVendor = /* GraphQL */ `
   subscription OnCreateVendor {
     onCreateVendor {
@@ -401,13 +572,264 @@ export const onDeleteContract = /* GraphQL */ `
     }
   }
 `;
+export const onCreatePayment = /* GraphQL */ `
+  subscription OnCreatePayment {
+    onCreatePayment {
+      id
+      type
+      tFileNumber
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      checkNumber
+      date
+      amount
+      totalPounds
+      invoiceId
+      tonsCredit
+      paymentType
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdatePayment = /* GraphQL */ `
+  subscription OnUpdatePayment {
+    onUpdatePayment {
+      id
+      type
+      tFileNumber
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      checkNumber
+      date
+      amount
+      totalPounds
+      invoiceId
+      tonsCredit
+      paymentType
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeletePayment = /* GraphQL */ `
+  subscription OnDeletePayment {
+    onDeletePayment {
+      id
+      type
+      tFileNumber
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      checkNumber
+      date
+      amount
+      totalPounds
+      invoiceId
+      tonsCredit
+      paymentType
+      createdAt
+      updatedAt
+    }
+  }
+`;
 export const onCreateTicket = /* GraphQL */ `
   subscription OnCreateTicket {
     onCreateTicket {
       id
       contractId
+      invoiceId
+      correspondingContractId
       type
       contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      corresondingContract {
         id
         contractNumber
         contractType
@@ -476,8 +898,58 @@ export const onUpdateTicket = /* GraphQL */ `
     onUpdateTicket {
       id
       contractId
+      invoiceId
+      correspondingContractId
       type
       contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      corresondingContract {
         id
         contractNumber
         contractType
@@ -546,8 +1018,58 @@ export const onDeleteTicket = /* GraphQL */ `
     onDeleteTicket {
       id
       contractId
+      invoiceId
+      correspondingContractId
       type
       contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      corresondingContract {
         id
         contractNumber
         contractType

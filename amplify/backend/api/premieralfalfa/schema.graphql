@@ -21,6 +21,31 @@ type Commodity @model {
   contracts: [Contract]! @connection(fields: ["id"])
 }
 
+type Invoice
+  @model
+  @key(
+    name: "invoicesSorted"
+    fields: ["type", "dueDate"]
+    queryField: "invoicesSorted"
+  )
+  @key(
+    name: "invoicesByVendor"
+    fields: ["vendorId", "dueDate"]
+    queryField: "vendorInvoices"
+  ) {
+  id: ID!
+  tickets: [Ticket]! @connection(keyName: "byInvoice", fields: ["id"])
+  vendorId: ID!
+  vendor: Vendor @connection(fields: ["vendorId"])
+  amountOwed: Float!
+  beginDate: AWSDateTime!
+  endDate: AWSDateTime!
+  type: String!
+  dueDate: AWSDateTime!
+  paymentId: ID
+  isPaid: Boolean!
+}
+
 type Vendor @model {
   id: ID!
   vendorNumber: String!
@@ -81,22 +106,68 @@ type Contract
   commodity: Commodity! @connection(fields: ["commodityId"])
 }
 
+type Payment
+  @model
+  @key(
+    name: "paymentsByContract"
+    fields: ["contractId", "date"]
+    queryField: "paymentsByContract"
+  )
+  @key(
+    name: "paymentsSorted"
+    fields: ["type", "date"]
+    queryField: "paymentsSorted"
+  ) {
+  id: ID!
+  type: String!
+  tFileNumber: String
+  contractId: ID!
+  contract: Contract! @connection(fields: ["contractId"])
+  checkNumber: String!
+  date: AWSDateTime!
+  amount: Float!
+  totalPounds: Float
+  invoiceId: ID
+  tonsCredit: Float
+  paymentType: PaymentType
+}
+
+enum PaymentType {
+  CHECKS
+  CASH
+  CREDITCARD
+}
+
 type Ticket
   @model
+  @key(name: "byInvoice", fields: ["invoiceId", "ticketNumber"])
   @key(
     name: "ticketsByContractByTicketDate"
     fields: ["contractId", "ticketDate"]
     queryField: "ticketsByContract"
   )
   @key(
+    name: "ticketsByContractId"
+    fields: ["contractId", "ticketNumber"]
+    queryField: "ticketsByContractId"
+  )
+  @key(
     name: "ticketsByDate"
     fields: ["type", "ticketDate"]
     queryField: "ticketsByDate"
+  )
+  @key(
+    name: "ticketsByCorrespondingContract"
+    fields: ["correspondingContractId", "ticketDate"]
   ) {
   id: ID!
   contractId: ID!
+  invoiceId: ID
+  correspondingContractId: ID!
   type: String!
   contract: Contract! @connection(fields: ["contractId"])
+  corresondingContract: Contract!
+    @connection(fields: ["correspondingContractId"])
   ticketDate: AWSDateTime!
   fieldNum: String
   baleCount: Float
@@ -140,6 +211,7 @@ type Mutation {
   batchAddVendors(vendors: [CreateVendorInput]): [Vendor]
   batchAddContracts(contracts: [CreateContractInput]): [Contract]
   batchAddTickets(tickets: [CreateTicketInput]): [Ticket]
+  batchAddPayments(payments: [CreatePaymentInput]): [Payment]
 }
 
 input CreateContractInput {
@@ -166,6 +238,7 @@ input CreateContractInput {
 input CreateTicketInput {
   id: ID
   contractId: ID!
+  correspondingContractId: ID!
   type: String!
   ticketDate: AWSDateTime!
   fieldNum: String
@@ -178,4 +251,17 @@ input CreateTicketInput {
   tareWeight: Float
   netWeight: Float
   netTons: Float
+}
+
+input CreatePaymentInput {
+  id: ID
+  type: String!
+  tFileNumber: String
+  contractId: ID!
+  checkNumber: String!
+  date: AWSDateTime!
+  amount: Float!
+  totalPounds: Float
+  tonsCredit: Float
+  paymentType: PaymentType
 }

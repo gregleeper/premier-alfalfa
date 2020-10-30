@@ -20,9 +20,20 @@ const Reports = () => {
               </Link>
             </li>
             <li>
-              <Link href="/reports/status-report-sold"><a>Status Report Sold</a></Link>
+              <Link href="/reports/status-report-sold">
+                <a>Status Report Sold</a>
+              </Link>
             </li>
-            <li><Link href='/reports/status-report-purchase'><a>Status Report Purchase</a></Link></li>
+            <li>
+              <Link href="/reports/status-report-purchase">
+                <a>Status Report Purchase</a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/reports/invoices">
+                <a>Invoices</a>
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

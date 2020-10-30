@@ -3,7 +3,8 @@ import { useState, useEffect, useMemo } from "react";
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import Layout from "../../components/layout";
-import { listTickets, listContracts } from "../../src/graphql/queries";
+import { listReportTickets } from "../../src/graphql/customQueries";
+import { listContracts } from "../../src/graphql/queries";
 import Table from "../../components/table";
 import { groupBy, computeSum } from "../../utils";
 import { useQuery, useInfiniteQuery, useQueryCache } from "react-query";
@@ -36,7 +37,7 @@ const TotalTonsHauled = () => {
       const {
         data: { listTickets: initTickets },
       } = await API.graphql({
-        query: listTickets,
+        query: listReportTickets,
         variables: {
           limit: 3000,
           filter: {
@@ -81,7 +82,7 @@ const TotalTonsHauled = () => {
       const {
         data: { listTickets: ticketData },
       } = await API.graphql({
-        query: listTickets,
+        query: listReportTickets,
         variables: {
           limit: 3000,
           filter: {
@@ -113,7 +114,7 @@ const TotalTonsHauled = () => {
       const {
         data: { listTickets: initTickets },
       } = await API.graphql({
-        query: listTickets,
+        query: listReportTickets,
         variables: {
           limit: 3000,
           filter: {
@@ -156,7 +157,7 @@ const TotalTonsHauled = () => {
       const {
         data: { listTickets: ticketData },
       } = await API.graphql({
-        query: listTickets,
+        query: listReportTickets,
         variables: {
           limit: 3000,
           filter: {
@@ -398,8 +399,17 @@ const TotalTonsHauled = () => {
           <div className="w-5/12 mx-auto text-center">
             <h6 className="text-gray-900 text-xl font-bold">
               Commodity Subtotals for the Period{" "}
-              {moment(beginDate).isValid() ? moment(beginDate).format("MM/DD/YY") : <span>no date chosen</span>} -{" "}
-              {moment(endDate).isValid() ? moment(endDate).format("MM/DD/YY") : <span>no date chosen</span>}
+              {moment(beginDate).isValid() ? (
+                moment(beginDate).format("MM/DD/YY")
+              ) : (
+                <span>no date chosen</span>
+              )}{" "}
+              -{" "}
+              {moment(endDate).isValid() ? (
+                moment(endDate).format("MM/DD/YY")
+              ) : (
+                <span>no date chosen</span>
+              )}
             </h6>
             {commodityTotals.map((c, i) => (
               <div key={i} className="flex justify-between ">
