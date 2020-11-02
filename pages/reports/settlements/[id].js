@@ -4,39 +4,41 @@ import { useState, useEffect, useRef } from "react";
 import moment from "moment";
 import Layout from "../../../components/layout";
 import {
-  getInvoice,
-  invoicesByContract,
+  getSettlement,
+  settlementsByContract,
 } from "../../../src/graphql/customQueries";
 import { formatMoney } from "../../../utils";
 import ReactToPrint from "react-to-print";
-const Invoice = () => {
+const Settlement = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [invoice, setInvoice] = useState();
+  const [settlement, setSettlement] = useState();
   const [tickets, setTickets] = useState([]);
   const [beginningBalance, setBeginningBalance] = useState(0);
-  const [previousUnpaidInvoices, setPreviousUnpaidInvoices] = useState([]);
+  const [previousUnpaidSettlements, setPreviousUnpaidSettlements] = useState(
+    []
+  );
   let toPrint = useRef(null);
 
-  const getRequestedInvoice = async () => {
+  const getRequestedSettlement = async () => {
     const {
-      data: { getInvoice: myInvoice },
+      data: { getSettlement: mySettlement },
     } = await API.graphql({
-      query: getInvoice,
+      query: getSettlement,
       variables: {
         id,
       },
     });
-    setInvoice(myInvoice);
+    setSettlement(mySettlement);
   };
 
   const getUnpaidBalanceForContract = async (contractId) => {
     const {
       data: {
-        invoicesByContract: { items: contractInvoices },
+        settlementsByContract: { items: contractSettlements },
       },
     } = await API.graphql({
-      query: invoicesByContract,
+      query: settlementsByContract,
       variables: {
         contractId,
         filter: {
@@ -46,29 +48,29 @@ const Invoice = () => {
       },
     });
 
-    if (contractInvoices.length) {
+    if (contractSettlements.length) {
       let array = [];
-      contractInvoices.map((myInvoice) => {
-        if (myInvoice.dueDate < invoice.dueDate) {
-          array.push(myInvoice);
-          setBeginningBalance(beginningBalance + myInvoice.amountOwed);
+      contractSettlements.map((mySettlement) => {
+        if (mySettlement.dueDate < settlement.dueDate) {
+          array.push(mySettlement);
+          setBeginningBalance(beginningBalance + mySettlement.amountOwed);
         }
       });
-      setPreviousUnpaidInvoices(array);
+      setPreviousUnpaidSettlements(array);
     }
   };
 
   useEffect(() => {
     if (id) {
-      getRequestedInvoice();
+      getRequestedSettlement();
     }
   }, [id]);
 
   useEffect(() => {
-    if (invoice) {
-      setTickets(invoice.tickets.items);
+    if (settlement) {
+      setTickets(settlement.tickets.items);
     }
-  }, [invoice]);
+  }, [settlement]);
 
   useEffect(() => {
     if (tickets.length) {
@@ -76,6 +78,7 @@ const Invoice = () => {
     }
   }, [tickets]);
 
+  console.log(tickets);
   const computeTotalPounds = () => {
     let total = 0;
     tickets.map((ticket) => {
@@ -102,7 +105,7 @@ const Invoice = () => {
                 href="#"
                 className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
               >
-                Print Invoice
+                Print Settlement
               </a>
             )}
             content={() => toPrint}
@@ -120,10 +123,12 @@ const Invoice = () => {
       <div ref={(el) => (toPrint = el)} className="px-12 py-6">
         <div>
           <p>Date: {moment().format("MM/DD/YY")}</p>
-          <p>Invoice Number: {invoice ? invoice.invoiceNumber : ""}</p>
+          <p>
+            Settlement Number: {settlement ? settlement.settlementNumber : ""}
+          </p>
         </div>
         <div className="text-3xl font-light text-center">
-          <h3>Invoice</h3>
+          <h3>Settlement</h3>
         </div>
 
         <div className="text-center text-lg">
@@ -134,7 +139,7 @@ const Invoice = () => {
           <p>Fax: 620-544-4510</p>
         </div>
 
-        {invoice && tickets.length > 0 ? (
+        {settlement && tickets.length > 0 ? (
           <div>
             <div className="py-3 w-full mx-auto flex justify-start items-start">
               <div className="mr-4">
@@ -142,21 +147,21 @@ const Invoice = () => {
               </div>
               <div>
                 <h6 className="text-lg font-light">
-                  {invoice.vendor.companyListingName}
+                  {settlement.vendor.companyListingName}
                 </h6>
-                <p>{invoice.vendor.address1}</p>
-                <p>{invoice.vendor.address2}</p>
+                <p>{settlement.vendor.address1}</p>
+                <p>{settlement.vendor.address2}</p>
                 <div className="flex justify-start">
-                  <p className="mr-2">{invoice.vendor.city}, </p>
-                  <p className="mr-2">{invoice.vendor.state}</p>
-                  <p>{invoice.vendor.zipCode}</p>
+                  <p className="mr-2">{settlement.vendor.city}, </p>
+                  <p className="mr-2">{settlement.vendor.state}</p>
+                  <p>{settlement.vendor.zipCode}</p>
                 </div>
               </div>
             </div>
             <div>
               <p>
-                Invoice for commodity to:{" "}
-                {moment(invoice.endDate).add(12, "hours").format("MM/DD/YY")}
+                Settlement for commodity to:{" "}
+                {moment(settlement.endDate).add(12, "hours").format("MM/DD/YY")}
               </p>
               <p>
                 Contract:{" "}
@@ -164,26 +169,26 @@ const Invoice = () => {
                   {tickets[0].contract.contractNumber}
                 </span>{" "}
                 {tickets[0].contract.commodity.name} @ $
-                {tickets[0].contract.salePrice}/Ton
+                {tickets[0].contract.contractPrice}/Ton
               </p>
             </div>
             <div className="mt-3">
-              <p className="font-semibold">Unpaid Invoices: </p>
-              {previousUnpaidInvoices.map((invoice) => (
+              <p className="font-semibold">Unpaid Settlements: </p>
+              {previousUnpaidSettlements.map((settlement) => (
                 <div>
                   <span className="mr-4">
-                    Invoice Number: {invoice.invoiceNumber}
+                    Settlement Number: {settlement.settlementNumber}
                   </span>
                   <span className="mr-4">
                     Net Tons:{" "}
-                    {invoice.tickets.items
+                    {settlement.tickets.items
                       .reduce(function (accumulator, currentValue) {
                         return accumulator + currentValue.netTons;
                       }, 0)
                       .toFixed(2)}
                   </span>
                   <span>
-                    Amount Owed: {formatMoney.format(invoice.amountOwed)}
+                    Amount Owed: {formatMoney.format(settlement.amountOwed)}
                   </span>
                 </div>
               ))}
@@ -223,14 +228,16 @@ const Invoice = () => {
                           <td className="px-4">{ticket.netTons}</td>
                           <td className="px-4">
                             {formatMoney.format(
-                              ticket.netTons * ticket.contract.salePrice
+                              ticket.netTons * ticket.contract.contractPrice
                             )}
                           </td>
                         </tr>
                       );
                     })}
                     <tr className="border-t border-gray-700">
-                      <td className="px-4 font-bold pt-3">Invoice Totals: </td>
+                      <td className="px-4 font-bold pt-3">
+                        Settlement Totals:{" "}
+                      </td>
                       <td className="px-4"></td>
                       <td className="px-4"></td>
                       <td className="px-4"></td>
@@ -238,12 +245,14 @@ const Invoice = () => {
                       <td className="px-4">{computeTotalPounds()}</td>
                       <td className="px-4">{computeTotalTons()}</td>
                       <td className="px-4 font-bold">
-                        {formatMoney.format(invoice.amountOwed)}
+                        {formatMoney.format(settlement.amountOwed)}
                       </td>
                     </tr>
-                    {previousUnpaidInvoices.map((upInvoice) => (
+                    {previousUnpaidSettlements.map((upSettlement) => (
                       <tr>
-                        <td className="px-4">{upInvoice.invoiceNumber} </td>
+                        <td className="px-4">
+                          {upSettlement.settlementNumber}{" "}
+                        </td>
                         <td className="px-4"></td>
                         <td className="px-4"></td>
                         <td className="px-4"></td>
@@ -251,7 +260,7 @@ const Invoice = () => {
                         <td className="px-4"></td>
                         <td className="px-4"></td>
                         <td className="px-4">
-                          {formatMoney.format(upInvoice.amountOwed)}
+                          {formatMoney.format(upSettlement.amountOwed)}
                         </td>
                       </tr>
                     ))}
@@ -265,13 +274,13 @@ const Invoice = () => {
                       <td className="px-4"></td>
                       <td className="px-4 font-bold text-lg">
                         {formatMoney.format(
-                          previousUnpaidInvoices.reduce(function (
+                          previousUnpaidSettlements.reduce(function (
                             accumulator,
                             currentValue
                           ) {
                             return accumulator + currentValue.amountOwed;
                           },
-                          invoice.amountOwed)
+                          settlement.amountOwed)
                         )}
                       </td>
                     </tr>
@@ -288,4 +297,4 @@ const Invoice = () => {
   );
 };
 
-export default Invoice;
+export default Settlement;

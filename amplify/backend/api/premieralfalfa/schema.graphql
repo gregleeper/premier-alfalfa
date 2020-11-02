@@ -21,6 +21,39 @@ type Commodity @model {
   contracts: [Contract]! @connection(fields: ["id"])
 }
 
+type Settlement
+  @model
+  @key(
+    name: "settlementsSorted"
+    fields: ["type", "dueDate"]
+    queryField: "settlementsSorted"
+  )
+  @key(
+    name: "settlementsByContract"
+    fields: ["contractId", "dueDate"]
+    queryField: "settlementsByContract"
+  )
+  @key(
+    name: "settlementsByVendor"
+    fields: ["vendorId", "dueDate"]
+    queryField: "vendorSettlements"
+  ) {
+  id: ID!
+  settlementNumber: String!
+  tickets: [Ticket]! @connection(keyName: "bySettlement", fields: ["id"])
+  vendorId: ID!
+  vendor: Vendor @connection(fields: ["vendorId"])
+  contractId: ID!
+  contract: Contract! @connection(fields: ["contractId"])
+  amountOwed: Float!
+  beginDate: AWSDateTime!
+  endDate: AWSDateTime!
+  type: String!
+  dueDate: AWSDateTime!
+  paymentId: ID
+  isPaid: Boolean!
+}
+
 type Invoice
   @model
   @key(
@@ -29,14 +62,22 @@ type Invoice
     queryField: "invoicesSorted"
   )
   @key(
+    name: "invoicesByContract"
+    fields: ["contractId", "dueDate"]
+    queryField: "invoicesByContract"
+  )
+  @key(
     name: "invoicesByVendor"
     fields: ["vendorId", "dueDate"]
     queryField: "vendorInvoices"
   ) {
   id: ID!
+  invoiceNumber: String!
   tickets: [Ticket]! @connection(keyName: "byInvoice", fields: ["id"])
   vendorId: ID!
   vendor: Vendor @connection(fields: ["vendorId"])
+  contractId: ID!
+  contract: Contract! @connection(fields: ["contractId"])
   amountOwed: Float!
   beginDate: AWSDateTime!
   endDate: AWSDateTime!
@@ -102,6 +143,7 @@ type Contract
   endDate: AWSDateTime!
   dateSigned: AWSDateTime
   purchasedFrom: String
+  tickets: [Ticket] @connection(keyName: "byContract", fields: ["id"])
   soldTo: String
   commodity: Commodity! @connection(fields: ["commodityId"])
 }
@@ -128,6 +170,7 @@ type Payment
   amount: Float!
   totalPounds: Float
   invoiceId: ID
+  settlementId: ID
   tonsCredit: Float
   paymentType: PaymentType
 }
@@ -140,7 +183,9 @@ enum PaymentType {
 
 type Ticket
   @model
+  @key(name: "bySettlement", fields: ["settlementId", "ticketNumber"])
   @key(name: "byInvoice", fields: ["invoiceId", "ticketNumber"])
+  @key(name: "byContract", fields: ["contractId", "ticketNumber"])
   @key(
     name: "ticketsByContractByTicketDate"
     fields: ["contractId", "ticketDate"]
@@ -163,6 +208,7 @@ type Ticket
   id: ID!
   contractId: ID!
   invoiceId: ID
+  settlementId: ID
   correspondingContractId: ID!
   type: String!
   contract: Contract! @connection(fields: ["contractId"])
@@ -263,5 +309,7 @@ input CreatePaymentInput {
   amount: Float!
   totalPounds: Float
   tonsCredit: Float
+  settlementId: ID
+  invoiceId: ID
   paymentType: PaymentType
 }

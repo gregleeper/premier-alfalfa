@@ -5,7 +5,10 @@ import moment from "moment";
 import { truncateString } from "../../utils";
 import { FormikSelect } from "../../components/formikSelect";
 import { API } from "aws-amplify";
-import { invoicesSorted } from "../../src/graphql/customQueries";
+import {
+  invoicesSorted,
+  settlementsSorted,
+} from "../../src/graphql/customQueries";
 import { createPayment } from "../../src/graphql/mutations.ts";
 import { listContracts } from "../../src/graphql/queries.ts";
 import { useQuery } from "react-query";
@@ -19,6 +22,7 @@ const CreatePayment = () => {
   const [contracts, setContracts] = useState([]);
   const [dateEntered, setDateEntered] = useState(new Date());
   const [invoices, setInvoices] = useState([]);
+  const [settlements, setSettlements] = useState([]);
   const [paymentTypes, setPaymentTypes] = useState([
     {
       value: "CHECKS",
@@ -60,13 +64,27 @@ const CreatePayment = () => {
     return myInvoices;
   });
 
+  const { data: settlementsData } = useQuery("settlements", async () => {
+    const {
+      data: { settlementsSorted: mySettlements },
+    } = await API.graphql({
+      query: settlementsSorted,
+      variables: {
+        type: "Settlement",
+        sortDirection: "DESC",
+        limit: 3000,
+      },
+    });
+    return mySettlements;
+  });
+
   useEffect(() => {
     if (invoicesData) {
       let options = [];
       invoicesData.items.map((invoice) => {
         options.push({
           value: invoice.id,
-          label: `${truncateString(invoice.id, 8)} - ${
+          label: `${invoice.invoiceNumber} - ${
             invoice.vendor.companyReportName
           } - Due ${moment(invoice.dueDate).format("MM/DD/YY")}`,
         });
@@ -75,6 +93,22 @@ const CreatePayment = () => {
       setInvoices(options);
     }
   }, [invoicesData]);
+
+  useEffect(() => {
+    if (settlementsData) {
+      let options = [];
+      settlementsData.items.map((settlement) => {
+        options.push({
+          value: settlement.id,
+          label: `${settlement.settlementNumber} - ${
+            settlement.vendor.companyReportName
+          } - Due ${moment(settlement.dueDate).format("MM/DD/YY")}`,
+        });
+      });
+
+      setSettlements(options);
+    }
+  }, [settlementsData]);
 
   useEffect(() => {
     if (contractsData) {
@@ -196,10 +230,24 @@ const CreatePayment = () => {
                       Invoice
                     </label>
                     <Field
-                      name="contractId"
+                      name="invoiceId"
                       className="w-1/2"
                       component={FormikSelect}
                       options={invoices}
+                    ></Field>
+                  </div>
+                  <div className="flex justify-between items-center mb-4 w-full">
+                    <label
+                      className="text-gray-900 w-1/4 md:w-1/2 pr-4"
+                      htmlFor="settlementId"
+                    >
+                      Settlement
+                    </label>
+                    <Field
+                      name="settlementId"
+                      className="w-1/2"
+                      component={FormikSelect}
+                      options={settlements}
                     ></Field>
                   </div>
                   <div className="flex justify-between items-center mb-4">

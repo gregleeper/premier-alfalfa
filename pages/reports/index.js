@@ -34,6 +34,16 @@ const Reports = () => {
                 <a>Invoices</a>
               </Link>
             </li>
+            <li>
+              <Link href="reports/accounts-receivable">
+                <a>Accounts Receivable</a>
+              </Link>
+            </li>
+            <li>
+              <Link href="reports/settlements">
+                <a>Settlements</a>
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

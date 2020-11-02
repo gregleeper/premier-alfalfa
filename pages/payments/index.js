@@ -141,6 +141,18 @@ const Payments = () => {
       accessor: "tonsCredit",
       disableFilters: true,
     },
+    {
+      Header: "Invoice",
+      accessor: "invoiceId",
+      Cell: ({ value }) =>
+        value ? (
+          <Link href="/reports/invoices/[id]" as={`/reports/invoices/${value}`}>
+            <a>View</a>
+          </Link>
+        ) : (
+          ""
+        ),
+    },
   ]);
 
   return (

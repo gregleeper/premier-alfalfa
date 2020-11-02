@@ -35,12 +35,18 @@ const Contracts = () => {
         Header: "Edit",
         accessor: "id",
         Cell: ({ value }) => (
-          <Link href="/contracts/edit/[id]" as={`/contracts/edit/${value}`}>
-            <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline">
-              {" "}
-              View
-            </a>
-          </Link>
+          <>
+            <Link href="/contracts/edit/[id]" as={`/contracts/edit/${value}`}>
+              <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline mr-2">
+                Edit
+              </a>
+            </Link>
+            <Link href="/contracts/view/[id]" as={`/contracts/view/${value}`}>
+              <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline">
+                View
+              </a>
+            </Link>
+          </>
         ),
         disableFilters: true,
       },

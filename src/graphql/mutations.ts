@@ -60,6 +60,30 @@ export const batchAddContracts = /* GraphQL */ `
       endDate
       dateSigned
       purchasedFrom
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       soldTo
       commodity {
         id
@@ -84,6 +108,7 @@ export const batchAddTickets = /* GraphQL */ `
       id
       contractId
       invoiceId
+      settlementId
       correspondingContractId
       type
       contract {
@@ -121,6 +146,9 @@ export const batchAddTickets = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -169,6 +197,9 @@ export const batchAddTickets = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -240,6 +271,9 @@ export const batchAddPayments = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -258,6 +292,7 @@ export const batchAddPayments = /* GraphQL */ `
       amount
       totalPounds
       invoiceId
+      settlementId
       tonsCredit
       paymentType
       createdAt
@@ -454,18 +489,20 @@ export const deleteCommodity = /* GraphQL */ `
     }
   }
 `;
-export const createInvoice = /* GraphQL */ `
-  mutation CreateInvoice(
-    $input: CreateInvoiceInput!
-    $condition: ModelInvoiceConditionInput
+export const createSettlement = /* GraphQL */ `
+  mutation CreateSettlement(
+    $input: CreateSettlementInput!
+    $condition: ModelSettlementConditionInput
   ) {
-    createInvoice(input: $input, condition: $condition) {
+    createSettlement(input: $input, condition: $condition) {
       id
+      settlementNumber
       tickets {
         items {
           id
           contractId
           invoiceId
+          settlementId
           correspondingContractId
           type
           ticketDate
@@ -499,6 +536,400 @@ export const createInvoice = /* GraphQL */ `
         attention
         prepayment
         prepaymentAmt
+        createdAt
+        updatedAt
+      }
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        tickets {
+          nextToken
+        }
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      amountOwed
+      beginDate
+      endDate
+      type
+      dueDate
+      paymentId
+      isPaid
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateSettlement = /* GraphQL */ `
+  mutation UpdateSettlement(
+    $input: UpdateSettlementInput!
+    $condition: ModelSettlementConditionInput
+  ) {
+    updateSettlement(input: $input, condition: $condition) {
+      id
+      settlementNumber
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      vendorId
+      vendor {
+        id
+        vendorNumber
+        companyReportName
+        companyListingName
+        address1
+        address2
+        city
+        state
+        zipCode
+        telephoneNum
+        attention
+        prepayment
+        prepaymentAmt
+        createdAt
+        updatedAt
+      }
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        tickets {
+          nextToken
+        }
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      amountOwed
+      beginDate
+      endDate
+      type
+      dueDate
+      paymentId
+      isPaid
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteSettlement = /* GraphQL */ `
+  mutation DeleteSettlement(
+    $input: DeleteSettlementInput!
+    $condition: ModelSettlementConditionInput
+  ) {
+    deleteSettlement(input: $input, condition: $condition) {
+      id
+      settlementNumber
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      vendorId
+      vendor {
+        id
+        vendorNumber
+        companyReportName
+        companyListingName
+        address1
+        address2
+        city
+        state
+        zipCode
+        telephoneNum
+        attention
+        prepayment
+        prepaymentAmt
+        createdAt
+        updatedAt
+      }
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        tickets {
+          nextToken
+        }
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      amountOwed
+      beginDate
+      endDate
+      type
+      dueDate
+      paymentId
+      isPaid
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const createInvoice = /* GraphQL */ `
+  mutation CreateInvoice(
+    $input: CreateInvoiceInput!
+    $condition: ModelInvoiceConditionInput
+  ) {
+    createInvoice(input: $input, condition: $condition) {
+      id
+      invoiceNumber
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      vendorId
+      vendor {
+        id
+        vendorNumber
+        companyReportName
+        companyListingName
+        address1
+        address2
+        city
+        state
+        zipCode
+        telephoneNum
+        attention
+        prepayment
+        prepaymentAmt
+        createdAt
+        updatedAt
+      }
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        tickets {
+          nextToken
+        }
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
         createdAt
         updatedAt
       }
@@ -521,11 +952,13 @@ export const updateInvoice = /* GraphQL */ `
   ) {
     updateInvoice(input: $input, condition: $condition) {
       id
+      invoiceNumber
       tickets {
         items {
           id
           contractId
           invoiceId
+          settlementId
           correspondingContractId
           type
           ticketDate
@@ -562,6 +995,58 @@ export const updateInvoice = /* GraphQL */ `
         createdAt
         updatedAt
       }
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        tickets {
+          nextToken
+        }
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
       amountOwed
       beginDate
       endDate
@@ -581,11 +1066,13 @@ export const deleteInvoice = /* GraphQL */ `
   ) {
     deleteInvoice(input: $input, condition: $condition) {
       id
+      invoiceNumber
       tickets {
         items {
           id
           contractId
           invoiceId
+          settlementId
           correspondingContractId
           type
           ticketDate
@@ -619,6 +1106,58 @@ export const deleteInvoice = /* GraphQL */ `
         attention
         prepayment
         prepaymentAmt
+        createdAt
+        updatedAt
+      }
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        tickets {
+          nextToken
+        }
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
         createdAt
         updatedAt
       }
@@ -746,6 +1285,30 @@ export const createContract = /* GraphQL */ `
       endDate
       dateSigned
       purchasedFrom
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       soldTo
       commodity {
         id
@@ -804,6 +1367,30 @@ export const updateContract = /* GraphQL */ `
       endDate
       dateSigned
       purchasedFrom
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       soldTo
       commodity {
         id
@@ -862,6 +1449,30 @@ export const deleteContract = /* GraphQL */ `
       endDate
       dateSigned
       purchasedFrom
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       soldTo
       commodity {
         id
@@ -925,6 +1536,9 @@ export const createPayment = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -943,6 +1557,7 @@ export const createPayment = /* GraphQL */ `
       amount
       totalPounds
       invoiceId
+      settlementId
       tonsCredit
       paymentType
       createdAt
@@ -995,6 +1610,9 @@ export const updatePayment = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1013,6 +1631,7 @@ export const updatePayment = /* GraphQL */ `
       amount
       totalPounds
       invoiceId
+      settlementId
       tonsCredit
       paymentType
       createdAt
@@ -1065,6 +1684,9 @@ export const deletePayment = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1083,6 +1705,7 @@ export const deletePayment = /* GraphQL */ `
       amount
       totalPounds
       invoiceId
+      settlementId
       tonsCredit
       paymentType
       createdAt
@@ -1099,6 +1722,7 @@ export const createTicket = /* GraphQL */ `
       id
       contractId
       invoiceId
+      settlementId
       correspondingContractId
       type
       contract {
@@ -1136,6 +1760,9 @@ export const createTicket = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1184,6 +1811,9 @@ export const createTicket = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1222,6 +1852,7 @@ export const updateTicket = /* GraphQL */ `
       id
       contractId
       invoiceId
+      settlementId
       correspondingContractId
       type
       contract {
@@ -1259,6 +1890,9 @@ export const updateTicket = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1307,6 +1941,9 @@ export const updateTicket = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1345,6 +1982,7 @@ export const deleteTicket = /* GraphQL */ `
       id
       contractId
       invoiceId
+      settlementId
       correspondingContractId
       type
       contract {
@@ -1382,6 +2020,9 @@ export const deleteTicket = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1430,6 +2071,9 @@ export const deleteTicket = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id

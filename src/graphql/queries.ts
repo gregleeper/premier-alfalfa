@@ -108,15 +108,17 @@ export const listCommoditys = /* GraphQL */ `
     }
   }
 `;
-export const getInvoice = /* GraphQL */ `
-  query GetInvoice($id: ID!) {
-    getInvoice(id: $id) {
+export const getSettlement = /* GraphQL */ `
+  query GetSettlement($id: ID!) {
+    getSettlement(id: $id) {
       id
+      settlementNumber
       tickets {
         items {
           id
           contractId
           invoiceId
+          settlementId
           correspondingContractId
           type
           ticketDate
@@ -153,6 +155,237 @@ export const getInvoice = /* GraphQL */ `
         createdAt
         updatedAt
       }
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        tickets {
+          nextToken
+        }
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      amountOwed
+      beginDate
+      endDate
+      type
+      dueDate
+      paymentId
+      isPaid
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listSettlements = /* GraphQL */ `
+  query ListSettlements(
+    $filter: ModelSettlementFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listSettlements(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        settlementNumber
+        tickets {
+          nextToken
+        }
+        vendorId
+        vendor {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        contractId
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
+          createdAt
+          updatedAt
+        }
+        amountOwed
+        beginDate
+        endDate
+        type
+        dueDate
+        paymentId
+        isPaid
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const getInvoice = /* GraphQL */ `
+  query GetInvoice($id: ID!) {
+    getInvoice(id: $id) {
+      id
+      invoiceNumber
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      vendorId
+      vendor {
+        id
+        vendorNumber
+        companyReportName
+        companyListingName
+        address1
+        address2
+        city
+        state
+        zipCode
+        telephoneNum
+        attention
+        prepayment
+        prepaymentAmt
+        createdAt
+        updatedAt
+      }
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        tickets {
+          nextToken
+        }
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
       amountOwed
       beginDate
       endDate
@@ -174,6 +407,7 @@ export const listInvoices = /* GraphQL */ `
     listInvoices(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        invoiceNumber
         tickets {
           nextToken
         }
@@ -192,6 +426,29 @@ export const listInvoices = /* GraphQL */ `
           attention
           prepayment
           prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        contractId
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
           createdAt
           updatedAt
         }
@@ -295,6 +552,30 @@ export const getContract = /* GraphQL */ `
       endDate
       dateSigned
       purchasedFrom
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       soldTo
       commodity {
         id
@@ -355,6 +636,9 @@ export const listContracts = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -414,6 +698,9 @@ export const getPayment = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -432,6 +719,7 @@ export const getPayment = /* GraphQL */ `
       amount
       totalPounds
       invoiceId
+      settlementId
       tonsCredit
       paymentType
       createdAt
@@ -478,6 +766,7 @@ export const listPayments = /* GraphQL */ `
         amount
         totalPounds
         invoiceId
+        settlementId
         tonsCredit
         paymentType
         createdAt
@@ -493,6 +782,7 @@ export const getTicket = /* GraphQL */ `
       id
       contractId
       invoiceId
+      settlementId
       correspondingContractId
       type
       contract {
@@ -530,6 +820,9 @@ export const getTicket = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -578,6 +871,9 @@ export const getTicket = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -618,6 +914,7 @@ export const listTickets = /* GraphQL */ `
         id
         contractId
         invoiceId
+        settlementId
         correspondingContractId
         type
         contract {
@@ -682,6 +979,240 @@ export const listTickets = /* GraphQL */ `
     }
   }
 `;
+export const settlementsSorted = /* GraphQL */ `
+  query SettlementsSorted(
+    $type: String
+    $dueDate: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelSettlementFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    settlementsSorted(
+      type: $type
+      dueDate: $dueDate
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        settlementNumber
+        tickets {
+          nextToken
+        }
+        vendorId
+        vendor {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        contractId
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
+          createdAt
+          updatedAt
+        }
+        amountOwed
+        beginDate
+        endDate
+        type
+        dueDate
+        paymentId
+        isPaid
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const settlementsByContract = /* GraphQL */ `
+  query SettlementsByContract(
+    $contractId: ID
+    $dueDate: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelSettlementFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    settlementsByContract(
+      contractId: $contractId
+      dueDate: $dueDate
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        settlementNumber
+        tickets {
+          nextToken
+        }
+        vendorId
+        vendor {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        contractId
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
+          createdAt
+          updatedAt
+        }
+        amountOwed
+        beginDate
+        endDate
+        type
+        dueDate
+        paymentId
+        isPaid
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const vendorSettlements = /* GraphQL */ `
+  query VendorSettlements(
+    $vendorId: ID
+    $dueDate: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelSettlementFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    vendorSettlements(
+      vendorId: $vendorId
+      dueDate: $dueDate
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        settlementNumber
+        tickets {
+          nextToken
+        }
+        vendorId
+        vendor {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        contractId
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
+          createdAt
+          updatedAt
+        }
+        amountOwed
+        beginDate
+        endDate
+        type
+        dueDate
+        paymentId
+        isPaid
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
 export const invoicesSorted = /* GraphQL */ `
   query InvoicesSorted(
     $type: String
@@ -701,6 +1232,7 @@ export const invoicesSorted = /* GraphQL */ `
     ) {
       items {
         id
+        invoiceNumber
         tickets {
           nextToken
         }
@@ -719,6 +1251,107 @@ export const invoicesSorted = /* GraphQL */ `
           attention
           prepayment
           prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        contractId
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
+          createdAt
+          updatedAt
+        }
+        amountOwed
+        beginDate
+        endDate
+        type
+        dueDate
+        paymentId
+        isPaid
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const invoicesByContract = /* GraphQL */ `
+  query InvoicesByContract(
+    $contractId: ID
+    $dueDate: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelInvoiceFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    invoicesByContract(
+      contractId: $contractId
+      dueDate: $dueDate
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        invoiceNumber
+        tickets {
+          nextToken
+        }
+        vendorId
+        vendor {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        contractId
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
           createdAt
           updatedAt
         }
@@ -755,6 +1388,7 @@ export const vendorInvoices = /* GraphQL */ `
     ) {
       items {
         id
+        invoiceNumber
         tickets {
           nextToken
         }
@@ -773,6 +1407,29 @@ export const vendorInvoices = /* GraphQL */ `
           attention
           prepayment
           prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        contractId
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
           createdAt
           updatedAt
         }
@@ -842,6 +1499,9 @@ export const contractsByStatus = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -911,6 +1571,9 @@ export const contractsByVendor = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -980,6 +1643,9 @@ export const contractsByCommodity = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1049,6 +1715,9 @@ export const contractsByType = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        tickets {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1115,6 +1784,7 @@ export const paymentsByContract = /* GraphQL */ `
         amount
         totalPounds
         invoiceId
+        settlementId
         tonsCredit
         paymentType
         createdAt
@@ -1173,6 +1843,7 @@ export const paymentsSorted = /* GraphQL */ `
         amount
         totalPounds
         invoiceId
+        settlementId
         tonsCredit
         paymentType
         createdAt
@@ -1203,6 +1874,7 @@ export const ticketsByContract = /* GraphQL */ `
         id
         contractId
         invoiceId
+        settlementId
         correspondingContractId
         type
         contract {
@@ -1288,6 +1960,7 @@ export const ticketsByContractId = /* GraphQL */ `
         id
         contractId
         invoiceId
+        settlementId
         correspondingContractId
         type
         contract {
@@ -1373,6 +2046,7 @@ export const ticketsByDate = /* GraphQL */ `
         id
         contractId
         invoiceId
+        settlementId
         correspondingContractId
         type
         contract {

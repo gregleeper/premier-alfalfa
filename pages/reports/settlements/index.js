@@ -1,6 +1,6 @@
 import Layout from "../../../components/layout";
 import Table from "../../../components/table";
-import { invoicesSorted } from "../../../src/graphql/customQueries";
+import { settlementsSorted } from "../../../src/graphql/customQueries";
 import { formatMoney } from "../../../utils";
 import moment from "moment";
 import { API } from "aws-amplify";
@@ -9,24 +9,24 @@ import { useQuery, useQueryCache } from "react-query";
 import { ReactQueryDevtools } from "react-query-devtools";
 import { useState, useEffect, useMemo } from "react";
 
-const Invoices = () => {
+const Settlements = () => {
   const cache = useQueryCache();
-  const [invoices, setInvoices] = useState([]);
+  const [settlements, setSettlements] = useState([]);
 
-  const { data: invoicesData } = useQuery(
-    "invoices",
+  const { data: settlementsData } = useQuery(
+    "settlements",
     async () => {
       const {
-        data: { invoicesSorted: invoices },
+        data: { settlementsSorted: settlements },
       } = await API.graphql({
-        query: invoicesSorted,
+        query: settlementsSorted,
         variables: {
-          type: "Invoice",
+          type: "Settlement",
           sortDirection: "DESC",
           limit: 3000,
         },
       });
-      return invoices;
+      return settlements;
     },
     {
       cacheTime: 1000 * 60 * 30,
@@ -34,17 +34,20 @@ const Invoices = () => {
   );
 
   useEffect(() => {
-    if (invoicesData) {
-      setInvoices(invoicesData.items);
+    if (settlementsData) {
+      setSettlements(settlementsData.items);
     }
-  }, [invoicesData]);
+  }, [settlementsData]);
 
   const columns = useMemo(() => [
     {
-      Header: "Invoice Id",
+      Header: "Settlement Id",
       accessor: "id",
       Cell: ({ value }) => (
-        <Link href="/reports/invoices/[id]" as={`/reports/invoices/${value}`}>
+        <Link
+          href="/reports/settlements/[id]"
+          as={`/reports/settlements/${value}`}
+        >
           <a className="text-blue-700 underline">View</a>
         </Link>
       ),
@@ -60,8 +63,8 @@ const Invoices = () => {
       disableFilters: true,
     },
     {
-      Header: "Invoice Number",
-      accessor: "invoiceNumber",
+      Header: "Settlement Number",
+      accessor: "settlementNumber",
     },
     {
       Header: "Amount Owed",
@@ -85,10 +88,10 @@ const Invoices = () => {
     <Layout>
       <div className="px-12 py-4">
         <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
-          <h3>All Invoices</h3>
+          <h3>All Settlements</h3>
         </div>
         <div className="px-12 py-3">
-          <Table data={invoices} columns={columns} />
+          <Table data={settlements} columns={columns} />
         </div>
       </div>
       <ReactQueryDevtools />
@@ -96,4 +99,4 @@ const Invoices = () => {
   );
 };
 
-export default Invoices;
+export default Settlements;

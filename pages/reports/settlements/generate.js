@@ -1,40 +1,41 @@
 import Layout from "../../../components/layout";
-import { getInvoice, ticketsByContract } from "../../../src/graphql/queries.ts";
+//import { getInvoice, ticketsByContract } from "../../../src/graphql/queries.ts";
 import { contractsByType } from "../../../src/graphql/customQueries";
 import {
-  createInvoice,
+  createSettlement,
   updateTicket,
-  updateInvoice,
-  deleteInvoice,
 } from "../../../src/graphql/mutations.ts";
 import { useQuery, useQueryCache } from "react-query";
 import { ReactQueryDevtools } from "react-query-devtools";
+import { formatMoney } from "../../../utils";
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import { useState, useEffect } from "react";
 import { API } from "aws-amplify";
 import { getContract, getTicket } from "../../../src/graphql/queries";
 
-const GenerateInvoices = () => {
+const GenerateSettlements = () => {
   const queryCache = useQueryCache();
-  const [activeSaleContracts, setActiveSaleContracts] = useState([]);
+  const [activePurchaseContracts, setActivePurchaseContracts] = useState([]);
   const [beginDate, setBeginDate] = useState(moment().startOf("isoWeek")._d);
   const [endDate, setEndDate] = useState(moment().endOf("isoWeek")._d);
   const [contractsWithTickets, setContractsWithTickets] = useState([]);
-  const [numberInvoicesCreated, setNumberInvoicesCreated] = useState(0);
+  const [numberOfSettlementsCreated, setNumberOfSettlementsCreated] = useState(
+    0
+  );
 
-  const { data: saleContractsData, refetch } = useQuery(
-    "activeSaleContracts",
+  const { data: purchaseContractsData, refetch } = useQuery(
+    "activePurchaseContracts",
     async () => {
       const {
         data: { contractsByType: myContracts },
       } = await API.graphql({
         query: contractsByType,
         variables: {
-          contractType: "SALE",
+          contractType: "PURCHASE",
           filter: {
             contractState: { eq: "ACTIVE" },
-            salePrice: { gt: 0 },
+            contractPrice: { gt: 0 },
           },
           ticketFilter: {
             ticketDate: {
@@ -57,16 +58,16 @@ const GenerateInvoices = () => {
   );
 
   useEffect(() => {
-    if (saleContractsData) {
-      setActiveSaleContracts(saleContractsData.items);
+    if (purchaseContractsData) {
+      setActivePurchaseContracts(purchaseContractsData.items);
     }
-  }, [saleContractsData]);
+  }, [purchaseContractsData]);
 
   useEffect(() => {
-    if (activeSaleContracts.length) {
+    if (activePurchaseContracts.length) {
       compileData();
     }
-  }, [activeSaleContracts]);
+  }, [activePurchaseContracts]);
 
   // useEffect(() => {
   //   if (contractsWithTickets.length > 0) {
@@ -76,41 +77,41 @@ const GenerateInvoices = () => {
 
   const compileData = () => {
     let array = [];
-    activeSaleContracts.map((contract) => {
-      if (contract.tickets.items.length > 0 && contract.salePrice > 0) {
+    activePurchaseContracts.map((contract) => {
+      if (contract.tickets.items.length > 0 && contract.contractPrice > 0) {
         array.push(contract);
       }
     });
     setContractsWithTickets(array);
   };
 
-  const createInvoices = async () => {
+  const createSettlements = async () => {
     contractsWithTickets.map(async (contract, index) => {
-      if (!contract.tickets.items[0].invoiceId) {
+      if (!contract.tickets.items[0].settlementId) {
         let sumNetTons = 0;
         let total = 0;
 
         contract.tickets.items.map((ticket) => {
           sumNetTons = sumNetTons + ticket.netTons;
         });
-        total = sumNetTons * contract.salePrice;
+        total = sumNetTons * contract.contractPrice;
 
         const {
-          data: { createInvoice: invoice },
+          data: { createSettlement: settlement },
         } = await API.graphql({
-          query: createInvoice,
+          query: createSettlement,
           variables: {
             input: {
               vendorId: contract.vendorId,
-              invoiceNumber:
-                "i" +
+              settlementNumber:
+                "s" +
                 moment(endDate).add(1, "week").add(1, "day").format("MMDDYY") +
                 index,
               amountOwed: total,
               dueDate: moment(endDate).add(1, "week").add(1, "day"),
               isPaid: false,
               contractId: contract.id,
-              type: "Invoice",
+              type: "Settlement",
               beginDate,
               endDate,
             },
@@ -123,15 +124,15 @@ const GenerateInvoices = () => {
             variables: {
               input: {
                 id: ticket.id,
-                invoiceId: invoice.id,
+                settlementId: settlement.id,
               },
             },
           });
         });
-        setNumberInvoicesCreated(numberInvoicesCreated + 1);
+        setNumberOfSettlementsCreated(numberOfSettlementsCreated + 1);
       }
-      if (contract.tickets.items[0].invoiceId) {
-        console.log("no invoice generated");
+      if (contract.tickets.items[0].settlementId) {
+        console.log("no settlement created");
       }
     });
   };
@@ -144,7 +145,7 @@ const GenerateInvoices = () => {
     <Layout>
       <div>
         <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
-          <h3>Generate Invoices</h3>
+          <h3>Generate Settlements</h3>
         </div>
         <div>
           <div className="w-1/4 mx-auto">
@@ -184,7 +185,7 @@ const GenerateInvoices = () => {
                 <div>
                   <p>
                     Number of active sale contracts:{" "}
-                    {activeSaleContracts.length}
+                    {activePurchaseContracts.length}
                   </p>
                   <p>
                     Contracts with tickets and sale price:{" "}
@@ -193,7 +194,7 @@ const GenerateInvoices = () => {
                   <ul className="mt-2" className="">
                     {contractsWithTickets.map((contract) => (
                       <li key={contract.id}>
-                        {contract.tickets.items[0].invoiceId ? (
+                        {contract.tickets.items[0].settlementId ? (
                           <span className="text-red-600 mr-2">
                             Invoice Already Created!
                           </span>
@@ -211,15 +212,15 @@ const GenerateInvoices = () => {
                 </div>
               ) : (
                 <div>
-                  <span>Choose dates to generate invoices</span>
+                  <span>Choose dates to generate settlements</span>
                 </div>
               )}
             </div>
             <div>
-              <span>Generate Invoices? </span>
+              <span>Generate Settlements? </span>
               <button
                 className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
-                onClick={() => createInvoices()}
+                onClick={() => createSettlements()}
               >
                 Generate
               </button>
@@ -232,4 +233,4 @@ const GenerateInvoices = () => {
   );
 };
 
-export default GenerateInvoices;
+export default GenerateSettlements;

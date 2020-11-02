@@ -3,10 +3,18 @@ import { useRouter } from "next/router";
 import { Formik, Form, Field } from "formik";
 import { FormikSelect } from "../../../components/formikSelect";
 import { API } from "aws-amplify";
-import { updatePayment } from "../../../src/graphql/mutations.ts";
+import {
+  updatePayment,
+  updateSettlement,
+  updateInvoice,
+} from "../../../src/graphql/mutations.ts";
 import { listContracts, getPayment } from "../../../src/graphql/queries.ts";
+import {
+  invoicesSorted,
+  settlementsSorted,
+} from "../../../src/graphql/customQueries";
 import moment from "moment";
-import { useQuery } from "react-query";
+import { useQuery, useMutation } from "react-query";
 import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import { useQueryCache } from "react-query";
@@ -16,6 +24,8 @@ const UpdatePayment = () => {
   const router = useRouter();
   const { id } = router.query;
   const [contracts, setContracts] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [settlements, setSettlements] = useState([]);
   const [payment, setPayment] = useState();
   const [dateEntered, setDateEntered] = useState(new Date());
   const [paymentTypes, setPaymentTypes] = useState([
@@ -32,6 +42,83 @@ const UpdatePayment = () => {
       label: "Credit Card",
     },
   ]);
+
+  const [mutate, { data, error, isSuccess }] = useMutation(
+    async (input) => {
+      const { data: paymentData } = await API.graphql({
+        query: updatePayment,
+        variables: {
+          input,
+        },
+      });
+      return paymentData;
+    },
+    {
+      onSuccess: ({ updatePayment }) => {
+        const lengthOfGroups = queryCache.getQueryData("payments").length;
+        const items = queryCache.getQueryData("payments")[lengthOfGroups - 1]
+          .items;
+        let previousData = queryCache.getQueryData("payments");
+        previousData[lengthOfGroups - 1].items.push(updatePayment);
+        return () => queryCache.setQueryData("payments", () => [previousData]);
+      },
+    }
+  );
+
+  const [
+    mutateSettlement,
+    {
+      data: settlementData,
+      error: settlementError,
+      isSuccess: settlementSuccess,
+    },
+  ] = useMutation(
+    async (input) => {
+      const { data: mySettlementData } = await API.graphql({
+        query: updateSettlement,
+        variables: {
+          input,
+        },
+      });
+      return mySettlementData;
+    },
+    {
+      onSuccess: ({ updateSettlement }) => {
+        const lengthOfGroups = queryCache.getQueryData("settlements").length;
+        const items = queryCache.getQueryData("settlements")[lengthOfGroups - 1]
+          .items;
+        let previousData = queryCache.getQueryData("settlements");
+        previousData[lengthOfGroups - 1].items.push(updateSettlement);
+        return () =>
+          queryCache.setQueryData("settlements", () => [previousData]);
+      },
+    }
+  );
+
+  const [
+    mutateInvoice,
+    { data: invoiceData, error: invoiceError, isSuccess: invoiceSuccess },
+  ] = useMutation(
+    async (input) => {
+      const { data: myInvoiceData } = await API.graphql({
+        query: updateInvoice,
+        variables: {
+          input,
+        },
+      });
+      return myInvoiceData;
+    },
+    {
+      onSuccess: ({ updateInvoice }) => {
+        const lengthOfGroups = queryCache.getQueryData("invoices").length;
+        const items = queryCache.getQueryData("invoices")[lengthOfGroups - 1]
+          .items;
+        let previousData = queryCache.getQueryData("invoices");
+        previousData[lengthOfGroups - 1].items.push(updateInvoice);
+        return () => queryCache.setQueryData("invoices", () => [previousData]);
+      },
+    }
+  );
 
   const { data: paymentData, refetch } = useQuery(
     "payment",
@@ -63,6 +150,34 @@ const UpdatePayment = () => {
     return myContracts;
   });
 
+  const { data: invoicesData } = useQuery("invoices", async () => {
+    const {
+      data: { invoicesSorted: myInvoices },
+    } = await API.graphql({
+      query: invoicesSorted,
+      variables: {
+        type: "Invoice",
+        sortDirection: "DESC",
+        limit: 3000,
+      },
+    });
+    return myInvoices;
+  });
+
+  const { data: settlementsData } = useQuery("settlements", async () => {
+    const {
+      data: { settlementsSorted: mySettlements },
+    } = await API.graphql({
+      query: settlementsSorted,
+      variables: {
+        type: "Settlement",
+        sortDirection: "DESC",
+        limit: 3000,
+      },
+    });
+    return mySettlements;
+  });
+
   useEffect(() => {
     if (contractsData) {
       let options = [];
@@ -75,6 +190,38 @@ const UpdatePayment = () => {
       setContracts(options);
     }
   }, [contractsData]);
+
+  useEffect(() => {
+    if (invoicesData) {
+      let options = [];
+      invoicesData.items.map((invoice) => {
+        options.push({
+          value: invoice.id,
+          label: `${invoice.invoiceNumber} - ${
+            invoice.vendor.companyReportName
+          } - Due ${moment(invoice.dueDate).format("MM/DD/YY")}`,
+        });
+      });
+
+      setInvoices(options);
+    }
+  }, [invoicesData]);
+
+  useEffect(() => {
+    if (settlementsData) {
+      let options = [];
+      settlementsData.items.map((settlement) => {
+        options.push({
+          value: settlement.id,
+          label: `${settlement.settlementNumber} - ${
+            settlement.vendor.companyReportName
+          } - Due ${moment(settlement.dueDate).format("MM/DD/YY")}`,
+        });
+      });
+
+      setSettlements(options);
+    }
+  }, [settlementsData]);
 
   useEffect(() => {
     if (paymentData) {
@@ -102,6 +249,8 @@ const UpdatePayment = () => {
                 type: "Payment",
                 tFileNumber: payment.tFileNumber || "",
                 contractId: payment.contractId || "",
+                invoiceId: payment.invoiceId || "",
+                settlementId: payment.settlementId || "",
                 checkNumber: payment.checkNumber || "",
                 date: (payment && payment.date) || "",
                 amount: (payment && payment.amount) || "",
@@ -110,26 +259,44 @@ const UpdatePayment = () => {
                 paymentType: (payment && payment.paymentType) || "",
               }}
               onSubmit={async (values, actions) => {
-                const {
-                  data: { updatePayment: myPayment },
-                } = await API.graphql({
-                  query: updatePayment,
-                  variables: {
-                    input: {
-                      type: "Payment",
-                      tFileNumber: values.tFileNumber,
-                      contractId: values.contractId,
-                      checkNumber: values.checkNumber,
-                      date: dateEntered,
-                      amount: values.amount,
-                      totalPounds: values.totalPounds,
-                      tonsCredit: values.tonsCredit,
-                      paymentType: values.paymentType,
-                    },
-                  },
-                });
-                cache.invalidateQueries("payments");
-                cache.setQueryData("payments", myPayment);
+                let input = {
+                  id,
+                  type: "Payment",
+                  tFileNumber: values.tFileNumber,
+                  contractId: values.contractId,
+                  invoiceId: values.invoiceId,
+                  settlementId: values.settlementId,
+                  checkNumber: values.checkNumber,
+                  date: dateEntered,
+                  amount: values.amount,
+                  totalPounds: values.totalPounds,
+                  tonsCredit: values.tonsCredit,
+                  paymentType: values.paymentType,
+                };
+                mutate(input);
+
+                if (
+                  values.settlementId !== payment.settlementId &&
+                  values.settlementId
+                ) {
+                  let input2 = {
+                    id: values.settlementId,
+                    isPaid: true,
+                  };
+                  mutateSettlement(input2);
+                }
+
+                if (
+                  values.invoiceId !== payment.invoiceId &&
+                  values.invoiceId
+                ) {
+                  let input3 = {
+                    id: values.invoiceId,
+                    isPaid: true,
+                  };
+                  mutateInvoice(input3);
+                }
+                router.back();
               }}
             >
               {({ isSubmitting, values }) => (
@@ -187,6 +354,34 @@ const UpdatePayment = () => {
                         className="w-1/2"
                         component={FormikSelect}
                         options={contracts}
+                      ></Field>
+                    </div>
+                    <div className="flex justify-between items-center mb-4 w-full">
+                      <label
+                        className="text-gray-900 w-1/4 md:w-1/2 pr-4"
+                        htmlFor="invoiceId"
+                      >
+                        Invoice
+                      </label>
+                      <Field
+                        name="invoiceId"
+                        className="w-1/2"
+                        component={FormikSelect}
+                        options={invoices}
+                      ></Field>
+                    </div>
+                    <div className="flex justify-between items-center mb-4 w-full">
+                      <label
+                        className="text-gray-900 w-1/4 md:w-1/2 pr-4"
+                        htmlFor="settlementId"
+                      >
+                        Settlement
+                      </label>
+                      <Field
+                        name="settlementId"
+                        className="w-1/2"
+                        component={FormikSelect}
+                        options={settlements}
                       ></Field>
                     </div>
                     <div className="flex justify-between items-center mb-4">
