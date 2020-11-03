@@ -56,8 +56,8 @@ const UpdatePayment = () => {
     {
       onSuccess: ({ updatePayment }) => {
         const lengthOfGroups = queryCache.getQueryData("payments").length;
-        const items = queryCache.getQueryData("payments")[lengthOfGroups - 1]
-          .items;
+        // const items = queryCache.getQueryData("payments")[lengthOfGroups - 1]
+        //   .items;
         let previousData = queryCache.getQueryData("payments");
         previousData[lengthOfGroups - 1].items.push(updatePayment);
         return () => queryCache.setQueryData("payments", () => [previousData]);
@@ -135,6 +135,7 @@ const UpdatePayment = () => {
     },
     {
       enabled: false,
+      refetchOnMount: true,
     }
   );
 
