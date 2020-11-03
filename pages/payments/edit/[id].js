@@ -85,8 +85,8 @@ const UpdatePayment = () => {
     {
       onSuccess: ({ updateSettlement }) => {
         const lengthOfGroups = queryCache.getQueryData("settlements").length;
-        const items = queryCache.getQueryData("settlements")[lengthOfGroups - 1]
-          .items;
+        // const items = queryCache.getQueryData("settlements")[lengthOfGroups - 1]
+        //   .items;
         let previousData = queryCache.getQueryData("settlements");
         previousData[lengthOfGroups - 1].items.push(updateSettlement);
         return () =>
@@ -111,8 +111,8 @@ const UpdatePayment = () => {
     {
       onSuccess: ({ updateInvoice }) => {
         const lengthOfGroups = queryCache.getQueryData("invoices").length;
-        const items = queryCache.getQueryData("invoices")[lengthOfGroups - 1]
-          .items;
+        // const items = queryCache.getQueryData("invoices")[lengthOfGroups - 1]
+        //   .items;
         let previousData = queryCache.getQueryData("invoices");
         previousData[lengthOfGroups - 1].items.push(updateInvoice);
         return () => queryCache.setQueryData("invoices", () => [previousData]);

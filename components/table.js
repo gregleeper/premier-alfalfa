@@ -125,6 +125,10 @@ function Table({ columns, data }) {
             id: "ticketDate",
             desc: true,
           },
+          {
+            id: "endDate",
+            desc: true,
+          },
         ],
       },
     },
