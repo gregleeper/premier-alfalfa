@@ -153,6 +153,21 @@ const Payments = () => {
           ""
         ),
     },
+    {
+      Header: "Settlement",
+      accessor: "settlementId",
+      Cell: ({ value }) =>
+        value ? (
+          <Link
+            href="/reports/settlements/[id]"
+            as={`/reports/settlements/${value}`}
+          >
+            <a>View</a>
+          </Link>
+        ) : (
+          ""
+        ),
+    },
   ]);
 
   return (

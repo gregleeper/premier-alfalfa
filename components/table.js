@@ -121,6 +121,10 @@ function Table({ columns, data }) {
             id: "totalSold",
             desc: true,
           },
+          {
+            id: "ticketDate",
+            desc: true,
+          },
         ],
       },
     },
