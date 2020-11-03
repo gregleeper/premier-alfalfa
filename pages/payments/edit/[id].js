@@ -20,7 +20,7 @@ import DatePicker from "react-datepicker";
 import { useQueryCache } from "react-query";
 
 const UpdatePayment = () => {
-  const cache = useQueryCache();
+  const queryCache = useQueryCache();
   const router = useRouter();
   const { id } = router.query;
   const [contracts, setContracts] = useState([]);
