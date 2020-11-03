@@ -1,6 +1,7 @@
 import Layout from "../../../components/layout";
 //import { getInvoice, ticketsByContract } from "../../../src/graphql/queries.ts";
 import { contractsByType } from "../../../src/graphql/customQueries";
+import { useRouter } from "next/router";
 import {
   createSettlement,
   updateTicket,
@@ -16,6 +17,7 @@ import { getContract, getTicket } from "../../../src/graphql/queries";
 
 const GenerateSettlements = () => {
   const queryCache = useQueryCache();
+  const router = useRouter();
   const [activePurchaseContracts, setActivePurchaseContracts] = useState([]);
   const [beginDate, setBeginDate] = useState(moment().startOf("isoWeek")._d);
   const [endDate, setEndDate] = useState(moment().endOf("isoWeek")._d);
@@ -135,6 +137,7 @@ const GenerateSettlements = () => {
         console.log("no settlement created");
       }
     });
+    router.back();
   };
 
   const handleFetchQueries = () => {
@@ -184,11 +187,11 @@ const GenerateSettlements = () => {
               {contractsWithTickets.length > 0 ? (
                 <div>
                   <p>
-                    Number of active sale contracts:{" "}
+                    Number of active purchase contracts:{" "}
                     {activePurchaseContracts.length}
                   </p>
                   <p>
-                    Contracts with tickets and sale price:{" "}
+                    Contracts with tickets and purchase price:{" "}
                     {contractsWithTickets.length}
                   </p>
                   <ul className="mt-2" className="">

@@ -87,6 +87,13 @@ const Invoices = () => {
         <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
           <h3>All Invoices</h3>
         </div>
+        <div className="my-6">
+          <Link href="/reports/settlements/generate">
+            <a className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white">
+              Generate New Settlements
+            </a>
+          </Link>
+        </div>
         <div className="px-12 py-3">
           <Table data={invoices} columns={columns} />
         </div>

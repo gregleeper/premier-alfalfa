@@ -1,6 +1,7 @@
 import Layout from "../../../components/layout";
 import { getInvoice, ticketsByContract } from "../../../src/graphql/queries.ts";
 import { contractsByType } from "../../../src/graphql/customQueries";
+import { useRouter } from "next/router";
 import {
   createInvoice,
   updateTicket,
@@ -17,6 +18,7 @@ import { getContract, getTicket } from "../../../src/graphql/queries";
 
 const GenerateInvoices = () => {
   const queryCache = useQueryCache();
+  const router = useRouter();
   const [activeSaleContracts, setActiveSaleContracts] = useState([]);
   const [beginDate, setBeginDate] = useState(moment().startOf("isoWeek")._d);
   const [endDate, setEndDate] = useState(moment().endOf("isoWeek")._d);
@@ -134,6 +136,8 @@ const GenerateInvoices = () => {
         console.log("no invoice generated");
       }
     });
+
+    router.back();
   };
 
   const handleFetchQueries = () => {

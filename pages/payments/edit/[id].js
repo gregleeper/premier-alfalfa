@@ -121,7 +121,7 @@ const UpdatePayment = () => {
   );
 
   const { data: paymentData, refetch } = useQuery(
-    "payment",
+    ["payment", { id }],
     async () => {
       const {
         data: { getPayment: myPayment },
