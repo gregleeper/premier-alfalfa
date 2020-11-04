@@ -142,6 +142,7 @@ const TotalTons = () => {
 
   const handleFetchQueries = () => {
     refetchYTD();
+    computeTotals();
   };
   return (
     <Layout>
@@ -216,12 +217,12 @@ const TotalTons = () => {
                     <table>
                       <thead>
                         <tr className="text-sm">
-                          <th>Contract Number</th>
-                          <th>Company Report Name</th>
-                          <th>Weekly Net Tons</th>
-                          <th>Year To Date Net Tons</th>
-                          <th>Balance Due</th>
-                          <th>Contracted Quantity</th>
+                          <th className="px-2">Contract Number</th>
+                          <th className="px-2">Company Report Name</th>
+                          <th className="px-2">Weekly Net Tons</th>
+                          <th className="px-2">Year To Date Net Tons</th>
+                          <th className="px-2">Balance Due</th>
+                          <th className="px-2">Contracted Quantity</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -230,13 +231,29 @@ const TotalTons = () => {
                             <td className="px-2">{element.contractNumber}</td>
                             <td className="px-2">{element.company}</td>
                             <td className="px-2">
-                              {element.weeklyNetTons.toFixed(2)}
+                              {element.weeklyNetTons.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </td>
                             <td className="px-2">
-                              {element.ytdNetTons.toFixed(2)}
+                              {element.ytdNetTons.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </td>
-                            <td>{element.balanceDue.toFixed(2)}</td>
-                            <td>{element.contractTotal.toFixed(2)}</td>
+                            <td>
+                              {element.balanceDue.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </td>
+                            <td>
+                              {element.contractTotal.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </td>
                           </tr>
                         ))}
                         <tr className="font-semibold text-lg border-t-4 border-gray-800">
@@ -250,7 +267,10 @@ const TotalTons = () => {
                                   accumulator + currentValue.weeklyNetTons,
                                 0
                               )
-                              .toFixed(2)}
+                              .toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                           </td>
                           <td>
                             {c
@@ -259,7 +279,10 @@ const TotalTons = () => {
                                   accumulator + currentValue.ytdNetTons,
                                 0
                               )
-                              .toFixed(2)}
+                              .toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                           </td>
                           <td></td>
                           <td></td>
