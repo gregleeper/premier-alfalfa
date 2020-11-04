@@ -1,268 +1,167 @@
-import { API } from "aws-amplify";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useQuery, useQueryCache } from "react-query";
+import ReactToPrint from "react-to-print";
 import moment from "moment";
-import DatePicker from "react-datepicker";
+import { contractsByType } from "../../src/graphql/customQueries";
 import Layout from "../../components/layout";
-import {
-  listReportTickets,
-  contractsByType,
-} from "../../src/graphql/customQueries";
-import { listContracts } from "../../src/graphql/queries";
-import Table from "../../components/table";
-import { groupBy, computeSum } from "../../utils";
-import { useQuery, useInfiniteQuery, useQueryCache } from "react-query";
-import { ReactQueryDevtools } from "react-query-devtools";
-const TotalTonsHauled = () => {
+import { API } from "aws-amplify";
+import DatePicker from "react-datepicker";
+import { listCommoditys } from "../../src/graphql/queries.ts";
+import { groupBy } from "../../utils";
+
+const TotalTons = () => {
   const cache = useQueryCache();
+  let toPrint = useRef(null);
   const [beginDate, setBeginDate] = useState(
-    cache.getQueryData("inventoryBalanceDates")
-      ? cache.getQueryData("inventoryBalanceDates").beginDate
+    cache.getQueryData("invDates")
+      ? cache.getQueryData("invDates").beginDate
       : null
   );
   const [endDate, setEndDate] = useState(
-    cache.getQueryData("inventoryBalanceDates")
-      ? cache.getQueryData("inventoryBalanceDates").endDate
+    cache.getQueryData("invDates")
+      ? cache.getQueryData("invDates").endDate
       : null
   );
-
-  const [activeContracts, setActiveContracts] = useState([]);
-  const [tickets, setTickets] = useState([]);
+  const [contractsYTD, setContractsYTD] = useState([]);
   const [totals, setTotals] = useState([]);
-  const [commodityTotals, setCommodityTotals] = useState([]);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [commodities, setCommodities] = useState([]);
+  const [reportedCommodities, setReportedCommodities] = useState([]);
 
-  const { data: initTicketsData, refetch, isFetched } = useQuery(
-    "inventoryBalance",
+  const { data: contractsDataYTD, refetch: refetchYTD } = useQuery(
+    "invYTD",
     async () => {
       const {
-        data: { listTickets: initTickets },
-      } = await API.graphql({
-        query: listReportTickets,
-        variables: {
-          limit: 3000,
-          filter: {
-            ticketDate: {
-              between: [
-                moment(beginDate).startOf("day"),
-                moment(endDate).endOf("day"),
-              ],
-            },
-          },
-        },
-      });
-
-      return initTickets;
-    },
-    {
-      enabled: false,
-      cacheTime: 1000 * 60 * 59,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchIntervalInBackground: false,
-      refetchOnReconnect: true,
-      forceFetchOnMount: false,
-      keepPreviousData: false,
-    }
-  );
-
-  const {
-    status,
-    data,
-    error,
-    isFetching,
-    isFetchingMore,
-    isSuccess,
-    fetchMore,
-    canFetchMore,
-  } = useInfiniteQuery(
-    "inventoryBalance",
-    async (
-      key,
-      nextToken = cache.getQueryData("inventoryBalance").nextToken
-    ) => {
-      const {
-        data: { listTickets: ticketData },
-      } = await API.graphql({
-        query: listReportTickets,
-        variables: {
-          limit: 3000,
-          filter: {
-            ticketDate: {
-              between: [
-                moment(beginDate).startOf("day"),
-                moment(endDate).endOf("day"),
-              ],
-            },
-          },
-          nextToken,
-        },
-      });
-      return ticketData;
-    },
-    {
-      enabled: false,
-      getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
-      cacheTime: 1000 * 60 * 60,
-      refetchOnWindowFocus: false,
-      forceFetchOnMount: false,
-      keepPreviousData: false,
-    }
-  );
-
-  const { data: activeContractsData } = useQuery(
-    "activeContracts",
-    async () => {
-      const {
-        data: { contractsByType: activeContracts },
+        data: { contractsByType: myContractsYTD },
       } = await API.graphql({
         query: contractsByType,
         variables: {
-          limit: 3000,
           contractType: "PURCHASE",
           filter: {
-            contractState: { eq: "ACTIVE" },
+            contractState: {
+              eq: "ACTIVE",
+            },
           },
+          ticketFilter: {
+            ticketDate: { le: endDate },
+          },
+          limit: 3000,
         },
       });
-      return activeContracts;
+      return myContractsYTD;
+    },
+    {
+      enabled: false,
     }
   );
 
+  const { data: commoditiesData } = useQuery(
+    "commodities",
+    async () => {
+      const {
+        data: { listCommoditys: myCommodities },
+      } = await API.graphql({
+        query: listCommoditys,
+      });
+      return myCommodities;
+    },
+    {
+      cacheTime: 1000 * 60 * 60,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  useEffect(() => {
+    if (commoditiesData) {
+      setCommodities(commoditiesData.items);
+    }
+  }, [commoditiesData]);
+
+  useEffect(() => {
+    if (contractsDataYTD) {
+      setContractsYTD(contractsDataYTD.items);
+    }
+  }, [contractsDataYTD]);
+
+  useEffect(() => {
+    if (contractsYTD.length) {
+      computeTotals();
+    }
+  }, [contractsYTD]);
+
+  useEffect(() => {
+    if (totals.length) {
+      getIncludedCommodities();
+    }
+  }, [totals]);
+
   const computeTotals = () => {
-    const byContract = groupBy(tickets, (ticket) => ticket.contractId);
-
-    const byCommodity = groupBy(
-      tickets,
-      (ticket) => ticket.contract.commodity.name
-    );
-    let commoditiesHauled = [];
-    byCommodity.forEach((i) => {
-      let commodity = {};
-
-      commodity.name = i[0].contract.commodity.name;
-      const group = byCommodity.get(commodity.name);
-      commodity.weekTotal = computeSum(group);
-      commoditiesHauled.push(commodity);
-    });
-    setCommodityTotals(commoditiesHauled);
     let array = [];
 
-    activeContracts.map((contract) => {
-      let ticketTotals = {};
-      const group = byContract.get(contract.id);
-
-      ticketTotals.commodity = contract.commodity.name;
-      ticketTotals.contractNumber = contract.contractNumber;
-      ticketTotals.contractName = contract.contractTo.companyReportName;
-
-      ticketTotals.tons = computeSum(group);
-
-      array.push(ticketTotals);
+    contractsYTD.map((contract) => {
+      let contractTotals = {};
+      console.log(contract);
+      contractTotals.commodity = contract.commodity.name;
+      contractTotals.contractNumber = contract.contractNumber;
+      contractTotals.company = contract.contractTo.companyReportName;
+      const filtered = contract.tickets.items.filter(
+        (ticket) =>
+          moment(ticket.ticketDate) >= moment(beginDate).startOf("day")
+      );
+      contractTotals.weeklyNetTons = filtered.reduce(function (
+        accumulator,
+        currentValue
+      ) {
+        return accumulator + currentValue.netTons;
+      },
+      0);
+      contractTotals.ytdNetTons = contract.tickets.items.reduce(function (
+        accumulator,
+        currentValue
+      ) {
+        return accumulator + currentValue.netTons;
+      },
+      0);
+      contractTotals.balanceDue = contract.quantity - contractTotals.ytdNetTons;
+      contractTotals.contractTotal = contract.quantity;
+      array.sort((a, b) => b.weeklyNetTons - a.weeklyNetTons);
+      array.push(contractTotals);
     });
+
     setTotals(array);
   };
 
-  const compileData = () => {
-    if (isInitialLoad) {
-      let array = [...tickets];
-
-      data &&
-        data.map((group, i) => {
-          group.items.map((item) => array.push(item));
-        });
-      setTickets(array);
-      setIsInitialLoad(false);
-    } else {
-      let array = [];
-      data &&
-        data.map((group, i) => {
-          group.items.map((item) => array.push(item));
-        });
-      setTickets(array);
-    }
-  };
-
-  const compileDataYTD = () => {
-    if (isInitialLoad) {
-      let array = [...ticketsYTD];
-
-      ytdData &&
-        ytdData.map((group, i) => {
-          group.items.map((item) => array.push(item));
-        });
-      setTicketsYTD(array);
-      setIsInitialLoad(false);
-    } else {
-      let array = [];
-      ytdData &&
-        ytdData.map((group, i) => {
-          group.items.map((item) => array.push(item));
-        });
-      setTicketsYTD(array);
-    }
+  const getIncludedCommodities = () => {
+    const group = groupBy(totals, (total) => total.commodity);
+    let array = [];
+    commodities.map((c) => {
+      if (group.get(c.name)) {
+        array.push(group.get(c.name));
+      }
+    });
+    setReportedCommodities(array);
   };
 
   const handleFetchQueries = () => {
-    setTickets([]);
-
-    setTotals([]);
-
-    refetch();
+    refetchYTD();
+    computeTotals();
   };
-
-  useEffect(() => {
-    if (activeContractsData) {
-      setActiveContracts(activeContractsData.items);
-    }
-  }, [activeContractsData]);
-
-  useEffect(() => {
-    if (initTicketsData) {
-      fetchMore();
-    }
-    if (initTicketsData && canFetchMore && !isFetchingMore) {
-      fetchMore();
-    }
-
-    if (initTicketsData && initTicketsData.length && !canFetchMore) {
-      compileData();
-    }
-  }, [initTicketsData]);
-
-  useEffect(() => {
-    if (tickets.length > 0) {
-      computeTotals();
-      cache.setQueryData("inventoryBalanceDates", {
-        beginDate: beginDate,
-        endDate: endDate,
-      });
-    }
-  }, [tickets]);
-
-  const columns = useMemo(() => [
-    {
-      Header: "Commodity",
-      accessor: "commodity",
-    },
-    {
-      Header: "Contract Number",
-      accessor: "contractNumber",
-    },
-    {
-      Header: "Contract Name",
-      accessor: "contractName",
-    },
-    {
-      Header: "Tons",
-      accessor: "tons",
-    },
-  ]);
-
   return (
     <Layout>
       <div>
-        <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
-          <h3>Inventory Balance</h3>
+        <div className="px-12 py-4">
+          <ReactToPrint
+            trigger={() => (
+              <a
+                href="#"
+                className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
+              >
+                Print Report
+              </a>
+            )}
+            content={() => toPrint}
+          />
         </div>
         <div className="w-4/12 mx-auto">
           <div className="flex justify-between items-end">
@@ -297,41 +196,75 @@ const TotalTonsHauled = () => {
             </div>
           </div>
         </div>
-        <div className="px-12 mt-4">
-          <div className="w-5/12 mx-auto text-center">
-            <h6 className="text-gray-900 text-xl font-bold">
-              Commodity Subtotals for the Period{" "}
-              {moment(beginDate).isValid() ? (
-                moment(beginDate).format("MM/DD/YY")
-              ) : (
-                <span>no date chosen</span>
-              )}{" "}
-              -{" "}
-              {moment(endDate).isValid() ? (
-                moment(endDate).format("MM/DD/YY")
-              ) : (
-                <span>no date chosen</span>
-              )}
-            </h6>
-            {commodityTotals.map((c, i) => (
-              <div key={i} className="flex justify-between ">
-                <p className="mr-6 text-bold">{c.name}</p>
-                <p>{c.weekTotal}</p>
-              </div>
-            ))}
+        <div ref={(el) => (toPrint = el)} className="pt-4 pb-24">
+          <div className="text-center w-1/2 mx-auto pt-6 pb-2 text-2xl font-bold">
+            <h3>Inventory Balance Report</h3>
+            {beginDate && endDate ? (
+              <p className="text-lg font-light">
+                {`For period: ${moment(beginDate).format(
+                  "MM/DD/YY"
+                )} to ${moment(endDate).format("MM/DD/YY")}`}{" "}
+              </p>
+            ) : (
+              <p>Choose dates for report</p>
+            )}
           </div>
-          {!isFetched ? (
-            <p>Choose dates to generate report.</p>
-          ) : isSuccess && !canFetchMore ? (
-            <Table data={totals} columns={columns} />
-          ) : (
-            <p>Loading...</p>
-          )}
+          <div>
+            {reportedCommodities.length &&
+              reportedCommodities.map((c, index) => (
+                <div className="px-12" key={index}>
+                  <h3 className="text-base font-light pt-1 pb-1">
+                    {c[0].commodity}
+                  </h3>
+                  <div className="pl-12">
+                    <table>
+                      <thead>
+                        <tr className="text-sm">
+                          <th className="px-2">Contract Number</th>
+                          <th className="px-2">Company Report Name</th>
+                          <th className="px-2">Inventory Balance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {c.map((element) => (
+                          <tr className="text-sm">
+                            <td className="px-2">{element.contractNumber}</td>
+                            <td className="px-2">{element.company}</td>
+                            <td className="px-2">
+                              {element.balanceDue.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </td>
+                          </tr>
+                        ))}
+                        <tr className="font-semibold text-lg border-t-4 border-gray-800">
+                          <td>Totals:</td>
+                          <td></td>
+
+                          <td>
+                            {c
+                              .reduce(
+                                (accumulator, currentValue) =>
+                                  accumulator + currentValue.balanceDue,
+                                0
+                              )
+                              .toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+          </div>
         </div>
       </div>
-      <ReactQueryDevtools />
     </Layout>
   );
 };
 
-export default TotalTonsHauled;
+export default TotalTons;
