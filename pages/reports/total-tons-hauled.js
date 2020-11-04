@@ -120,6 +120,8 @@ const TotalTons = () => {
         return accumulator + currentValue.netTons;
       },
       0);
+      contractTotals.balanceDue = contract.quantity - contractTotals.ytdNetTons;
+      contractTotals.contractTotal = contract.quantity;
       array.sort((a, b) => b.weeklyNetTons - a.weeklyNetTons);
       array.push(contractTotals);
     });
@@ -218,6 +220,8 @@ const TotalTons = () => {
                           <th>Company Report Name</th>
                           <th>Weekly Net Tons</th>
                           <th>Year To Date Net Tons</th>
+                          <th>Balance Due</th>
+                          <th>Contracted Quantity</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -231,6 +235,8 @@ const TotalTons = () => {
                             <td className="px-2">
                               {element.ytdNetTons.toFixed(2)}
                             </td>
+                            <td>{element.balanceDue.toFixed(2)}</td>
+                            <td>{element.contractTotal.toFixed(2)}</td>
                           </tr>
                         ))}
                         <tr className="font-semibold text-lg border-t-4 border-gray-800">
@@ -255,6 +261,8 @@ const TotalTons = () => {
                               )
                               .toFixed(2)}
                           </td>
+                          <td></td>
+                          <td></td>
                         </tr>
                       </tbody>
                     </table>
