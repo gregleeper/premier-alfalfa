@@ -1,4 +1,4 @@
-type CompanyInfo @model {
+type CompanyInfo @model @auth(rules: [{ allow: groups, groups: ["Admin"] }]) {
   id: ID!
   companyName: String!
   additionalName: String
@@ -12,7 +12,7 @@ type CompanyInfo @model {
   faxNum: String
 }
 
-type Commodity @model {
+type Commodity @model @auth(rules: [{ allow: groups, groups: ["Admin"] }]) {
   id: ID!
   name: String!
   calculateCode: Int!
@@ -23,6 +23,7 @@ type Commodity @model {
 
 type Settlement
   @model
+  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
   @key(
     name: "settlementsSorted"
     fields: ["type", "dueDate"]
@@ -56,6 +57,7 @@ type Settlement
 
 type Invoice
   @model
+  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
   @key(
     name: "invoicesSorted"
     fields: ["type", "dueDate"]
@@ -87,7 +89,7 @@ type Invoice
   isPaid: Boolean!
 }
 
-type Vendor @model {
+type Vendor @model @auth(rules: [{ allow: groups, groups: ["Admin"] }]) {
   id: ID!
   vendorNumber: String!
   companyReportName: String
@@ -104,6 +106,7 @@ type Vendor @model {
 }
 
 type Contract
+  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
   @model
   @key(
     name: "byStatus"
@@ -150,6 +153,7 @@ type Contract
 
 type Payment
   @model
+  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
   @key(
     name: "paymentsByContract"
     fields: ["contractId", "date"]
@@ -182,6 +186,7 @@ enum PaymentType {
 }
 
 type Ticket
+  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
   @model
   @key(name: "bySettlement", fields: ["settlementId", "ticketNumber"])
   @key(name: "byInvoice", fields: ["invoiceId", "ticketNumber"])

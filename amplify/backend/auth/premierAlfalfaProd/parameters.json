@@ -1,8 +1,6 @@
 {
-    "identityPoolName": "premieralfalfa291ddaa1_identitypool_291ddaa1",
-    "allowUnauthenticatedIdentities": false,
-    "resourceNameTruncated": "premie291ddaa1",
-    "userPoolName": "premieralfalfa291ddaa1_userpool_291ddaa1",
+    "resourceNameTruncated": "premie3d96eedf",
+    "userPoolName": "PremierAlfalfaProdUsers",
     "autoVerifiedAttributes": [
         "email"
     ],
@@ -12,13 +10,14 @@
     ],
     "smsAuthenticationMessage": "Your authentication code is {####}",
     "smsVerificationMessage": "Your verification code is {####}",
-    "emailVerificationSubject": "Your verification code",
-    "emailVerificationMessage": "Your verification code is {####}",
+    "emailVerificationSubject": "pa67951",
+    "emailVerificationMessage": "Please verify the email verification code. '{####}'",
     "defaultPasswordPolicy": false,
     "passwordPolicyMinLength": 8,
     "passwordPolicyCharacters": [],
     "requiredAttributes": [
-        "email"
+        "email",
+        "name"
     ],
     "userpoolClientGenerateSecret": true,
     "userpoolClientRefreshTokenValidity": 30,
@@ -28,11 +27,11 @@
     "userpoolClientReadAttributes": [
         "email"
     ],
-    "userpoolClientLambdaRole": "premie291ddaa1_userpoolclient_lambda_role",
+    "userpoolClientLambdaRole": "premie3d96eedf_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,
-    "sharedId": "291ddaa1",
-    "resourceName": "premieralfalfa291ddaa1",
-    "authSelections": "identityPoolAndUserPool",
+    "sharedId": "3d96eedf",
+    "resourceName": "premierAlfalfaProd",
+    "authSelections": "userPoolOnly",
     "authRoleArn": {
         "Fn::GetAtt": [
             "AuthRole",
@@ -45,8 +44,18 @@
             "Arn"
         ]
     },
-    "useDefault": "default",
-    "userPoolGroupList": [],
+    "useDefault": "manual",
+    "userPoolGroups": true,
+    "adminQueries": true,
+    "triggers": "{}",
+    "hostedUI": false,
+    "userPoolGroupList": [
+        "admin"
+    ],
     "serviceName": "Cognito",
+    "parentStack": {
+        "Ref": "AWS::StackId"
+    },
+    "permissions": [],
     "dependsOn": []
 }

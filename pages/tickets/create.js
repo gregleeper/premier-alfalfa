@@ -2,7 +2,7 @@ import { Formik, Field, Form } from "formik";
 import { useState, useEffect } from "react";
 import { FormikSelect } from "../../components/formikSelect";
 import Layout from "../../components/layout";
-import { API } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 import { createTicket } from "../../src/graphql/mutations.ts";
 import { listContracts } from "../../src/graphql/queries.ts";
 import DatePicker from "react-datepicker";
@@ -332,5 +332,27 @@ const CreateTicket = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps({ req, res }) {
+  const { Auth } = withSSRContext({ req });
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+
+    return {
+      props: {
+        authenticated: true,
+        username: user.username,
+      },
+    };
+  } catch (err) {
+    res.writeHead(302, { Location: "/sign-in" });
+    res.end();
+    return {
+      props: {
+        authenticated: false,
+      },
+    };
+  }
+}
 
 export default CreateTicket;

@@ -1,13 +1,14 @@
 import { Formik, Field, Form } from "formik";
 import { useState, useEffect } from "react";
 import Layout from "../../components/layout";
-import { API } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 import { createContract } from "../../src/graphql/mutations.ts";
 import { listVendors, listCommoditys } from "../../src/graphql/queries.ts";
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import { FormikSelect } from "../../components/formikSelect";
-import {useQuery} from 'react-query'
+import { useQuery } from "react-query";
+
 const CreateContract = ({ allVendors }) => {
   const [commodities, setCommodities] = useState([]);
   const [dateSigned, setDateSigned] = useState(new Date());
@@ -22,34 +23,39 @@ const CreateContract = ({ allVendors }) => {
     setVendorOptions(options);
   };
 
-  const {data: vendorsData} = useQuery('vendors', async ( ) => {
-    const {data: {listVendors: vendorsData}} = await API.graphql({
-      query: listVendors,
-      variables: {
+  const { data: vendorsData } = useQuery(
+    "vendors",
+    async () => {
+      const {
+        data: { listVendors: vendorsData },
+      } = await API.graphql({
+        query: listVendors,
+        variables: {
+          limit: 3000,
+        },
+      });
+      return vendorsData;
+    },
+    {
+      cacheTime: 1000 * 60 * 60,
+    }
+  );
 
-        limit: 3000
-      }
-    })
-    return vendorsData
-  },
-  {
-    cacheTime: 1000 * 60 * 60
-  }
-  )
-
-  const {data: commoditysData} = useQuery('commodities', async () => {
-    const {data: {listCommoditys: commoditiesData}} = await API.graphql({
+  const { data: commoditysData } = useQuery("commodities", async () => {
+    const {
+      data: { listCommoditys: commoditiesData },
+    } = await API.graphql({
       query: listCommoditys,
       variables: {
-        limit: 3000
-      }
-    })
-    return commoditiesData
-  })
+        limit: 3000,
+      },
+    });
+    return commoditiesData;
+  });
 
   useEffect(() => {
-    if(commoditysData){
-      setCommodities(commoditysData.items)
+    if (commoditysData) {
+      setCommodities(commoditysData.items);
     }
   }, [commoditysData, vendorsData]);
 
@@ -357,6 +363,28 @@ export async function getStaticProps({ preview = null }) {
     },
     revalidate: 1,
   };
+}
+
+export async function getServerSideProps({ req, res }) {
+  const { Auth } = withSSRContext({ req });
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+
+    return {
+      props: {
+        authenticated: true,
+        username: user.username,
+      },
+    };
+  } catch (err) {
+    res.writeHead(302, { Location: "/sign-in" });
+    res.end();
+    return {
+      props: {
+        authenticated: false,
+      },
+    };
+  }
 }
 
 export default CreateContract;

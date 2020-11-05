@@ -3,7 +3,7 @@ import Table from "../../../components/table";
 import { settlementsSorted } from "../../../src/graphql/customQueries";
 import { formatMoney } from "../../../utils";
 import moment from "moment";
-import { API } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 import Link from "next/link";
 import { useQuery, useQueryCache } from "react-query";
 import { ReactQueryDevtools } from "react-query-devtools";
@@ -105,5 +105,27 @@ const Settlements = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps({ req, res }) {
+  const { Auth } = withSSRContext({ req });
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+
+    return {
+      props: {
+        authenticated: true,
+        username: user.username,
+      },
+    };
+  } catch (err) {
+    res.writeHead(302, { Location: "/sign-in" });
+    res.end();
+    return {
+      props: {
+        authenticated: false,
+      },
+    };
+  }
+}
 
 export default Settlements;

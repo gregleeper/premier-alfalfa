@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import moment from "moment";
 import { truncateString } from "../../utils";
 import { FormikSelect } from "../../components/formikSelect";
-import { API } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 import {
   invoicesSorted,
   settlementsSorted,
@@ -327,5 +327,27 @@ const CreatePayment = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps({ req, res }) {
+  const { Auth } = withSSRContext({ req });
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+
+    return {
+      props: {
+        authenticated: true,
+        username: user.username,
+      },
+    };
+  } catch (err) {
+    res.writeHead(302, { Location: "/sign-in" });
+    res.end();
+    return {
+      props: {
+        authenticated: false,
+      },
+    };
+  }
+}
 
 export default CreatePayment;

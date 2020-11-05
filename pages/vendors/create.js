@@ -1,6 +1,6 @@
 import { Formik, Field, Form } from "formik";
 import Layout from "../../components/layout";
-import { API } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 
 import { createVendor } from "../../src/graphql/mutations.ts";
 
@@ -232,5 +232,27 @@ const CreateVendor = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps({ req, res }) {
+  const { Auth } = withSSRContext({ req });
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+
+    return {
+      props: {
+        authenticated: true,
+        username: user.username,
+      },
+    };
+  } catch (err) {
+    res.writeHead(302, { Location: "/sign-in" });
+    res.end();
+    return {
+      props: {
+        authenticated: false,
+      },
+    };
+  }
+}
 
 export default CreateVendor;

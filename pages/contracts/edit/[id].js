@@ -1,7 +1,7 @@
 import { Formik, Field, Form } from "formik";
 import { useState, useEffect } from "react";
 import Layout from "../../../components/layout";
-import { API } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 import { updateContract } from "../../../src/graphql/mutations.ts";
 import {
   listVendors,
@@ -11,8 +11,8 @@ import {
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import { useRouter } from "next/router";
-import {useQuery} from 'react-query'
-import {FormikSelect} from '../../../components/formikSelect'
+import { useQuery } from "react-query";
+import { FormikSelect } from "../../../components/formikSelect";
 
 const EditContract = () => {
   const router = useRouter();
@@ -22,7 +22,7 @@ const EditContract = () => {
   const [dateSigned, setDateSigned] = useState(new Date());
   const [beginDate, setBeginDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const [vendorOptions, setVendorOptions] = useState([])
+  const [vendorOptions, setVendorOptions] = useState([]);
 
   useEffect(() => {
     if (contract) {
@@ -32,30 +32,26 @@ const EditContract = () => {
     }
   }, [contract]);
 
-  const {data: commoditysData} = useQuery('commodities', async () => {
+  const { data: commoditysData } = useQuery("commodities", async () => {
     const {
-      data: {
-        listCommoditys: commoditiesData,
-      },
+      data: { listCommoditys: commoditiesData },
     } = await API.graphql({
       query: listCommoditys,
     });
-    return commoditiesData
-  })
+    return commoditiesData;
+  });
 
-  const {data: vendorsData} = useQuery('vendors', async () => {
+  const { data: vendorsData } = useQuery("vendors", async () => {
     const {
-      data: {
-        listVendors: myVendors,
-      },
+      data: { listVendors: myVendors },
     } = await API.graphql({
       query: listVendors,
       variables: {
-        limit: 3000
-      }
+        limit: 3000,
+      },
     });
-    return myVendors
-  })
+    return myVendors;
+  });
 
   const getMyContract = async () => {
     const {
@@ -77,11 +73,10 @@ const EditContract = () => {
   };
 
   useEffect(() => {
-    if(commoditysData){
-      setCommodities(commoditysData.items)
+    if (commoditysData) {
+      setCommodities(commoditysData.items);
     }
-    
-  }, [ commoditysData]);
+  }, [commoditysData]);
 
   useEffect(() => {
     if (vendorsData) {
@@ -106,7 +101,7 @@ const EditContract = () => {
                 contractNumber: (contract && contract.contractNumber) || "",
                 contractType: (contract && contract.contractType) || "",
                 contractState: (contract && contract.contractState) || "",
-                vendorId: (contract.vendorId) || "",
+                vendorId: contract.vendorId || "",
                 commodityId: (contract && contract.commodityId) || "",
                 quantity: (contract && contract.quantity) || "",
                 price: (contract && contract.price) || "",
@@ -145,7 +140,6 @@ const EditContract = () => {
               }}
             >
               {({ isSubmitting }) => (
-                
                 <Form>
                   {console.log(contract.vendorId)}
                   <div className="w-7/12 mx-auto">
@@ -255,9 +249,7 @@ const EditContract = () => {
                         component={FormikSelect}
                         as="select"
                         options={vendorOptions}
-                      >
-                        
-                      </Field>
+                      ></Field>
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -378,5 +370,27 @@ const EditContract = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps({ req, res }) {
+  const { Auth } = withSSRContext({ req });
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+
+    return {
+      props: {
+        authenticated: true,
+        username: user.username,
+      },
+    };
+  } catch (err) {
+    res.writeHead(302, { Location: "/sign-in" });
+    res.end();
+    return {
+      props: {
+        authenticated: false,
+      },
+    };
+  }
+}
 
 export default EditContract;

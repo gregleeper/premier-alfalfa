@@ -5,10 +5,9 @@ import { formatMoney } from "../../../utils";
 import Table from "../../../components/table";
 import Link from "next/link";
 import moment from "moment";
-import { API } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 import { getContractAndTickets } from "../../../src/graphql/customQueries";
 import Layout from "../../../components/layout";
-import { isAccessor } from "typescript";
 
 const ContractInfo = () => {
   const router = useRouter();
@@ -133,9 +132,6 @@ const ContractInfo = () => {
     ],
     []
   );
-
-  console.log(contractInfo);
-  console.log(tickets);
 
   return (
     <Layout>
@@ -268,5 +264,27 @@ const ContractInfo = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps({ req, res }) {
+  const { Auth } = withSSRContext({ req });
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+
+    return {
+      props: {
+        authenticated: true,
+        username: user.username,
+      },
+    };
+  } catch (err) {
+    res.writeHead(302, { Location: "/sign-in" });
+    res.end();
+    return {
+      props: {
+        authenticated: false,
+      },
+    };
+  }
+}
 
 export default ContractInfo;

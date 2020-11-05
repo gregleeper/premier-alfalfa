@@ -1,15 +1,16 @@
-#set($paymentsdata = [])
-#foreach($item in ${ctx.args.payments})
+#set($ticketsdata = [])
+#foreach($item in ${ctx.args.tickets})
     $util.qr($item.put("createdAt", $util.time.nowISO8601()))
     $util.qr($item.put("updatedAt", $util.time.nowISO8601()))
-    $util.qr($item.put("__typename", "Payment"))
+    $util.qr($item.put("__typename", "Ticket"))
     $util.qr($item.put("id", $util.defaultIfNullOrBlank($item.id, $util.autoId())))
-    $util.qr($paymentsdata.add($util.dynamodb.toMapValues($item)))
+    $util.qr($ticketsdata.add($util.dynamodb.toMapValues($item)))
 #end
 {
   "version": "2018-05-29",
   "operation": "BatchPutItem",
   "tables": {
-      "Payment-oin3kh53anhxdddu6s6l7cqvla-dev": $utils.toJson($paymentsdata)
+      "Ticket-3pvyfk3f6jgfpnxld5nsw2nwoa-prod": $utils.toJson($ticketsdata)
   }
 }
+

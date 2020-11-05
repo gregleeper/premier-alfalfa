@@ -79,6 +79,8 @@ export type CreatePaymentInput = {
   amount: number,
   totalPounds?: number | null,
   tonsCredit?: number | null,
+  settlementId?: string | null,
+  invoiceId?: string | null,
   paymentType?: PaymentType | null,
 };
 

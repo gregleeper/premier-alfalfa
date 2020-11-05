@@ -1,0 +1,55 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "authpremierAlfalfaProdUserPoolId": {
+            "Type": "String",
+            "Default": "authpremierAlfalfaProdUserPoolId"
+        },
+        
+        "authpremierAlfalfaProdAppClientID": {
+            "Type": "String",
+            "Default": "authpremierAlfalfaProdAppClientID"
+        },
+        "authpremierAlfalfaProdAppClientIDWeb": {
+            "Type": "String",
+            "Default": "authpremierAlfalfaProdAppClientIDWeb"
+        },
+        "AuthRoleArn": {
+            "Type": "String"
+        },
+        "UnauthRoleArn": {
+            "Type": "String"
+        },
+        "env": {
+            "Type": "String"
+        }
+    },
+    "Conditions": {
+        "ShouldNotCreateEnvResources": {
+            "Fn::Equals": [
+                {
+                    "Ref": "env"
+                },
+                "NONE"
+            ]
+        }
+    },
+    "Resources": {
+    
+        "adminGroup": {
+          "Type" : "AWS::Cognito::UserPoolGroup",
+          "Properties" : {
+              "GroupName" : "admin",
+              "Precedence" : 1,
+              
+              "UserPoolId" : {
+                "Ref": "authpremierAlfalfaProdUserPoolId"
+              } 
+            }
+        },
+        
+    
+    
+    },
+    
+}

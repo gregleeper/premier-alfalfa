@@ -2,7 +2,7 @@ import Layout from "../../../components/layout";
 import { useRouter } from "next/router";
 import { Formik, Form, Field } from "formik";
 import { FormikSelect } from "../../../components/formikSelect";
-import { API } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 import {
   updatePayment,
   updateSettlement,
@@ -457,5 +457,27 @@ const UpdatePayment = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps({ req, res }) {
+  const { Auth } = withSSRContext({ req });
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+
+    return {
+      props: {
+        authenticated: true,
+        username: user.username,
+      },
+    };
+  } catch (err) {
+    res.writeHead(302, { Location: "/sign-in" });
+    res.end();
+    return {
+      props: {
+        authenticated: false,
+      },
+    };
+  }
+}
 
 export default UpdatePayment;

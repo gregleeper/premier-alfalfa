@@ -1,6 +1,6 @@
 import Layout from "../../components/layout";
 import { useMemo, useEffect, useState } from "react";
-import { API } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 import { listContracts } from "../../src/graphql/queries.ts";
 import Link from "next/link";
 import Table from "../../components/table";
@@ -149,5 +149,27 @@ const Contracts = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps({ req, res }) {
+  const { Auth } = withSSRContext({ req });
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+
+    return {
+      props: {
+        authenticated: true,
+        username: user.username,
+      },
+    };
+  } catch (err) {
+    res.writeHead(302, { Location: "/sign-in" });
+    res.end();
+    return {
+      props: {
+        authenticated: false,
+      },
+    };
+  }
+}
 
 export default Contracts;

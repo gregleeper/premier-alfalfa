@@ -1,4 +1,4 @@
-import { API } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 import Table from "../../components/table";
 import { useEffect, useState, useMemo } from "react";
 import DatePicker from "react-datepicker";
@@ -404,5 +404,27 @@ const CommodityTotals = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps({ req, res }) {
+  const { Auth } = withSSRContext({ req });
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+
+    return {
+      props: {
+        authenticated: true,
+        username: user.username,
+      },
+    };
+  } catch (err) {
+    res.writeHead(302, { Location: "/sign-in" });
+    res.end();
+    return {
+      props: {
+        authenticated: false,
+      },
+    };
+  }
+}
 
 export default CommodityTotals;

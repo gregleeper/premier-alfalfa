@@ -3,7 +3,7 @@ import Layout from "../../components/layout";
 import { useRef, useState } from "react";
 import { batchAddTickets } from "../../src/graphql/mutations.ts";
 import moment from "moment";
-import { API } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 const BulkCreateTickets = () => {
   const buttonRef = useRef();
   const [dataArray, setDataArray] = useState([]);
@@ -164,5 +164,27 @@ const BulkCreateTickets = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps({ req, res }) {
+  const { Auth } = withSSRContext({ req });
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+
+    return {
+      props: {
+        authenticated: true,
+        username: user.username,
+      },
+    };
+  } catch (err) {
+    res.writeHead(302, { Location: "/sign-in" });
+    res.end();
+    return {
+      props: {
+        authenticated: false,
+      },
+    };
+  }
+}
 
 export default BulkCreateTickets;
