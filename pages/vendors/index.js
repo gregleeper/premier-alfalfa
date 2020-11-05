@@ -6,7 +6,7 @@ import Link from "next/link";
 import Table from "../../components/table";
 import { useQuery } from "react-query";
 import { ReactQueryDevtools } from "react-query-devtools";
-const Vendors = ({ vendors }) => {
+const Vendors = () => {
   const [vendorsState, setVendorsState] = useState([]);
 
   const { data } = useQuery(
@@ -23,16 +23,15 @@ const Vendors = ({ vendors }) => {
       return vendorData;
     },
     {
-      initialData: vendors.data.listVendors,
       cacheTime: 1000 * 60 * 60,
     }
   );
 
   useEffect(() => {
-    if (vendors) {
-      setVendorsState(vendors.data.listVendors.items);
+    if (data) {
+      setVendorsState(data.items);
     }
-  }, [vendors]);
+  }, [data]);
 
   const columns = useMemo(
     () => [
@@ -116,24 +115,6 @@ const Vendors = ({ vendors }) => {
     </Layout>
   );
 };
-
-export async function getStaticProps({ preview = null }) {
-  const vendors =
-    (await API.graphql({
-      query: listVendors,
-      variables: {
-        limit: 1000,
-      },
-    })) || [];
-
-  return {
-    props: {
-      vendors,
-      preview,
-    },
-    revalidate: 1,
-  };
-}
 
 export async function getServerSideProps({ req, res }) {
   const { Auth } = withSSRContext({ req });

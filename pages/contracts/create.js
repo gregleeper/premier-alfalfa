@@ -9,7 +9,7 @@ import DatePicker from "react-datepicker";
 import { FormikSelect } from "../../components/formikSelect";
 import { useQuery } from "react-query";
 
-const CreateContract = ({ allVendors }) => {
+const CreateContract = () => {
   const [commodities, setCommodities] = useState([]);
   const [dateSigned, setDateSigned] = useState(new Date());
   const [beginDate, setBeginDate] = useState(new Date());
@@ -344,26 +344,6 @@ const CreateContract = ({ allVendors }) => {
     </Layout>
   );
 };
-
-export async function getStaticProps({ preview = null }) {
-  const {
-    data: {
-      listVendors: { items: allVendors },
-    },
-  } =
-    (await API.graphql({
-      query: listVendors,
-      variables: { limit: 1000 },
-    })) || [];
-
-  return {
-    props: {
-      allVendors,
-      preview,
-    },
-    revalidate: 1,
-  };
-}
 
 export async function getServerSideProps({ req, res }) {
   const { Auth } = withSSRContext({ req });
