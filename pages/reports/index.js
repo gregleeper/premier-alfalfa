@@ -49,6 +49,11 @@ const Reports = () => {
                 <a>Inventory Balance</a>
               </Link>
             </li>
+            <li>
+              <Link href="reports/inventory-reduction">
+                <a>Inventory Reduction</a>
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

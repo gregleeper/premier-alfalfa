@@ -151,7 +151,7 @@ const AccountsReceivable = () => {
                     </thead>
                     <tbody>
                       <tr className="">
-                        <td className="pl-4 pr-2">
+                        <td className="pl-4 pr-2 w-48">
                           {item[0].vendor.companyReportName}
                         </td>
                         <td className="px-2">
