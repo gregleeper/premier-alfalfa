@@ -31,6 +31,7 @@ const CreateVendor = () => {
             }}
             validationSchema={CreateVendorSchema}
             onSubmit={async (values, actions) => {
+              console.log("submitting");
               await API.graphql({
                 query: createVendor,
                 variables: {
@@ -53,8 +54,9 @@ const CreateVendor = () => {
               actions.resetForm();
             }}
           >
-            {({ isSubmitting, errors, touched }) => (
+            {({ isSubmitting, errors, touched, values }) => (
               <Form>
+                {console.log(errors)}
                 <div className="w-7/12 mx-auto">
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -306,7 +308,7 @@ export async function getServerSideProps({ req, res }) {
   const { Auth } = withSSRContext({ req });
   try {
     const user = await Auth.currentAuthenticatedUser();
-
+    console.log(user.signInUserSession.accessToken.payload);
     return {
       props: {
         authenticated: true,

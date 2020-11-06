@@ -96,6 +96,7 @@ const CreateTicket = () => {
             }}
             validationSchema={CreateTicketSchema}
             onSubmit={async (values, actions) => {
+              console.log("submitting");
               const input1 = {
                 contractId: values.contractId,
                 correspondingContractId: values.correspondingContractId,
@@ -393,7 +394,7 @@ const CreateTicket = () => {
                     <button
                       className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
                       type="submit"
-                      disabled={isSubmitting}
+                      // disabled={isSubmitting}
                     >
                       Submit
                     </button>

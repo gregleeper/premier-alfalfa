@@ -147,8 +147,8 @@ const BulkCreateVendors = () => {
 };
 
 export async function getServerSideProps({ req, res }) {
-  const { Auth } = withSSRContext({ req });
   try {
+    const { Auth } = withSSRContext({ req });
     const user = await Auth.currentAuthenticatedUser();
 
     return {
@@ -161,9 +161,7 @@ export async function getServerSideProps({ req, res }) {
     res.writeHead(302, { Location: "/sign-in" });
     res.end();
     return {
-      props: {
-        authenticated: false,
-      },
+      props: {},
     };
   }
 }

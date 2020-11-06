@@ -1,4 +1,4 @@
-type CompanyInfo @model @auth(rules: [{ allow: groups, groups: ["Admin"] }]) {
+type CompanyInfo @model @auth(rules: [{ allow: groups, groups: ["admin"] }]) {
   id: ID!
   companyName: String!
   additionalName: String
@@ -12,7 +12,7 @@ type CompanyInfo @model @auth(rules: [{ allow: groups, groups: ["Admin"] }]) {
   faxNum: String
 }
 
-type Commodity @model @auth(rules: [{ allow: groups, groups: ["Admin"] }]) {
+type Commodity @model @auth(rules: [{ allow: groups, groups: ["admin"] }]) {
   id: ID!
   name: String!
   calculateCode: Int!
@@ -23,7 +23,7 @@ type Commodity @model @auth(rules: [{ allow: groups, groups: ["Admin"] }]) {
 
 type Settlement
   @model
-  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
+  @auth(rules: [{ allow: groups, groups: ["admin"] }])
   @key(
     name: "settlementsSorted"
     fields: ["type", "dueDate"]
@@ -57,7 +57,7 @@ type Settlement
 
 type Invoice
   @model
-  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
+  @auth(rules: [{ allow: groups, groups: ["admin"] }])
   @key(
     name: "invoicesSorted"
     fields: ["type", "dueDate"]
@@ -89,7 +89,7 @@ type Invoice
   isPaid: Boolean!
 }
 
-type Vendor @model @auth(rules: [{ allow: groups, groups: ["Admin"] }]) {
+type Vendor @model @auth(rules: [{ allow: groups, groups: ["admin"] }]) {
   id: ID!
   vendorNumber: String!
   companyReportName: String
@@ -106,7 +106,7 @@ type Vendor @model @auth(rules: [{ allow: groups, groups: ["Admin"] }]) {
 }
 
 type Contract
-  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
+  @auth(rules: [{ allow: groups, groups: ["admin"] }])
   @model
   @key(
     name: "byStatus"
@@ -153,7 +153,7 @@ type Contract
 
 type Payment
   @model
-  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
+  @auth(rules: [{ allow: groups, groups: ["admin"] }])
   @key(
     name: "paymentsByContract"
     fields: ["contractId", "date"]
@@ -186,7 +186,7 @@ enum PaymentType {
 }
 
 type Ticket
-  @auth(rules: [{ allow: groups, groups: ["Admin"] }])
+  @auth(rules: [{ allow: groups, groups: ["admin"] }])
   @model
   @key(name: "bySettlement", fields: ["settlementId", "ticketNumber"])
   @key(name: "byInvoice", fields: ["invoiceId", "ticketNumber"])

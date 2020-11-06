@@ -29,19 +29,20 @@ export const CreateCommoditySchema = Yup.object().shape({
 
 export const CreateVendorSchema = Yup.object().shape({
   vendorNumber: Yup.string().min(3, "Needs to be longer").required("Required"),
-  companyReportName: Yup.string().min(3, "Needs to be longer"),
+  companyReportName: Yup.string().min(3, "Needs to be longer").optional(),
   companyListingName: Yup.string()
+    .optional()
     .min(3, "Needs to be longer")
     .required("Required"),
   address1: Yup.string().min(3, "needs to be longer"),
-  address2: Yup.string(),
+  address2: Yup.string().optional(),
   city: Yup.string().min(2, "Needs to be longer"),
   state: Yup.string().min(2, "Needs to be longer"),
   zipCode: Yup.string().min(5, "Needs to be longer"),
-  telephoneNumber: Yup.string().min(7, "Needs to be longer"),
-  attention: Yup.string(),
-  prePayment: Yup.boolean().required("required"),
-  prePaymentAmount: Yup.number().required("Required"),
+  telephoneNumber: Yup.string().min(7, "Needs to be longer").optional(),
+  attention: Yup.string().optional(),
+  prePayment: Yup.boolean(),
+  prePaymentAmount: Yup.number(),
 });
 
 export const CreateContractSchema = Yup.object().shape({

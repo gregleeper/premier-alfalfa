@@ -269,8 +269,8 @@ const Tickets = () => {
 };
 
 export async function getServerSideProps({ req, res }) {
-  const { Auth } = withSSRContext({ req });
   try {
+    const { Auth } = withSSRContext({ req });
     const user = await Auth.currentAuthenticatedUser();
 
     return {
