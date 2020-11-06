@@ -15,6 +15,7 @@ import { useQuery } from "react-query";
 import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import { useQueryCache } from "react-query";
+import { CreatePaymentSchema } from "../../components/validationSchema";
 
 const CreatePayment = () => {
   const cache = useQueryCache();
@@ -142,6 +143,7 @@ const CreatePayment = () => {
               tonsCredit: 0,
               paymentType: "",
             }}
+            validationSchema={CreatePaymentSchema}
             onSubmit={async (values, actions) => {
               const {
                 data: { createPayment: payment },
@@ -165,7 +167,7 @@ const CreatePayment = () => {
               cache.setQueryData("payments", payment);
             }}
           >
-            {({ isSubmitting, values }) => (
+            {({ isSubmitting, errors, touched }) => (
               <Form>
                 <div className="w-7/12 mx-auto">
                   <div className="flex justify-between items-center mb-4">
@@ -180,6 +182,11 @@ const CreatePayment = () => {
                       name="tFileNumber"
                       placeholder="Ticket File Number"
                     />
+                    {errors.tFileNumber && touched.tFileNumber ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.tFileNumber}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -193,6 +200,11 @@ const CreatePayment = () => {
                       name="checkNumber"
                       placeholder="Check Number"
                     />
+                    {errors.checkNumber && touched.checkNumber ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.checkNumber}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4 ">
                     <label
@@ -207,6 +219,11 @@ const CreatePayment = () => {
                       onChange={(date) => setDateEntered(date)}
                       className="form-input w-full"
                     />
+                    {errors.date && touched.date ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.date}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4 w-full">
                     <label
@@ -221,6 +238,11 @@ const CreatePayment = () => {
                       component={FormikSelect}
                       options={contracts}
                     ></Field>
+                    {errors.contractId && touched.contractId ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.contractId}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4 w-full">
                     <label
@@ -235,6 +257,11 @@ const CreatePayment = () => {
                       component={FormikSelect}
                       options={invoices}
                     ></Field>
+                    {errors.invoiceId && touched.invoiceId ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.invoiceId}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4 w-full">
                     <label
@@ -249,6 +276,11 @@ const CreatePayment = () => {
                       component={FormikSelect}
                       options={settlements}
                     ></Field>
+                    {errors.settlementId && touched.settlementId ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.settlementId}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -262,6 +294,11 @@ const CreatePayment = () => {
                       name="amount"
                       type="number"
                     />
+                    {errors.amount && touched.amount ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.amount}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -275,6 +312,11 @@ const CreatePayment = () => {
                       name="totalPounds"
                       type="number"
                     />
+                    {errors.totalPounds && touched.totalPounds ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.totalPounds}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -288,6 +330,11 @@ const CreatePayment = () => {
                       name="tonsCredit"
                       type="number"
                     />
+                    {errors.tonsCredit && touched.tonsCredit ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.tonsCredit}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4 w-full">
                     <label
@@ -302,6 +349,11 @@ const CreatePayment = () => {
                       component={FormikSelect}
                       options={paymentTypes}
                     />
+                    {errors.paymentType && touched.paymentType ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.paymentType}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-center mt-12">
                     <button

@@ -8,6 +8,7 @@ import { listContracts, getTicket } from "../../../src/graphql/queries.ts";
 import DatePicker from "react-datepicker";
 import { useRouter } from "next/router";
 import { QueryCache, useQuery, useQueryCache } from "react-query";
+import { CreateTicketSchema } from "../../../components/validationSchema";
 
 const EditTicket = () => {
   const queryCache = new QueryCache();
@@ -94,6 +95,7 @@ const EditTicket = () => {
                 netWeight: (ticket && ticket.netWeight) || "",
                 netTons: (ticket && ticket.netTons) || "",
               }}
+              validationSchema={CreateTicketSchema}
               onSubmit={async (values, actions) => {
                 console.log(values);
                 const {
@@ -139,6 +141,11 @@ const EditTicket = () => {
                         name="ticketNumber"
                         placeholder="Ticket Number"
                       />
+                      {errors.ticketNumber && touched.ticketNumber ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.ticketNumber}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -154,6 +161,11 @@ const EditTicket = () => {
                         name="contractId"
                         placeholder="Contract Number"
                       />
+                      {errors.contractId && touched.contractId ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.contractId}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -169,6 +181,12 @@ const EditTicket = () => {
                         name="correspondingContractId"
                         placeholder="Contract Number"
                       />
+                      {errors.correspondingContractId &&
+                      touched.correspondingContractId ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.correspondingContractId}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -182,6 +200,11 @@ const EditTicket = () => {
                         onChange={(date) => setTicketDate(date)}
                         className="form-input w-full"
                       />
+                      {errors.ticketDate && touched.ticketDate ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.ticketDate}
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="flex justify-between items-center mb-4">
@@ -197,6 +220,11 @@ const EditTicket = () => {
                         name="fieldNum"
                         placeholder="Field Number"
                       />
+                      {errors.fieldNum && touched.fieldNum ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.fieldNum}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -211,6 +239,11 @@ const EditTicket = () => {
                         name="baleCount"
                         placeholder="Bale Count"
                       />
+                      {errors.baleCount && touched.baleCount ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.baleCount}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4 w-full">
                       <label
@@ -224,6 +257,11 @@ const EditTicket = () => {
                         name="ladingNumber"
                         placeholder="Lading Number"
                       />
+                      {errors.ladingNumber && touched.ladingNumber ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.ladingNumber}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -237,6 +275,11 @@ const EditTicket = () => {
                         name="driver"
                         placeholder="Driver"
                       />
+                      {errors.driver && touched.driver ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.driver}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -250,6 +293,11 @@ const EditTicket = () => {
                         name="truckNumber"
                         placeholder="Truck Number"
                       />
+                      {errors.truckNumber && touched.truckNumber ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.truckNumber}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -263,6 +311,11 @@ const EditTicket = () => {
                         name="grossWeight"
                         type="number"
                       />
+                      {errors.grossWeight && touched.grossWeight ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.grossWeight}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -276,6 +329,11 @@ const EditTicket = () => {
                         name="tareWeight"
                         type="number"
                       />
+                      {errors.tareWeight && touched.tareWeight ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.tareWeight}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -289,6 +347,11 @@ const EditTicket = () => {
                         name="netWeight"
                         type="number"
                       />
+                      {errors.netWeight && touched.netWeight ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.netWeight}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -302,6 +365,11 @@ const EditTicket = () => {
                         name="netTons"
                         type="number"
                       />
+                      {errors.netTons && touched.netTons ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.netTons}
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="flex justify-center mt-12 pb-24">

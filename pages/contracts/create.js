@@ -1,5 +1,6 @@
 import { Formik, Field, Form } from "formik";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import Layout from "../../components/layout";
 import { API, withSSRContext } from "aws-amplify";
 import { createContract } from "../../src/graphql/mutations.ts";
@@ -8,8 +9,9 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import { FormikSelect } from "../../components/formikSelect";
 import { useQuery } from "react-query";
-
+import { CreateContractSchema } from "../../components/validationSchema";
 const CreateContract = () => {
+  const router = useRouter();
   const [commodities, setCommodities] = useState([]);
   const [dateSigned, setDateSigned] = useState(new Date());
   const [beginDate, setBeginDate] = useState(new Date());
@@ -80,8 +82,9 @@ const CreateContract = () => {
                 contractState: "",
                 vendorId: "",
                 commodityId: "",
-                quantity: "",
-                price: "",
+                quantity: 0,
+                contractPrice: 0,
+                salePrice: 0,
                 terms: "",
                 weights: "",
                 basis: "",
@@ -90,6 +93,7 @@ const CreateContract = () => {
                 endDate: "",
                 dateSigned: "",
               }}
+              validationSchema={CreateContractSchema}
               onSubmit={async (values, actions) => {
                 await API.graphql({
                   query: createContract,
@@ -101,7 +105,8 @@ const CreateContract = () => {
                       vendorId: values.vendorId,
                       commodityId: values.commodityId,
                       quantity: values.quantity,
-                      price: values.price,
+                      contractPrice: values.contractPrice,
+                      salePrice: values.salePrice,
                       terms: values.terms,
                       weights: values.weights,
                       basis: values.basis,
@@ -115,7 +120,7 @@ const CreateContract = () => {
                 actions.resetForm();
               }}
             >
-              {({ isSubmitting, values }) => (
+              {({ isSubmitting, errors, touched }) => (
                 <Form>
                   <div className="w-7/12 mx-auto">
                     <div className="flex justify-between items-center mb-4">
@@ -130,6 +135,11 @@ const CreateContract = () => {
                         name="contractNumber"
                         placeholder="Contract Number"
                       />
+                      {errors.contractNumber && touched.contractNumber ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.contractNumber}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -143,6 +153,11 @@ const CreateContract = () => {
                         onChange={(date) => setDateSigned(date)}
                         className="form-input w-full"
                       />
+                      {errors.dateSigned && touched.dateSigned ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.dateSigned}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -159,6 +174,11 @@ const CreateContract = () => {
                         selectsStart
                       />
                     </div>
+                    {errors.beginDate && touched.beginDate ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.beginDate}
+                      </div>
+                    ) : null}
                     <div className="flex justify-between items-center mb-4">
                       <label
                         className="text-gray-900 w-1/4 md:w-1/2"
@@ -174,6 +194,11 @@ const CreateContract = () => {
                         minDate={beginDate}
                         className="form-input w-full"
                       />
+                      {errors.endDate && touched.endDate ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.endDate}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -192,6 +217,11 @@ const CreateContract = () => {
                         <option value="SALE">Sale</option>
                         <option value="PURCHASE">Purchase</option>
                       </Field>
+                      {errors.contractType && touched.contractType ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.contractType}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -210,6 +240,11 @@ const CreateContract = () => {
                         <option value="ACTIVE">Active</option>
                         <option value="CLOSED">Closed</option>
                       </Field>
+                      {errors.contractState && touched.contractState ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.contractState}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4 w-full">
                       <label
@@ -224,6 +259,11 @@ const CreateContract = () => {
                         component={FormikSelect}
                         options={vendorOptions}
                       ></Field>
+                      {errors.vendorId && touched.vendorId ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.vendorId}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -245,6 +285,11 @@ const CreateContract = () => {
                             </option>
                           ))}
                       </Field>
+                      {errors.commodityId && touched.commodityId ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.commodityId}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -258,19 +303,47 @@ const CreateContract = () => {
                         name="quantity"
                         type="number"
                       />
+                      {errors.quantity && touched.quantity ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.quantity}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
                         className="w-1/4 text-gray-900 md:w-1/2"
-                        htmlFor="price"
+                        htmlFor="contractPrice"
                       >
-                        Price
+                        Contract Price
                       </label>
                       <Field
                         className="form-input w-full"
-                        name="price"
+                        name="contractPrice"
                         type="number"
                       />
+                      {errors.contractPrice && touched.contractPrice ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.contractPrice}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="flex justify-between items-center mb-4">
+                      <label
+                        className="w-1/4 text-gray-900 md:w-1/2"
+                        htmlFor="salePrice"
+                      >
+                        Sale Price
+                      </label>
+                      <Field
+                        className="form-input w-full"
+                        name="salePrice"
+                        type="number"
+                      />
+                      {errors.salePrice && touched.salePrice ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.salePrice}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -284,6 +357,11 @@ const CreateContract = () => {
                         name="terms"
                         component="textarea"
                       />
+                      {errors.terms && touched.terms ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.terms}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -297,6 +375,11 @@ const CreateContract = () => {
                         name="weights"
                         component="textarea"
                       />
+                      {errors.weights && touched.weights ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.weights}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -310,6 +393,11 @@ const CreateContract = () => {
                         name="basis"
                         component="textarea"
                       />
+                      {errors.basis && touched.basis ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.basis}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -323,11 +411,22 @@ const CreateContract = () => {
                         name="remarks"
                         component="textarea"
                       />
+                      {errors.remarks && touched.remarks ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.remarks}
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="flex justify-center mt-12">
                       <button
-                        className="border border-blue-400 bg-blue-500 text-white py-2 px-4 rounded-lg"
+                        className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+                        onClick={() => router.back()}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
                         type="submit"
                         disabled={isSubmitting}
                       >

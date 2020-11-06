@@ -2,6 +2,7 @@ import { Formik, Field, Form } from "formik";
 import Layout from "../../components/layout";
 import { API, withSSRContext } from "aws-amplify";
 import { createCommodity } from "../../src/graphql/mutations.ts";
+import { CreateCommoditySchema } from "../../components/validationSchema";
 
 const CreateCommodity = () => {
   return (
@@ -18,6 +19,7 @@ const CreateCommodity = () => {
               billingCode: 3,
               poundsPerBushel: 0,
             }}
+            validationSchema={CreateCommoditySchema}
             onSubmit={async (values, actions) => {
               await API.graphql({
                 query: createCommodity,
@@ -33,7 +35,7 @@ const CreateCommodity = () => {
               actions.resetForm();
             }}
           >
-            {({ isSubmitting }) => (
+            {({ errors, touched, isSubmitting }) => (
               <Form>
                 <div className="w-7/12 mx-auto">
                   <div className="flex justify-between items-center mb-4">
@@ -48,6 +50,11 @@ const CreateCommodity = () => {
                       name="name"
                       placeholder="Alfalfa"
                     />
+                    {errors.name && touched.name ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.name}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label

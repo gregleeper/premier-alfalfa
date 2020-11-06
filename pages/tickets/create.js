@@ -1,4 +1,5 @@
 import { Formik, Field, Form } from "formik";
+import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { FormikSelect } from "../../components/formikSelect";
 import Layout from "../../components/layout";
@@ -8,9 +9,11 @@ import { listContracts } from "../../src/graphql/queries.ts";
 import DatePicker from "react-datepicker";
 import { useQuery, useMutation, useQueryCache } from "react-query";
 import { ReactQueryDevtools } from "react-query-devtools";
+import { CreateTicketSchema } from "../../components/validationSchema";
 
 const CreateTicket = () => {
   const queryCache = useQueryCache();
+  const router = useRouter();
   const [contracts, setContracts] = useState([]);
   const [correspondingContracts, setCorrespondingContracts] = useState([]);
   const [ticketDate, setTicketDate] = useState(new Date());
@@ -91,6 +94,7 @@ const CreateTicket = () => {
               netWeight: "",
               netTons: "",
             }}
+            validationSchema={CreateTicketSchema}
             onSubmit={async (values, actions) => {
               const input1 = {
                 contractId: values.contractId,
@@ -132,7 +136,7 @@ const CreateTicket = () => {
               actions.resetForm();
             }}
           >
-            {({ isSubmitting }) => (
+            {({ isSubmitting, errors, touched }) => (
               <Form>
                 <div className="w-7/12 mx-auto">
                   <div className="flex justify-between items-center mb-4">
@@ -147,6 +151,11 @@ const CreateTicket = () => {
                       name="ticketNumber"
                       placeholder="Ticket Number"
                     />
+                    {errors.ticketNumber && touched.ticketNumber ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.ticketNumber}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -162,6 +171,11 @@ const CreateTicket = () => {
                       name="contractId"
                       placeholder="Contract Number"
                     />
+                    {errors.contractId && touched.contractId ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.contractId}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -177,6 +191,12 @@ const CreateTicket = () => {
                       name="correspondingContractId"
                       placeholder="Contract Number"
                     />
+                    {errors.correspondingContractId &&
+                    touched.correspondingContractId ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.correspondingContractId}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -190,6 +210,11 @@ const CreateTicket = () => {
                       onChange={(date) => setTicketDate(date)}
                       className="form-input w-full"
                     />
+                    {errors.ticketDate && touched.ticketDate ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.ticketDate}
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="flex justify-between items-center mb-4">
@@ -205,6 +230,11 @@ const CreateTicket = () => {
                       name="fieldNum"
                       placeholder="Field Number"
                     />
+                    {errors.fieldNum && touched.fieldNum ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.fieldNum}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -220,6 +250,11 @@ const CreateTicket = () => {
                       placeholder="Bale Count"
                       type="number"
                     />
+                    {errors.baleCount && touched.baleCount ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.baleCount}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4 w-full">
                     <label
@@ -233,6 +268,11 @@ const CreateTicket = () => {
                       name="ladingNumber"
                       placeholder="Lading Number"
                     />
+                    {errors.ladingNumber && touched.ladingNumber ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.ladingNumber}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -246,6 +286,11 @@ const CreateTicket = () => {
                       name="driver"
                       placeholder="Driver"
                     />
+                    {errors.drivers && touched.drivers ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.drivers}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -259,6 +304,11 @@ const CreateTicket = () => {
                       name="truckNumber"
                       placeholder="Truck Number"
                     />
+                    {errors.truckNumber && touched.truckNumber ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.truckNumber}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -272,6 +322,11 @@ const CreateTicket = () => {
                       name="grossWeight"
                       type="number"
                     />
+                    {errors.grossWeight && touched.grossWeight ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.grossWeight}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -285,6 +340,11 @@ const CreateTicket = () => {
                       name="tareWeight"
                       type="number"
                     />
+                    {errors.tareWeight && touched.tareWeight ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.tareWeight}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -298,6 +358,11 @@ const CreateTicket = () => {
                       name="netWeight"
                       type="number"
                     />
+                    {errors.netWeight && touched.netWeight ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.netWeight}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -311,9 +376,20 @@ const CreateTicket = () => {
                       name="netTons"
                       type="number"
                     />
+                    {errors.netTons && touched.netTons ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.netTons}
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="flex justify-center mt-12">
+                    <button
+                      className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+                      onClick={() => router.back()}
+                    >
+                      Cancel
+                    </button>
                     <button
                       className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
                       type="submit"

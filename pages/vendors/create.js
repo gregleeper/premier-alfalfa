@@ -1,10 +1,12 @@
 import { Formik, Field, Form } from "formik";
 import Layout from "../../components/layout";
 import { API, withSSRContext } from "aws-amplify";
-
+import { useRouter } from "next/router";
 import { createVendor } from "../../src/graphql/mutations.ts";
+import { CreateVendorSchema } from "../../components/validationSchema";
 
 const CreateVendor = () => {
+  const router = useRouter();
   return (
     <Layout>
       <div>
@@ -27,6 +29,7 @@ const CreateVendor = () => {
               prepayment: false,
               prepaymentAmt: 0,
             }}
+            validationSchema={CreateVendorSchema}
             onSubmit={async (values, actions) => {
               await API.graphql({
                 query: createVendor,
@@ -50,7 +53,7 @@ const CreateVendor = () => {
               actions.resetForm();
             }}
           >
-            {({ isSubmitting }) => (
+            {({ isSubmitting, errors, touched }) => (
               <Form>
                 <div className="w-7/12 mx-auto">
                   <div className="flex justify-between items-center mb-4">
@@ -65,6 +68,11 @@ const CreateVendor = () => {
                       name="vendorNumber"
                       placeholder="Vendor Number"
                     />
+                    {errors.vendorNumber && touched.vendorNumber ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.vendorNumber}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -79,6 +87,11 @@ const CreateVendor = () => {
                       name="companyReportName"
                       placeholder="Company Report Name"
                     />
+                    {errors.companyReportName && touched.companyReportName ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.companyReportName}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -93,6 +106,11 @@ const CreateVendor = () => {
                       name="companyListingName"
                       placeholder="Company Listing Name"
                     />
+                    {errors.companyListingName && touched.companyListingName ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.companyListingName}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4 w-full">
                     <label
@@ -106,6 +124,11 @@ const CreateVendor = () => {
                       name="address1"
                       placeholder="999 W Ave North"
                     />
+                    {errors.address1 && touched.address1 ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.address1}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -119,6 +142,11 @@ const CreateVendor = () => {
                       name="address2"
                       placeholder="Suite 200"
                     />
+                    {errors.address2 && touched.address2 ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.address2}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -132,6 +160,11 @@ const CreateVendor = () => {
                       name="city"
                       placeholder="Hugoton"
                     />
+                    {errors.city && touched.city ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.city}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -145,6 +178,11 @@ const CreateVendor = () => {
                       name="state"
                       placeholder="Kansas"
                     />
+                    {errors.state && touched.state ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.state}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -158,6 +196,11 @@ const CreateVendor = () => {
                       name="zipCode"
                       placeholder="67951"
                     />
+                    {errors.zipCode && touched.zipCode ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.zipCode}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -171,6 +214,11 @@ const CreateVendor = () => {
                       name="telephoneNum"
                       placeholder="620-555-5555"
                     />
+                    {errors.telephoneNum && touched.telephoneNum ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.telephoneNum}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -184,6 +232,11 @@ const CreateVendor = () => {
                       name="attention"
                       placeholder="67951"
                     />
+                    {errors.attention && touched.dateSigned ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.dateSigned}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -200,6 +253,11 @@ const CreateVendor = () => {
                       <option value={false}>No</option>
                       <option value={true}>Yes</option>
                     </Field>
+                    {errors.prepayment && touched.dateSigned ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.dateSigned}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -213,10 +271,21 @@ const CreateVendor = () => {
                       type="number"
                       name="prepaymentAmt"
                     />
+                    {errors.prepaymentAmt && touched.prepaymentAmt ? (
+                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                        {errors.prepaymentAmt}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex justify-center mt-12">
                     <button
-                      className="border border-blue-400 bg-blue-500 text-white py-2 px-4 rounded-lg"
+                      className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+                      onClick={() => router.back()}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
                       type="submit"
                       disabled={isSubmitting}
                     >

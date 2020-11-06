@@ -5,6 +5,7 @@ import { updateCommodity } from "../../../src/graphql/mutations.ts";
 import { getCommodity } from "../../../src/graphql/queries.ts";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { CreateCommoditySchema } from "../../../components/validationSchema";
 
 const CreateCommodity = () => {
   const router = useRouter();
@@ -41,6 +42,7 @@ const CreateCommodity = () => {
                 billingCode: (commodity && commodity.billingCode) || 3,
                 poundsPerBushel: (commodity && commodity.poundsPerBushel) || 0,
               }}
+              validationSchema={CreateCommoditySchema}
               onSubmit={async (values) => {
                 await API.graphql({
                   query: updateCommodity,
@@ -57,7 +59,7 @@ const CreateCommodity = () => {
                 router.back();
               }}
             >
-              {({ isSubmitting }) => (
+              {({ isSubmitting, errors, touched }) => (
                 <Form>
                   <div className="w-7/12 mx-auto">
                     <div className="flex justify-between items-center mb-4">
@@ -72,6 +74,11 @@ const CreateCommodity = () => {
                         name="name"
                         placeholder="Alfalfa"
                       />
+                      {errors.name && touched.name ? (
+                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
+                          {errors.name}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
