@@ -7,7 +7,7 @@ export const CreateTicketSchema = Yup.object().shape({
   correspondingContractId: Yup.string()
     .min(2, "Select a corresponding contract")
     .required("Required"),
-  ticketDate: Yup.date().required("Required"),
+  ticketDate: Yup.date(),
   type: Yup.string(),
   fieldNum: Yup.string(),
   baleCount: Yup.number(),
@@ -49,9 +49,9 @@ export const CreateContractSchema = Yup.object().shape({
   contractNumber: Yup.string()
     .min(3, "Needs to be longer")
     .required("Required"),
-  dateSigned: Yup.date().required("Required"),
-  beginDate: Yup.date().required("Required"),
-  endDate: Yup.date().required("Required"),
+  dateSigned: Yup.date(),
+  beginDate: Yup.date(),
+  endDate: Yup.date(),
   contractType: Yup.string().oneOf(["PURCHASE", "SALE"]).required("Required"),
   contractState: Yup.string().oneOf(["ACTIVE", "CLOSED"]).required("Required"),
   vendorId: Yup.string().required("Required"),
@@ -70,7 +70,7 @@ export const CreateContractSchema = Yup.object().shape({
 export const CreatePaymentSchema = Yup.object().shape({
   tFileNumber: Yup.string().required("Required"),
   checkNumber: Yup.string().required("Required"),
-  date: Yup.date().required("Required"),
+  date: Yup.date(),
   contractId: Yup.string().required("Required"),
   invoiceId: Yup.string(),
   settlementId: Yup.string(),
