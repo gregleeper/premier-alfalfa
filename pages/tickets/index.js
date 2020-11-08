@@ -183,9 +183,7 @@ const Tickets = () => {
       {
         Header: "Ticket Date",
         accessor: "ticketDate",
-        Cell: ({ value }) => (
-          <span>{moment(value).format("MMM Do, YYYY")}</span>
-        ),
+        Cell: ({ value }) => <span>{moment(value).format("MM/DD/YY")}</span>,
       },
       {
         Header: "Corresponding Contract",
