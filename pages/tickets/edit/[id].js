@@ -238,6 +238,7 @@ const EditTicket = () => {
                         className="form-input w-full"
                         name="baleCount"
                         placeholder="Bale Count"
+                        type="number"
                       />
                       {errors.baleCount && touched.baleCount ? (
                         <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
