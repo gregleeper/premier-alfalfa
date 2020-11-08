@@ -7,7 +7,7 @@ import { updateTicket } from "../../../src/graphql/mutations.ts";
 import { listContracts, getTicket } from "../../../src/graphql/queries.ts";
 import DatePicker from "react-datepicker";
 import { useRouter } from "next/router";
-import { QueryCache, useQuery, useQueryCache } from "react-query";
+import { QueryCache, useQuery } from "react-query";
 import { CreateTicketSchema } from "../../../components/validationSchema";
 
 const EditTicket = () => {
@@ -126,7 +126,7 @@ const EditTicket = () => {
                 router.push("/tickets");
               }}
             >
-              {({ isSubmitting }) => (
+              {({ isSubmitting, errors, touched }) => (
                 <Form>
                   <div className="w-7/12 mx-auto">
                     <div className="flex justify-between items-center mb-4">
