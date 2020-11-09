@@ -84,15 +84,15 @@ const CreateTicket = () => {
               correspondingContractId: "",
               ticketDate: ticketDate,
               fieldNum: "",
-              baleCount: "",
+              baleCount: 0,
               ticketNumber: "",
               ladingNumber: "",
               driver: "",
               truckNumber: "",
-              grossWeight: "",
-              tareWeight: "",
-              netWeight: "",
-              netTons: "",
+              grossWeight: 0,
+              tareWeight: 0,
+              netWeight: 0,
+              netTons: 0,
             }}
             validationSchema={CreateTicketSchema}
             onSubmit={async (values, actions) => {
