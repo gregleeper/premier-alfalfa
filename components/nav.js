@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const Nav = () => {
   return (
-    <nav className="">
+    <nav className="border-b-2 border-gray-900 bg-gray-200 shadow">
       <div className="py-4">
         <ul className="flex justify-around">
           <li>Dashboard</li>
