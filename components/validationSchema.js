@@ -10,7 +10,6 @@ export const CreateTicketSchema = Yup.object().shape({
 
   type: Yup.string(),
   fieldNum: Yup.string(),
-  baleCount: Yup.number(),
 
   ladingNumber: Yup.string().min(2, "Should be longer"),
   driver: Yup.string().min(2, "Should be longer"),

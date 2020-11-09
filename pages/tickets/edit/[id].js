@@ -85,7 +85,7 @@ const EditTicket = () => {
                   (ticket && ticket.correspondingContractId) || "",
                 ticketDate: (ticket && ticket.ticketDate) || ticketDate,
                 fieldNum: (ticket && ticket.fieldNum) || "",
-                baleCount: (ticket && ticket.baleCount) || "",
+                baleCount: (ticket && ticket.baleCount) || null,
                 ticketNumber: (ticket && ticket.ticketNumber) || "",
                 ladingNumber: (ticket && ticket.ladingNumber) || "",
                 driver: (ticket && ticket.driver) || "",
