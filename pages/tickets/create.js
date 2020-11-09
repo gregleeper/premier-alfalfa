@@ -122,7 +122,7 @@ const CreateTicket = () => {
               const input2 = {
                 contractId: values.correspondingContractId,
                 correspondingContractId: values.contractId,
-                ticketDate: values.ticketDate,
+                ticketDate: ticketDate,
                 fieldNum: values.fieldNum,
                 baleCount: values.baleCount,
                 ticketNumber: values.ticketNumber,

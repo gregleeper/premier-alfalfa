@@ -7,7 +7,7 @@ import { updateTicket } from "../../../src/graphql/mutations.ts";
 import { listContracts, getTicket } from "../../../src/graphql/queries.ts";
 import DatePicker from "react-datepicker";
 import { useRouter } from "next/router";
-import { QueryCache, useQuery } from "react-query";
+import { QueryCache, useQuery, useMutation } from "react-query";
 import { CreateTicketSchema } from "../../../components/validationSchema";
 
 const EditTicket = () => {
@@ -19,6 +19,28 @@ const EditTicket = () => {
 
   const router = useRouter();
   const { id } = router.query;
+
+  const [mutate, { data, error, isSuccess }] = useMutation(
+    async (input) => {
+      const { data: ticketData } = await API.graphql({
+        query: updateTicket,
+        variables: {
+          input,
+        },
+      });
+      return ticketData;
+    },
+    {
+      onSuccess: ({ updateTicket }) => {
+        const lengthOfGroups = queryCache.getQueryData("tickets").length;
+        const items = queryCache.getQueryData("tickets")[lengthOfGroups - 1]
+          .items;
+        let previousData = queryCache.getQueryData("tickets");
+        previousData[lengthOfGroups - 1].items.push(updateTicket);
+        return () => queryCache.setQueryData("tickets", () => [previousData]);
+      },
+    }
+  );
 
   const getTicketToEdit = async () => {
     const {
@@ -98,31 +120,27 @@ const EditTicket = () => {
               validationSchema={CreateTicketSchema}
               onSubmit={async (values, actions) => {
                 console.log(ticketDate);
-                const {
-                  data: { updateTicket: updatedTicket },
-                } = await API.graphql({
-                  query: updateTicket,
-                  variables: {
-                    input: {
-                      id,
-                      contractId: values.contractId,
-                      correspondingContractId: values.correspondingContractId,
-                      ticketDate: ticketDate,
-                      fieldNum: values.fieldNum,
-                      baleCount: values.baleCount,
-                      ticketNumber: values.ticketNumber,
-                      ladingNumber: values.ladingNumber,
-                      driver: values.driver,
-                      type: "Ticket",
-                      truckNumber: values.truckNumber,
-                      grossWeight: values.grossWeight,
-                      tareWeight: values.tareWeight,
-                      netWeight: values.netWeight,
-                      netTons: values.netTons,
-                    },
-                  },
-                });
-                queryCache.setQueryData("tickets", updatedTicket);
+
+                let input = {
+                  id,
+                  contractId: values.contractId,
+                  correspondingContractId: values.correspondingContractId,
+                  ticketDate: ticketDate,
+                  fieldNum: values.fieldNum,
+                  baleCount: values.baleCount,
+                  ticketNumber: values.ticketNumber,
+                  ladingNumber: values.ladingNumber,
+                  driver: values.driver,
+                  type: "Ticket",
+                  truckNumber: values.truckNumber,
+                  grossWeight: values.grossWeight,
+                  tareWeight: values.tareWeight,
+                  netWeight: values.netWeight,
+                  netTons: values.netTons,
+                };
+
+                mutate(input);
+
                 router.push("/tickets");
               }}
             >
