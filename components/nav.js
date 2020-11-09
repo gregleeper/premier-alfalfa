@@ -5,7 +5,7 @@ const Nav = () => {
     <nav className="border-b-2 border-gray-900 bg-gray-200 shadow">
       <div className="py-4">
         <ul className="flex justify-around">
-          <li>Dashboard</li>
+          {/* <li>Dashboard</li> */}
           <li>
             <Link href="/tickets">
               <a className="text-blue-700 underline hover:text-blue-600 hover:no-underline ">
