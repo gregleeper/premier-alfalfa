@@ -17,6 +17,7 @@ const CreateTicket = () => {
   const [contracts, setContracts] = useState([]);
   const [correspondingContracts, setCorrespondingContracts] = useState([]);
   const [ticketDate, setTicketDate] = useState(new Date());
+
   const [mutate, { data, error, isSuccess }] = useMutation(
     async (input) => {
       const { data: ticketData } = await API.graphql({
@@ -38,6 +39,8 @@ const CreateTicket = () => {
       },
     }
   );
+
+  console.log(ticketDate);
 
   const { data: contractsData } = useQuery(
     "contracts",
@@ -96,10 +99,11 @@ const CreateTicket = () => {
             }}
             validationSchema={CreateTicketSchema}
             onSubmit={async (values, actions) => {
+              console.log(ticketDate);
               const input1 = {
                 contractId: values.contractId,
                 correspondingContractId: values.correspondingContractId,
-                ticketDate: values.ticketDate,
+                ticketDate: ticketDate,
                 fieldNum: values.fieldNum,
                 baleCount: values.baleCount,
                 ticketNumber: values.ticketNumber,
@@ -207,7 +211,9 @@ const CreateTicket = () => {
                     </label>
                     <DatePicker
                       selected={ticketDate}
-                      onChange={(date) => setTicketDate(date)}
+                      onChange={(date) => {
+                        console.log(date), setTicketDate(date);
+                      }}
                       className="form-input w-full"
                     />
                   </div>

@@ -97,7 +97,7 @@ const EditTicket = () => {
               }}
               validationSchema={CreateTicketSchema}
               onSubmit={async (values, actions) => {
-                console.log(values);
+                console.log(ticketDate);
                 const {
                   data: { updateTicket: updatedTicket },
                 } = await API.graphql({
@@ -107,7 +107,7 @@ const EditTicket = () => {
                       id,
                       contractId: values.contractId,
                       correspondingContractId: values.correspondingContractId,
-                      ticketDate: values.ticketDate,
+                      ticketDate: ticketDate,
                       fieldNum: values.fieldNum,
                       baleCount: values.baleCount,
                       ticketNumber: values.ticketNumber,
