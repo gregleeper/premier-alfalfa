@@ -210,11 +210,6 @@ const CreateTicket = () => {
                       onChange={(date) => setTicketDate(date)}
                       className="form-input w-full"
                     />
-                    {errors.ticketDate && touched.ticketDate ? (
-                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
-                        {errors.ticketDate}
-                      </div>
-                    ) : null}
                   </div>
 
                   <div className="flex justify-between items-center mb-4">

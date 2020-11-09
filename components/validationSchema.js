@@ -7,7 +7,7 @@ export const CreateTicketSchema = Yup.object().shape({
   correspondingContractId: Yup.string()
     .min(2, "Select a corresponding contract")
     .required("Required"),
-  ticketDate: Yup.date(),
+
   type: Yup.string(),
   fieldNum: Yup.string(),
   baleCount: Yup.number(),
