@@ -184,6 +184,7 @@ export const onCreateSettlement = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -295,6 +296,7 @@ export const onUpdateSettlement = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -406,6 +408,7 @@ export const onDeleteSettlement = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -517,6 +520,7 @@ export const onCreateInvoice = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -628,6 +632,7 @@ export const onUpdateInvoice = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -739,6 +744,7 @@ export const onDeleteInvoice = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -945,6 +951,7 @@ export const onCreateContract = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -1024,6 +1031,7 @@ export const onUpdateContract = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -1103,6 +1111,7 @@ export const onDeleteContract = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -1197,6 +1206,31 @@ export const onCreatePayment = /* GraphQL */ `
         createdAt
         updatedAt
       }
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          paymentId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       checkNumber
       date
       amount
@@ -1267,6 +1301,31 @@ export const onUpdatePayment = /* GraphQL */ `
         }
         createdAt
         updatedAt
+      }
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          paymentId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
       }
       checkNumber
       date
@@ -1339,6 +1398,31 @@ export const onDeletePayment = /* GraphQL */ `
         createdAt
         updatedAt
       }
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          paymentId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       checkNumber
       date
       amount
@@ -1359,6 +1443,7 @@ export const onCreateTicket = /* GraphQL */ `
       contractId
       invoiceId
       settlementId
+      paymentId
       correspondingContractId
       type
       contract {
@@ -1486,6 +1571,7 @@ export const onUpdateTicket = /* GraphQL */ `
       contractId
       invoiceId
       settlementId
+      paymentId
       correspondingContractId
       type
       contract {
@@ -1613,6 +1699,7 @@ export const onDeleteTicket = /* GraphQL */ `
       contractId
       invoiceId
       settlementId
+      paymentId
       correspondingContractId
       type
       contract {

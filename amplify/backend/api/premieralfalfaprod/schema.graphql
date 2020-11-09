@@ -169,6 +169,7 @@ type Payment
   tFileNumber: String
   contractId: ID!
   contract: Contract! @connection(fields: ["contractId"])
+  tickets: [Ticket] @connection(keyName: "byPayment", fields: ["id"])
   checkNumber: String!
   date: AWSDateTime!
   amount: Float!
@@ -191,6 +192,7 @@ type Ticket
   @key(name: "bySettlement", fields: ["settlementId", "ticketNumber"])
   @key(name: "byInvoice", fields: ["invoiceId", "ticketNumber"])
   @key(name: "byContract", fields: ["contractId", "ticketNumber"])
+  @key(name: "byPayment", fields: ["paymentId", "ticketNumber"])
   @key(
     name: "ticketsByContractByTicketDate"
     fields: ["contractId", "ticketDate"]
@@ -214,6 +216,7 @@ type Ticket
   contractId: ID!
   invoiceId: ID
   settlementId: ID
+  paymentId: ID
   correspondingContractId: ID!
   type: String!
   contract: Contract! @connection(fields: ["contractId"])

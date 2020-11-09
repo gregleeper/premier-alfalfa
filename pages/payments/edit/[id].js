@@ -1,18 +1,23 @@
 import Layout from "../../../components/layout";
 import { useRouter } from "next/router";
-import { Formik, Form, Field } from "formik";
+import { Formik, Form, Field, FieldArray } from "formik";
 import { FormikSelect } from "../../../components/formikSelect";
-import { API, withSSRContext } from "aws-amplify";
+import { FormikMultiSelect } from "../../../components/formikMultiSelect";
+import { API, label, withSSRContext } from "aws-amplify";
 import {
   updatePayment,
   updateSettlement,
+  updateTicket,
   updateInvoice,
 } from "../../../src/graphql/mutations.ts";
 import { listContracts, getPayment } from "../../../src/graphql/queries.ts";
 import {
   invoicesSorted,
   settlementsSorted,
+  ticketsByContract,
+  ticketsByDate,
 } from "../../../src/graphql/customQueries";
+import { formatMoney } from "../../../utils";
 import moment from "moment";
 import { useQuery, useMutation } from "react-query";
 import { useState, useEffect } from "react";
@@ -24,8 +29,13 @@ const UpdatePayment = () => {
   const router = useRouter();
   const { id } = router.query;
   const [contracts, setContracts] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [ticketOptions, setTicketOptions] = useState([]);
+  const [contractId, setContractId] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [settlements, setSettlements] = useState([]);
+  const [totalPounds, setTotalPounds] = useState(0);
+  const [totalTons, setTotalTons] = useState(0);
   const [payment, setPayment] = useState();
   const [dateEntered, setDateEntered] = useState(new Date());
   const [paymentTypes, setPaymentTypes] = useState([
@@ -62,6 +72,24 @@ const UpdatePayment = () => {
         previousData[lengthOfGroups - 1].items.push(updatePayment);
         return () => queryCache.setQueryData("payments", () => [previousData]);
       },
+    }
+  );
+
+  const { data: ticketsData, refetch: fetchTickets } = useQuery(
+    ["tickets", id],
+    async () => {
+      const {
+        data: { ticketsByContract: myTickets },
+      } = await API.graphql({
+        query: ticketsByContract,
+        variables: {
+          contractId,
+        },
+      });
+      return myTickets;
+    },
+    {
+      enabled: false,
     }
   );
 
@@ -179,6 +207,41 @@ const UpdatePayment = () => {
     return mySettlements;
   });
 
+  const computeTotalPounds = (ids) => {
+    let myTickets = [];
+    for (let i = 0; i < tickets.length; i++) {
+      for (let j = 0; j < ids.length; j++) {
+        if (tickets[i].id === ids[j].value) {
+          myTickets.push(tickets[i]);
+        }
+      }
+    }
+    console.log(myTickets);
+    let total = myTickets.reduce(
+      (accumulator, currentValue) => accumulator + currentValue.netWeight,
+      0
+    );
+
+    setTotalPounds(total);
+  };
+
+  const computeTotalTons = (ids) => {
+    let myTickets = [];
+    for (let i = 0; i < tickets.length; i++) {
+      for (let j = 0; j < ids.length; j++) {
+        if (tickets[i].id === ids[j].value) {
+          myTickets.push(tickets[i]);
+        }
+      }
+    }
+    let total = myTickets.reduce(
+      (accumulator, currentValue) => accumulator + currentValue.netTons,
+      0
+    );
+
+    setTotalTons(total);
+  };
+
   useEffect(() => {
     if (contractsData) {
       let options = [];
@@ -193,14 +256,36 @@ const UpdatePayment = () => {
   }, [contractsData]);
 
   useEffect(() => {
+    if (ticketsData) {
+      setTickets(ticketsData.items);
+    }
+  }, [ticketsData]);
+
+  useEffect(() => {
+    if (tickets.length) {
+      let options = [];
+      tickets.map((ticket) =>
+        options.push({
+          value: ticket.id,
+          label: `${ticket.ticketNumber} - Net Tons: ${ticket.netTons}`,
+        })
+      );
+      setTicketOptions(options);
+    }
+  }, [tickets]);
+
+  useEffect(() => {
     if (invoicesData) {
       let options = [];
+      console.log(invoicesData);
       invoicesData.items.map((invoice) => {
         options.push({
           value: invoice.id,
           label: `${invoice.invoiceNumber} - ${
             invoice.vendor.companyReportName
-          } - Due ${moment(invoice.dueDate).format("MM/DD/YY")}`,
+          } - Due ${moment(invoice.dueDate).format("MM/DD/YY")} - ${
+            invoice.tickets.items[0].contract.contractNumber
+          } - ${formatMoney.format(invoice.amountOwed)}`,
         });
       });
 
@@ -223,6 +308,12 @@ const UpdatePayment = () => {
       setSettlements(options);
     }
   }, [settlementsData]);
+
+  useEffect(() => {
+    if (contractId) {
+      fetchTickets();
+    }
+  }, [contractId]);
 
   useEffect(() => {
     if (paymentData) {
@@ -252,6 +343,7 @@ const UpdatePayment = () => {
                 contractId: payment.contractId || "",
                 invoiceId: payment.invoiceId || "",
                 settlementId: payment.settlementId || "",
+                tickets: payment.tickets || [],
                 checkNumber: payment.checkNumber || "",
                 date: (payment && payment.date) || "",
                 amount: (payment && payment.amount) || "",
@@ -260,6 +352,20 @@ const UpdatePayment = () => {
                 paymentType: (payment && payment.paymentType) || "",
               }}
               onSubmit={async (values, actions) => {
+                console.log(values);
+                values.tickets.map(async (ticket) => {
+                  const {
+                    data: { updateTicket },
+                  } = await API.graphql({
+                    query: updateTicket,
+                    variables: {
+                      input: {
+                        id: ticket.value,
+                        paymentId: id,
+                      },
+                    },
+                  });
+                });
                 let input = {
                   id,
                   type: "Payment",
@@ -300,8 +406,15 @@ const UpdatePayment = () => {
                 router.back();
               }}
             >
-              {({ isSubmitting, values }) => (
+              {({ isSubmitting, values, setFieldValue, setFieldTouched }) => (
                 <Form>
+                  {console.log("values: ", values)}
+                  {values.contractId ? setContractId(values.contractId) : null}
+                  {values.tickets && values.tickets.length
+                    ? (computeTotalPounds(values.tickets),
+                      computeTotalTons(values.tickets))
+                    : (setTotalPounds(0), setTotalTons(0))}
+
                   <div className="w-7/12 mx-auto">
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -360,6 +473,25 @@ const UpdatePayment = () => {
                     <div className="flex justify-between items-center mb-4 w-full">
                       <label
                         className="text-gray-900 w-1/4 md:w-1/2 pr-4"
+                        htmlFor="tickets"
+                      >
+                        Tickets
+                      </label>
+                      <Field
+                        name="tickets"
+                        className="w-1/2"
+                        component={FormikMultiSelect}
+                        componentName="tickets"
+                        value={values.tickets && values.tickets}
+                        onChange={setFieldValue}
+                        onBlur={setFieldTouched}
+                        isClearable={true}
+                        options={ticketOptions}
+                      ></Field>
+                    </div>
+                    {/* <div className="flex justify-between items-center mb-4 w-full">
+                      <label
+                        className="text-gray-900 w-1/4 md:w-1/2 pr-4"
                         htmlFor="invoiceId"
                       >
                         Invoice
@@ -370,7 +502,7 @@ const UpdatePayment = () => {
                         component={FormikSelect}
                         options={invoices}
                       ></Field>
-                    </div>
+                    </div> */}
                     <div className="flex justify-between items-center mb-4 w-full">
                       <label
                         className="text-gray-900 w-1/4 md:w-1/2 pr-4"
@@ -403,8 +535,9 @@ const UpdatePayment = () => {
                         className="w-1/4 text-gray-900 md:w-1/2"
                         htmlFor="totalPounds"
                       >
-                        Total Pounds
+                        {`Total Pounds - ${totalPounds}`}
                       </label>
+
                       <Field
                         className="form-input w-full"
                         name="totalPounds"
@@ -416,7 +549,7 @@ const UpdatePayment = () => {
                         className="w-1/4 text-gray-900 md:w-1/2"
                         htmlFor="tonsCredit"
                       >
-                        Tons Credit
+                        {`Tons Credit - ${totalTons}`}
                       </label>
                       <Field
                         className="form-input w-full"

@@ -66,6 +66,7 @@ export const batchAddContracts = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -109,6 +110,7 @@ export const batchAddTickets = /* GraphQL */ `
       contractId
       invoiceId
       settlementId
+      paymentId
       correspondingContractId
       type
       contract {
@@ -286,6 +288,31 @@ export const batchAddPayments = /* GraphQL */ `
         }
         createdAt
         updatedAt
+      }
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          paymentId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
       }
       checkNumber
       date
@@ -503,6 +530,7 @@ export const createSettlement = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -617,6 +645,7 @@ export const updateSettlement = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -731,6 +760,7 @@ export const deleteSettlement = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -845,6 +875,7 @@ export const createInvoice = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -959,6 +990,7 @@ export const updateInvoice = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -1073,6 +1105,7 @@ export const deleteInvoice = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -1291,6 +1324,7 @@ export const createContract = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -1373,6 +1407,7 @@ export const updateContract = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -1455,6 +1490,7 @@ export const deleteContract = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -1552,6 +1588,31 @@ export const createPayment = /* GraphQL */ `
         createdAt
         updatedAt
       }
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          paymentId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       checkNumber
       date
       amount
@@ -1625,6 +1686,31 @@ export const updatePayment = /* GraphQL */ `
         }
         createdAt
         updatedAt
+      }
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          paymentId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
       }
       checkNumber
       date
@@ -1700,6 +1786,31 @@ export const deletePayment = /* GraphQL */ `
         createdAt
         updatedAt
       }
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          paymentId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       checkNumber
       date
       amount
@@ -1723,6 +1834,7 @@ export const createTicket = /* GraphQL */ `
       contractId
       invoiceId
       settlementId
+      paymentId
       correspondingContractId
       type
       contract {
@@ -1853,6 +1965,7 @@ export const updateTicket = /* GraphQL */ `
       contractId
       invoiceId
       settlementId
+      paymentId
       correspondingContractId
       type
       contract {
@@ -1983,6 +2096,7 @@ export const deleteTicket = /* GraphQL */ `
       contractId
       invoiceId
       settlementId
+      paymentId
       correspondingContractId
       type
       contract {

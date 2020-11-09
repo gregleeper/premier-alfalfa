@@ -990,3 +990,89 @@ export const getSettlement = /* GraphQL */ `
     }
   }
 `;
+export const ticketsByContract = /* GraphQL */ `
+  query TicketsByContract(
+    $contractId: ID
+    $ticketDate: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelTicketFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    ticketsByContract(
+      contractId: $contractId
+      ticketDate: $ticketDate
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        contractId
+        invoiceId
+        settlementId
+        correspondingContractId
+        type
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
+          createdAt
+          updatedAt
+        }
+        corresondingContract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
+          createdAt
+          updatedAt
+        }
+        ticketDate
+        fieldNum
+        baleCount
+        ticketNumber
+        ladingNumber
+        driver
+        truckNumber
+        grossWeight
+        tareWeight
+        netWeight
+        netTons
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;

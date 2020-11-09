@@ -4,17 +4,19 @@ import { useRouter } from "next/router";
 import moment from "moment";
 import { truncateString } from "../../utils";
 import { FormikSelect } from "../../components/formikSelect";
+import { FormikMultiSelect } from "../../components/formikMultiSelect";
 import { API, withSSRContext } from "aws-amplify";
 import {
   invoicesSorted,
   settlementsSorted,
+  ticketsByContract,
 } from "../../src/graphql/customQueries";
-import { createPayment } from "../../src/graphql/mutations.ts";
+import { createPayment, updateTicket } from "../../src/graphql/mutations.ts";
 import { listContracts } from "../../src/graphql/queries.ts";
-import { useQuery } from "react-query";
+import { useQuery, useQueryCache, useMutation } from "react-query";
 import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
-import { useQueryCache } from "react-query";
+
 import { CreatePaymentSchema } from "../../components/validationSchema";
 
 const CreatePayment = () => {
@@ -22,7 +24,12 @@ const CreatePayment = () => {
   const router = useRouter();
   const [contracts, setContracts] = useState([]);
   const [dateEntered, setDateEntered] = useState(new Date());
+  const [contractId, setContractId] = useState(null);
+  const [tickets, setTickets] = useState([]);
+  const [ticketOptions, setTicketOptions] = useState([]);
   const [invoices, setInvoices] = useState([]);
+  const [totalPounds, setTotalPounds] = useState(0);
+  const [totalTons, setTotalTons] = useState(0);
   const [settlements, setSettlements] = useState([]);
   const [paymentTypes, setPaymentTypes] = useState([
     {
@@ -38,6 +45,46 @@ const CreatePayment = () => {
       label: "Credit Card",
     },
   ]);
+
+  const [mutate, { data, error, isSuccess }] = useMutation(
+    async (input) => {
+      const { data: paymentData } = await API.graphql({
+        query: createPayment,
+        variables: {
+          input,
+        },
+      });
+      return paymentData;
+    },
+    {
+      onSuccess: ({ createPayment }) => {
+        const lengthOfGroups = cache.getQueryData("payments").length;
+        // const items =  cache.getQueryData("payments")[lengthOfGroups - 1]
+        //   .items;
+        let previousData = cache.getQueryData("payments");
+        previousData[lengthOfGroups - 1].items.push(createPayment);
+        return () => cache.setQueryData("payments", () => [previousData]);
+      },
+    }
+  );
+
+  const { data: ticketsData, refetch: fetchTickets } = useQuery(
+    "tickets",
+    async () => {
+      const {
+        data: { ticketsByContract: myTickets },
+      } = await API.graphql({
+        query: ticketsByContract,
+        variables: {
+          contractId,
+        },
+      });
+      return myTickets;
+    },
+    {
+      enabled: false,
+    }
+  );
 
   const { data: contractsData } = useQuery("contracts", async () => {
     const {
@@ -78,6 +125,31 @@ const CreatePayment = () => {
     });
     return mySettlements;
   });
+
+  useEffect(() => {
+    if (ticketsData) {
+      setTickets(ticketsData.items);
+    }
+  }, [ticketsData]);
+
+  useEffect(() => {
+    if (tickets.length) {
+      let options = [];
+      tickets.map((ticket) =>
+        options.push({
+          value: ticket.id,
+          label: `${ticket.ticketNumber} - Net Tons: ${ticket.netTons}`,
+        })
+      );
+      setTicketOptions(options);
+    }
+  }, [tickets]);
+
+  useEffect(() => {
+    if (contractId) {
+      fetchTickets();
+    }
+  }, [contractId]);
 
   useEffect(() => {
     if (invoicesData) {
@@ -124,6 +196,41 @@ const CreatePayment = () => {
     }
   }, [contractsData]);
 
+  const computeTotalPounds = (ids) => {
+    let myTickets = [];
+    for (let i = 0; i < tickets.length; i++) {
+      for (let j = 0; j < ids.length; j++) {
+        if (tickets[i].id === ids[j].value) {
+          myTickets.push(tickets[i]);
+        }
+      }
+    }
+
+    let total = myTickets.reduce(
+      (accumulator, currentValue) => accumulator + currentValue.netWeight,
+      0
+    );
+    console.log(total);
+    setTotalPounds(total);
+  };
+
+  const computeTotalTons = (ids) => {
+    let myTickets = [];
+    for (let i = 0; i < tickets.length; i++) {
+      for (let j = 0; j < ids.length; j++) {
+        if (tickets[i].id === ids[j].value) {
+          myTickets.push(tickets[i]);
+        }
+      }
+    }
+    let total = myTickets.reduce(
+      (accumulator, currentValue) => accumulator + currentValue.netTons,
+      0
+    );
+
+    setTotalTons(total);
+  };
+
   return (
     <Layout>
       <div>
@@ -137,6 +244,7 @@ const CreatePayment = () => {
               tFileNumber: "",
               contractId: "",
               checkNumber: "",
+              tickets: [],
               date: "",
               amount: 0,
               totalPounds: 0,
@@ -145,30 +253,47 @@ const CreatePayment = () => {
             }}
             validationSchema={CreatePaymentSchema}
             onSubmit={async (values, actions) => {
-              const {
-                data: { createPayment: payment },
-              } = await API.graphql({
-                query: createPayment,
-                variables: {
-                  input: {
-                    type: "Payment",
-                    tFileNumber: values.tFileNumber,
-                    contractId: values.contractId,
-                    checkNumber: values.checkNumber,
-                    date: dateEntered,
-                    amount: values.amount,
-                    totalPounds: values.totalPounds,
-                    tonsCredit: values.tonsCredit,
-                    paymentType: values.paymentType,
+              let input = {
+                type: "Payment",
+                tFileNumber: values.tFileNumber,
+                contractId: values.contractId,
+                checkNumber: values.checkNumber,
+                date: dateEntered,
+                amount: values.amount,
+                totalPounds: values.totalPounds,
+                tonsCredit: values.tonsCredit,
+                paymentType: values.paymentType,
+              };
+              mutate(input);
+
+              values.tickets.map(async (ticket) => {
+                const {
+                  data: { updateTicket },
+                } = await API.graphql({
+                  query: updateTicket,
+                  variables: {
+                    id: ticket.value,
+                    paymentId: payment.id,
                   },
-                },
+                });
               });
-              cache.invalidateQueries("payments");
-              cache.setQueryData("payments", payment);
             }}
           >
-            {({ isSubmitting, errors, touched }) => (
+            {({
+              isSubmitting,
+              errors,
+              touched,
+              values,
+              setFieldTouched,
+              setFieldValue,
+            }) => (
               <Form>
+                {console.log("values: ", values)}
+                {values.contractId ? setContractId(values.contractId) : null}
+                {values.tickets && values.tickets.length
+                  ? (computeTotalPounds(values.tickets),
+                    computeTotalTons(values.tickets))
+                  : (setTotalPounds(0), setTotalTons(0))}
                 <div className="w-7/12 mx-auto">
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -247,21 +372,21 @@ const CreatePayment = () => {
                   <div className="flex justify-between items-center mb-4 w-full">
                     <label
                       className="text-gray-900 w-1/4 md:w-1/2 pr-4"
-                      htmlFor="invoiceId"
+                      htmlFor="tickets"
                     >
-                      Invoice
+                      Tickets
                     </label>
                     <Field
-                      name="invoiceId"
+                      name="tickets"
                       className="w-1/2"
-                      component={FormikSelect}
-                      options={invoices}
+                      component={FormikMultiSelect}
+                      componentName="tickets"
+                      value={values.tickets && values.tickets}
+                      onChange={setFieldValue}
+                      onBlur={setFieldTouched}
+                      isClearable={true}
+                      options={ticketOptions}
                     ></Field>
-                    {errors.invoiceId && touched.invoiceId ? (
-                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
-                        {errors.invoiceId}
-                      </div>
-                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4 w-full">
                     <label
@@ -305,7 +430,7 @@ const CreatePayment = () => {
                       className="w-1/4 text-gray-900 md:w-1/2"
                       htmlFor="totalPounds"
                     >
-                      Total Pounds
+                      {`Total Pounds - ${totalPounds}`}
                     </label>
                     <Field
                       className="form-input w-full"
@@ -323,7 +448,7 @@ const CreatePayment = () => {
                       className="w-1/4 text-gray-900 md:w-1/2"
                       htmlFor="tonsCredit"
                     >
-                      Tons Credit
+                      {`Tons Credit - ${totalTons}`}
                     </label>
                     <Field
                       className="form-input w-full"

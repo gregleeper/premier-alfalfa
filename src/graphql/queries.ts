@@ -119,6 +119,7 @@ export const getSettlement = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -298,6 +299,7 @@ export const getInvoice = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -558,6 +560,7 @@ export const getContract = /* GraphQL */ `
           contractId
           invoiceId
           settlementId
+          paymentId
           correspondingContractId
           type
           ticketDate
@@ -714,6 +717,31 @@ export const getPayment = /* GraphQL */ `
         createdAt
         updatedAt
       }
+      tickets {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          paymentId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       checkNumber
       date
       amount
@@ -761,6 +789,9 @@ export const listPayments = /* GraphQL */ `
           createdAt
           updatedAt
         }
+        tickets {
+          nextToken
+        }
         checkNumber
         date
         amount
@@ -783,6 +814,7 @@ export const getTicket = /* GraphQL */ `
       contractId
       invoiceId
       settlementId
+      paymentId
       correspondingContractId
       type
       contract {
@@ -915,6 +947,7 @@ export const listTickets = /* GraphQL */ `
         contractId
         invoiceId
         settlementId
+        paymentId
         correspondingContractId
         type
         contract {
@@ -1779,6 +1812,9 @@ export const paymentsByContract = /* GraphQL */ `
           createdAt
           updatedAt
         }
+        tickets {
+          nextToken
+        }
         checkNumber
         date
         amount
@@ -1838,6 +1874,9 @@ export const paymentsSorted = /* GraphQL */ `
           createdAt
           updatedAt
         }
+        tickets {
+          nextToken
+        }
         checkNumber
         date
         amount
@@ -1875,6 +1914,7 @@ export const ticketsByContract = /* GraphQL */ `
         contractId
         invoiceId
         settlementId
+        paymentId
         correspondingContractId
         type
         contract {
@@ -1961,6 +2001,7 @@ export const ticketsByContractId = /* GraphQL */ `
         contractId
         invoiceId
         settlementId
+        paymentId
         correspondingContractId
         type
         contract {
@@ -2047,6 +2088,7 @@ export const ticketsByDate = /* GraphQL */ `
         contractId
         invoiceId
         settlementId
+        paymentId
         correspondingContractId
         type
         contract {
