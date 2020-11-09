@@ -1,5 +1,4 @@
 import Layout from "../../../components/layout";
-//import { getInvoice, ticketsByContract } from "../../../src/graphql/queries.ts";
 import { contractsByType } from "../../../src/graphql/customQueries";
 import { useRouter } from "next/router";
 import {
@@ -137,7 +136,7 @@ const GenerateSettlements = () => {
         console.log("no settlement created");
       }
     });
-    router.back();
+    router.push("/reports/settlements");
   };
 
   const handleFetchQueries = () => {

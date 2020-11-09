@@ -200,6 +200,36 @@ const Tickets = () => {
         ),
       },
       {
+        Header: "Driver",
+        accessor: "driver",
+        disableFilters: true,
+      },
+      {
+        Header: "Field #",
+        accessor: "fieldNumber",
+        disableFilters: true,
+      },
+      {
+        Header: "BaleCt",
+        accessor: "baleCount",
+        disableFilters: true,
+      },
+      {
+        Header: "Gross W",
+        accessor: "grossWeight",
+        disableFilters: true,
+      },
+      {
+        Header: "Tare W",
+        accessor: "tareWeight",
+        disableFilters: true,
+      },
+      {
+        Header: "Net W",
+        accessor: "netWeight",
+        disableFilters: true,
+      },
+      {
         Header: "Net Tons",
         accessor: "netTons",
         disableFilters: true,

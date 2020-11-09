@@ -88,7 +88,7 @@ const Invoices = () => {
           <h3>All Invoices</h3>
         </div>
         <div className="my-6">
-          <Link href="/reports/settlements/generate">
+          <Link href="/reports/invoices/generate">
             <a className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white">
               Generate New Invoices
             </a>
