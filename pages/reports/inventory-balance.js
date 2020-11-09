@@ -101,7 +101,6 @@ const TotalTons = () => {
 
     contractsYTD.map((contract) => {
       let contractTotals = {};
-      console.log(contract);
       contractTotals.commodity = contract.commodity.name;
       contractTotals.contractNumber = contract.contractNumber;
       contractTotals.company = contract.contractTo.companyReportName;

@@ -143,7 +143,6 @@ const EditContract = () => {
             >
               {({ isSubmitting }) => (
                 <Form>
-                  {console.log(contract.vendorId)}
                   <div className="w-7/12 mx-auto">
                     <div className="flex justify-between items-center mb-4">
                       <label

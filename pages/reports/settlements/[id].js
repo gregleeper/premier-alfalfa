@@ -78,7 +78,6 @@ const Settlement = () => {
     }
   }, [tickets]);
 
-  console.log(tickets);
   const computeTotalPounds = () => {
     let total = 0;
     tickets.map((ticket) => {
