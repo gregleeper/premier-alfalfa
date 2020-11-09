@@ -96,48 +96,49 @@ const CreateTicket = () => {
             }}
             validationSchema={CreateTicketSchema}
             onSubmit={async (values, actions) => {
-              console.log("submitting");
-              const input1 = {
-                contractId: values.contractId,
-                correspondingContractId: values.correspondingContractId,
-                ticketDate: values.ticketDate,
-                fieldNum: values.fieldNum,
-                baleCount: values.baleCount,
-                ticketNumber: values.ticketNumber,
-                ladingNumber: values.ladingNumber,
-                driver: values.driver,
-                type: "Ticket",
-                truckNumber: values.truckNumber,
-                grossWeight: values.grossWeight,
-                tareWeight: values.tareWeight,
-                netWeight: values.netWeight,
-                netTons: values.netTons,
-              };
+              console.log(values);
+              // console.log("submitting");
+              // const input1 = {
+              //   contractId: values.contractId,
+              //   correspondingContractId: values.correspondingContractId,
+              //   ticketDate: values.ticketDate,
+              //   fieldNum: values.fieldNum,
+              //   baleCount: values.baleCount,
+              //   ticketNumber: values.ticketNumber,
+              //   ladingNumber: values.ladingNumber,
+              //   driver: values.driver,
+              //   type: "Ticket",
+              //   truckNumber: values.truckNumber,
+              //   grossWeight: values.grossWeight,
+              //   tareWeight: values.tareWeight,
+              //   netWeight: values.netWeight,
+              //   netTons: values.netTons,
+              // };
 
-              mutate(input1);
+              // mutate(input1);
 
-              const input2 = {
-                contractId: values.correspondingContractId,
-                correspondingContractId: values.contractId,
-                ticketDate: values.ticketDate,
-                fieldNum: values.fieldNum,
-                baleCount: values.baleCount,
-                ticketNumber: values.ticketNumber,
-                ladingNumber: values.ladingNumber,
-                driver: values.driver,
-                type: "Ticket",
-                truckNumber: values.truckNumber,
-                grossWeight: values.grossWeight,
-                tareWeight: values.tareWeight,
-                netWeight: values.netWeight,
-                netTons: values.netTons,
-              };
-              mutate(input2);
+              // const input2 = {
+              //   contractId: values.correspondingContractId,
+              //   correspondingContractId: values.contractId,
+              //   ticketDate: values.ticketDate,
+              //   fieldNum: values.fieldNum,
+              //   baleCount: values.baleCount,
+              //   ticketNumber: values.ticketNumber,
+              //   ladingNumber: values.ladingNumber,
+              //   driver: values.driver,
+              //   type: "Ticket",
+              //   truckNumber: values.truckNumber,
+              //   grossWeight: values.grossWeight,
+              //   tareWeight: values.tareWeight,
+              //   netWeight: values.netWeight,
+              //   netTons: values.netTons,
+              // };
+              // mutate(input2);
 
-              actions.resetForm();
+              // actions.resetForm();
             }}
           >
-            {({ isSubmitting, errors, touched }) => (
+            {({ isSubmitting, errors, touched, values }) => (
               <Form>
                 <div className="w-7/12 mx-auto">
                   <div className="flex justify-between items-center mb-4">
@@ -251,11 +252,6 @@ const CreateTicket = () => {
                       placeholder="Bale Count"
                       type="number"
                     />
-                    {errors.baleCount && touched.baleCount ? (
-                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
-                        {errors.baleCount}
-                      </div>
-                    ) : null}
                   </div>
                   <div className="flex justify-between items-center mb-4 w-full">
                     <label
