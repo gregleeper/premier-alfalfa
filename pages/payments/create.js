@@ -261,6 +261,19 @@ const CreatePayment = () => {
             }}
             validationSchema={CreatePaymentSchema}
             onSubmit={async (values, actions) => {
+              values.tickets.map(async (ticket) => {
+                const {
+                  data: { updateTicket: myTicket },
+                } = await API.graphql({
+                  query: updateTicket,
+                  variables: {
+                    input: {
+                      id: ticket.value,
+                      paymentId: id,
+                    },
+                  },
+                });
+              });
               let input = {
                 type: "Payment",
                 tFileNumber: values.tFileNumber,
