@@ -99,7 +99,6 @@ const CreateTicket = () => {
             }}
             validationSchema={CreateTicketSchema}
             onSubmit={async (values, actions) => {
-              console.log(ticketDate);
               const input1 = {
                 contractId: values.contractId,
                 correspondingContractId: values.correspondingContractId,

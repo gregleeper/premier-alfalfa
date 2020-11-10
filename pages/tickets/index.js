@@ -77,7 +77,7 @@ const Tickets = () => {
         query: ticketsByDate,
         variables: {
           type: "Ticket",
-          limit: 3000,
+          limit: 2000,
           nextToken,
           sortDirection: "DESC",
         },

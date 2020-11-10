@@ -403,6 +403,9 @@ export const ticketsByDate = /* GraphQL */ `
           }
           vendorId
           commodityId
+          commodity {
+            name
+          }
           quantity
           contractPrice
           salePrice
