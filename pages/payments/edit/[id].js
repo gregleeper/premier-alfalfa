@@ -363,6 +363,24 @@ const UpdatePayment = () => {
                 paymentType: (payment && payment.paymentType) || "",
               }}
               onSubmit={async (values, actions) => {
+                let ticketArray = [];
+                values.tickets.map((item) => ticketArray.push(item.value));
+
+                initialTickets.forEach(async (ticket) => {
+                  if (!ticketArray.includes(ticket.value)) {
+                    const {
+                      data: { updateTicket: myTicket },
+                    } = await API.graphql({
+                      query: updateTicket,
+                      variables: {
+                        input: {
+                          id: ticket.value,
+                          paymentId: null,
+                        },
+                      },
+                    });
+                  }
+                });
                 values.tickets.map(async (ticket) => {
                   const {
                     data: { updateTicket: myTicket },
@@ -416,15 +434,8 @@ const UpdatePayment = () => {
                 router.back();
               }}
             >
-              {({
-                isSubmitting,
-                values,
-                setFieldValue,
-                setFieldTouched,
-                initialValues,
-              }) => (
+              {({ isSubmitting, values, setFieldValue, setFieldTouched }) => (
                 <Form>
-                  {console.log("init: ", initialValues)}
                   {values.contractId ? setContractId(values.contractId) : null}
                   {values.tickets && values.tickets.length
                     ? (computeTotalPounds(values.tickets),

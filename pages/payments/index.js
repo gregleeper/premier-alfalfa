@@ -3,7 +3,10 @@ import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import moment from "moment";
 import { API, withSSRContext } from "aws-amplify";
-import { paymentsSorted } from "../../src/graphql/customQueries";
+import {
+  paymentsSorted,
+  ticketsByContract,
+} from "../../src/graphql/customQueries";
 import Layout from "../../components/layout";
 import Table from "../../components/table";
 import { formatMoney } from "../../utils";
@@ -142,31 +145,15 @@ const Payments = () => {
       disableFilters: true,
     },
     {
-      Header: "Invoice",
-      accessor: "invoiceId",
-      Cell: ({ value }) =>
-        value ? (
-          <Link href="/reports/invoices/[id]" as={`/reports/invoices/${value}`}>
-            <a>View</a>
-          </Link>
-        ) : (
-          ""
-        ),
-    },
-    {
-      Header: "Settlement",
-      accessor: "settlementId",
-      Cell: ({ value }) =>
-        value ? (
-          <Link
-            href="/reports/settlements/[id]"
-            as={`/reports/settlements/${value}`}
-          >
-            <a>View</a>
-          </Link>
-        ) : (
-          ""
-        ),
+      Header: "Tickets Paid",
+      accessor: "tickets",
+      Cell: ({ value }) => (
+        <div>
+          {value.items.map((ticket) => (
+            <span className="mr-2">{ticket.ticketNumber}</span>
+          ))}
+        </div>
+      ),
     },
   ]);
 

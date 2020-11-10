@@ -506,6 +506,15 @@ export const paymentsSorted = /* GraphQL */ `
           createdAt
           updatedAt
         }
+        tickets {
+          items {
+            id
+            ticketNumber
+            netTons
+            netWeight
+            truckNumber
+          }
+        }
         checkNumber
         date
         amount
