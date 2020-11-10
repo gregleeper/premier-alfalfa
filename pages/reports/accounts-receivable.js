@@ -20,22 +20,6 @@ const AccountsReceivable = () => {
   const [vendorTotals, setVendorTotals] = useState([]);
   let toPrint = useRef(null);
 
-  const { data: invoiceData } = useQuery("invoices", async () => {
-    const {
-      data: { invoicesSorted: myInvoices },
-    } = await API.graphql({
-      query: invoicesSorted,
-      variables: {
-        type: "Invoice",
-        filter: {
-          isPaid: { eq: false },
-        },
-        limit: 3000,
-      },
-    });
-    return myInvoices;
-  });
-
   const { data: contractData } = useQuery("activeSaleContracts", async () => {
     const {
       data: { contractsByType: myContracts },
@@ -97,28 +81,10 @@ const AccountsReceivable = () => {
   };
 
   useEffect(() => {
-    if (invoiceData) {
-      setInvoices(invoiceData.items);
-    }
-  }, [invoiceData]);
-
-  useEffect(() => {
     if (contractData) {
       setActiveSaleContracts(contractData.items);
     }
   }, [contractData]);
-
-  useEffect(() => {
-    if (invoices.length > 0 && activeSaleContracts.length > 0) {
-      computeTotals();
-    }
-  }, [activeSaleContracts, invoices]);
-
-  // useEffect(() => {
-  //   if (contractsTotals.length) {
-  //     computeTotalsFromTickets();
-  //   }
-  // }, [contractsTotals]);
 
   const computeTotalsFromTickets = () => {
     const byVendor = groupBy(contractsTotals, (contract) => contract.company);
@@ -135,25 +101,6 @@ const AccountsReceivable = () => {
     });
 
     setVendorTotals(array);
-  };
-
-  const computeTotals = () => {
-    const byVendor = groupBy(invoices, (invoice) => invoice.vendorId);
-    const byContract = groupBy(
-      invoices,
-      (invoice) => invoice.tickets.items[0].contract.contractNumber
-    );
-    let array = [];
-    activeSaleContracts.map((contract) => {
-      array.push(byContract.get(contract.contractNumber));
-    });
-    let finalArray = [];
-    array.map((item, index) => {
-      if (item) {
-        finalArray.push(item);
-      }
-    });
-    setTotals(finalArray);
   };
 
   const getZeroToSevenDaysOld = (tickets) => {
@@ -214,11 +161,11 @@ const AccountsReceivable = () => {
             <span>{moment().format("MM/DD/YY")}</span>
           </div>
 
-          <div className="mx-12">
+          <div className="mx-12 mb-12">
             {vendorTotals.length > 0 ? (
               vendorTotals.map((item, index) => (
-                <div className="mt-6" key={index}>
-                  <table className="px-4 text-sm ">
+                <div className="mt-6 mb-4" key={index}>
+                  <table className="px-4 text-sm">
                     <thead>
                       <tr className="">
                         <th className="px-2 w-48 ">{item.company}</th>
@@ -283,10 +230,10 @@ const AccountsReceivable = () => {
                           </tr>
                         </>
                       ))}
-                      <tr>
-                        <td className="pl-2">Totals:</td>
-                        <td></td>
-                        <td className="text-center">
+                      <tr className="border-t-2 border-gray-700">
+                        <td className="pl-2 py-2">Totals:</td>
+                        <td className="py-2"></td>
+                        <td className="text-center py-2">
                           {formatMoney.format(
                             item.contracts.reduce(
                               (acc, cv) =>
