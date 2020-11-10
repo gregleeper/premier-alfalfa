@@ -37,6 +37,7 @@ const UpdatePayment = () => {
   const [totalPounds, setTotalPounds] = useState(0);
   const [totalTons, setTotalTons] = useState(0);
   const [payment, setPayment] = useState();
+  const [ticketsOnPayment, setTicketsOnPayment] = useState([]);
   const [dateEntered, setDateEntered] = useState(new Date());
   const [paymentTypes, setPaymentTypes] = useState([
     {
@@ -216,7 +217,7 @@ const UpdatePayment = () => {
         }
       }
     }
-    console.log(myTickets);
+
     let total = myTickets.reduce(
       (accumulator, currentValue) => accumulator + currentValue.netWeight,
       0
@@ -277,7 +278,7 @@ const UpdatePayment = () => {
   useEffect(() => {
     if (invoicesData) {
       let options = [];
-      console.log(invoicesData);
+
       invoicesData.items.map((invoice) => {
         options.push({
           value: invoice.id,
@@ -328,6 +329,16 @@ const UpdatePayment = () => {
     }
   }, [id]);
 
+  let initialTickets = [];
+  if (payment && payment.tickets.items.length) {
+    payment.tickets.items.map((ticket) => {
+      initialTickets.push({
+        value: ticket.id,
+        label: `${ticket.ticketNumber} - ${ticket.netTons}`,
+      });
+    });
+  }
+
   return (
     <Layout>
       <div>
@@ -343,7 +354,7 @@ const UpdatePayment = () => {
                 contractId: payment.contractId || "",
                 invoiceId: payment.invoiceId || "",
                 settlementId: payment.settlementId || "",
-                tickets: payment.tickets || [],
+                tickets: initialTickets || [],
                 checkNumber: payment.checkNumber || "",
                 date: (payment && payment.date) || "",
                 amount: (payment && payment.amount) || "",
@@ -352,10 +363,9 @@ const UpdatePayment = () => {
                 paymentType: (payment && payment.paymentType) || "",
               }}
               onSubmit={async (values, actions) => {
-                console.log(values);
                 values.tickets.map(async (ticket) => {
                   const {
-                    data: { updateTicket },
+                    data: { updateTicket: myTicket },
                   } = await API.graphql({
                     query: updateTicket,
                     variables: {
@@ -406,9 +416,15 @@ const UpdatePayment = () => {
                 router.back();
               }}
             >
-              {({ isSubmitting, values, setFieldValue, setFieldTouched }) => (
+              {({
+                isSubmitting,
+                values,
+                setFieldValue,
+                setFieldTouched,
+                initialValues,
+              }) => (
                 <Form>
-                  {console.log("values: ", values)}
+                  {console.log("init: ", initialValues)}
                   {values.contractId ? setContractId(values.contractId) : null}
                   {values.tickets && values.tickets.length
                     ? (computeTotalPounds(values.tickets),
@@ -482,7 +498,7 @@ const UpdatePayment = () => {
                         className="w-1/2"
                         component={FormikMultiSelect}
                         componentName="tickets"
-                        value={values.tickets && values.tickets}
+                        value={values.tickets}
                         onChange={setFieldValue}
                         onBlur={setFieldTouched}
                         isClearable={true}

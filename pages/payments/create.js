@@ -268,7 +268,7 @@ const CreatePayment = () => {
 
               values.tickets.map(async (ticket) => {
                 const {
-                  data: { updateTicket },
+                  data: { updateTicket: myTicket },
                 } = await API.graphql({
                   query: updateTicket,
                   variables: {

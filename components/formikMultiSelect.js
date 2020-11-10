@@ -28,7 +28,7 @@ export function FormikMultiSelect({
       onChange={(value, name) => handleChange(value)}
       isClearable={isClearable}
       options={options}
-      value={value && value.items}
+      value={value || (value && value.items)}
     />
   );
 }
