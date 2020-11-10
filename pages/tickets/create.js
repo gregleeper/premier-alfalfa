@@ -139,7 +139,7 @@ const CreateTicket = () => {
               actions.resetForm();
             }}
           >
-            {({ isSubmitting, errors, touched, setFieldValue }) => (
+            {({ isSubmitting, errors, touched }) => (
               <Form>
                 <div className="w-7/12 mx-auto">
                   <div className="flex justify-between items-center mb-4">
@@ -151,7 +151,6 @@ const CreateTicket = () => {
                     </label>
                     <Field
                       className="form-input w-full"
-                      onChange={() => setFieldValue()}
                       name="ticketNumber"
                       placeholder="Ticket Number"
                     />
@@ -389,7 +388,7 @@ const CreateTicket = () => {
                     <button
                       className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
                       type="submit"
-                      // disabled={isSubmitting}
+                      disabled={isSubmitting}
                     >
                       Submit
                     </button>
