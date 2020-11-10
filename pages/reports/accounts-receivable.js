@@ -169,12 +169,12 @@ const AccountsReceivable = () => {
                     <thead>
                       <tr className="">
                         <th className="px-2 w-48 ">{item.company}</th>
-                        <th className="px-12 ">Contract</th>
-                        <th className="px-12">Balance Due</th>
-                        <th className="px-12">0-7</th>
-                        <th className="px-12">8-14</th>
-                        <th className="px-12">15-21</th>
-                        <th className="px-12">22-Over</th>
+                        <th className="px-10 ">Contract</th>
+                        <th className="px-10">Balance Due</th>
+                        <th className="px-10">0-7</th>
+                        <th className="px-10">8-14</th>
+                        <th className="px-10">15-21</th>
+                        <th className="px-10">22-Over</th>
                       </tr>
                     </thead>
                     <tbody>
