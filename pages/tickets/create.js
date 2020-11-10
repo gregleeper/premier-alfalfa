@@ -139,7 +139,7 @@ const CreateTicket = () => {
               actions.resetForm();
             }}
           >
-            {({ isSubmitting, errors, touched, values }) => (
+            {({ isSubmitting, errors, touched, setFieldValue }) => (
               <Form>
                 <div className="w-7/12 mx-auto">
                   <div className="flex justify-between items-center mb-4">
@@ -151,6 +151,7 @@ const CreateTicket = () => {
                     </label>
                     <Field
                       className="form-input w-full"
+                      onChange={() => setFieldValue()}
                       name="ticketNumber"
                       placeholder="Ticket Number"
                     />

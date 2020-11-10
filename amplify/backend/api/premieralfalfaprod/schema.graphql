@@ -184,6 +184,8 @@ enum PaymentType {
   CHECKS
   CASH
   CREDITCARD
+  EFT
+  WIRE
 }
 
 type Ticket

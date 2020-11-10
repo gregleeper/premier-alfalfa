@@ -88,6 +88,8 @@ export enum PaymentType {
   CHECKS = "CHECKS",
   CASH = "CASH",
   CREDITCARD = "CREDITCARD",
+  EFT = "EFT",
+  WIRE = "WIRE",
 }
 
 
