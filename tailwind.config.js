@@ -98,7 +98,10 @@ module.exports = {
   variants: {
     opacity: ["responsive", "hover", "focus", "disabled"],
   },
-  plugins: [require("@tailwindcss/custom-forms")],
+  plugins: [
+    require("@tailwindcss/custom-forms"),
+    require("@tailwindcss/typography"),
+  ],
   experimental: {
     applyComplexClasses: true,
   },

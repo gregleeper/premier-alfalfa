@@ -164,11 +164,13 @@ const AccountsReceivable = () => {
           <div className="mx-12 mb-12">
             {vendorTotals.length > 0 ? (
               vendorTotals.map((item, index) => (
-                <div className="mt-6 mb-4" key={index}>
-                  <table className="px-4 text-sm">
+                <div className="mr-4" key={index}>
+                  <table className="mb-6">
                     <thead>
                       <tr className="">
-                        <th className="px-2 w-48 ">{item.company}</th>
+                        <th className="px-2 w-48 text-xs font-semibold ">
+                          {item.company}
+                        </th>
                         <th className="px-10 ">Contract</th>
                         <th className="px-10">Balance Due</th>
                         <th className="px-10">0-7</th>
@@ -231,9 +233,9 @@ const AccountsReceivable = () => {
                         </>
                       ))}
                       <tr className="border-t-2 border-gray-700">
-                        <td className="pl-2 py-2">Totals:</td>
-                        <td className="py-2"></td>
-                        <td className="text-center py-2">
+                        <td className="pl-2 py-2"></td>
+                        <td className="py-2 text-base text-center">Totals:</td>
+                        <td className="text-center py-2 font-semibold">
                           {formatMoney.format(
                             item.contracts.reduce(
                               (acc, cv) =>
