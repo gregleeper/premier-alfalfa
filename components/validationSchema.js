@@ -2,22 +2,24 @@ import { yupToFormErrors } from "formik";
 import * as Yup from "yup";
 
 export const CreateTicketSchema = Yup.object().shape({
-  ticketNumber: Yup.string().min(2, "Should be longer").required("Required"),
-  contractId: Yup.string().min(2, "Select a contract").required("Required"),
-  correspondingContractId: Yup.string()
+  ticketNumber: Yup.string("must be a string")
+    .min(2, "Should be longer")
+    .required("Required"),
+  contractId: Yup.string("must be a string")
+    .min(2, "Select a contract")
+    .required("Required"),
+  correspondingContractId: Yup.string("must be a string")
     .min(2, "Select a corresponding contract")
     .required("Required"),
+  fieldNum: Yup.string("must be a string"),
 
-  type: Yup.string(),
-  fieldNum: Yup.string(),
-
-  ladingNumber: Yup.string().min(2, "Should be longer"),
-  driver: Yup.string().min(2, "Should be longer"),
-  truckNumber: Yup.string(),
-  grossWeight: Yup.number(),
-  tareWeight: Yup.number(),
-  netWeight: Yup.number().required("Required"),
-  netTons: Yup.number().required("Required"),
+  ladingNumber: Yup.string("must be a string").min(2, "Should be longer"),
+  driver: Yup.string("must be a string").min(2, "Should be longer"),
+  truckNumber: Yup.string("string not entered"),
+  grossWeight: Yup.number("needs to be a number"),
+  tareWeight: Yup.number("needs to be a number"),
+  netWeight: Yup.number("needs to be a number").required("Required"),
+  netTons: Yup.number("needs to be a number").required("Required"),
 });
 
 export const CreateCommoditySchema = Yup.object().shape({

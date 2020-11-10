@@ -1,14 +1,12 @@
 import { API, withSSRContext } from "aws-amplify";
+import ReactToPrint from "react-to-print";
 import Table from "../../components/table";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import DatePicker from "react-datepicker";
 import { computeAvgNetTons, groupBy } from "../../utils";
 import moment from "moment";
 import Layout from "../../components/layout";
-import {
-  listReportTickets,
-  ticketsByDate,
-} from "../../src/graphql/customQueries";
+import { listReportTickets } from "../../src/graphql/customQueries";
 import { listCommoditys } from "../../src/graphql/queries.ts";
 import { useQuery, useInfiniteQuery, useQueryCache } from "react-query";
 import { ReactQueryDevtools } from "react-query-devtools";
@@ -16,6 +14,7 @@ import { TypeFormatFlags } from "typescript";
 
 const CommodityTotals = () => {
   const cache = useQueryCache();
+  let toPrint = useRef(null);
   const [beginDate, setBeginDate] = useState(
     cache.getQueryData("cctDates")
       ? cache.getQueryData("cctDates").beginDate
@@ -45,19 +44,19 @@ const CommodityTotals = () => {
     "commodityTonTotals",
     async () => {
       const {
-        data: { ticketsByDate: initTickets },
+        data: { listTickets: initTickets },
       } = await API.graphql({
-        query: ticketsByDate,
-
+        query: listReportTickets,
         variables: {
-          type: "Ticket",
-          ticketDate: {
-            between: [
-              moment(beginDate).startOf("day"),
-              moment(endDate).endOf("day"),
-            ],
-          },
           limit: 2000,
+          filter: {
+            ticketDate: {
+              between: [
+                moment(beginDate).startOf("day"),
+                moment(endDate).endOf("day"),
+              ],
+            },
+          },
         },
       });
       return initTickets;
@@ -90,19 +89,19 @@ const CommodityTotals = () => {
       nextToken = cache.getQueryData("commodityTonTotals").nextToken
     ) => {
       const {
-        data: { ticketsByDate: ticketData },
+        data: { listTickets: ticketData },
       } = await API.graphql({
-        query: ticketsByDate,
+        query: listReportTickets,
         variables: {
           limit: 2000,
-          type: "Ticket",
-          ticketDate: {
-            between: [
-              moment(beginDate).startOf("day"),
-              moment(endDate).endOf("day"),
-            ],
+          filter: {
+            ticketDate: {
+              between: [
+                moment(beginDate).startOf("day"),
+                moment(endDate).endOf("day"),
+              ],
+            },
           },
-
           nextToken,
         },
       });
@@ -122,14 +121,15 @@ const CommodityTotals = () => {
     "commodityTonTotalsYTD",
     async () => {
       const {
-        data: { ticketsByDate: initTicketsYTD },
+        data: { listTickets: initTicketsYTD },
       } = await API.graphql({
-        query: ticketsByDate,
+        query: listReportTickets,
         variables: {
           limit: 2000,
-          type: "Ticket",
-          ticketDate: {
-            between: [moment().startOf("year"), moment(endDate).endOf("day")],
+          filter: {
+            ticketDate: {
+              between: [moment().startOf("year"), moment(endDate).endOf("day")],
+            },
           },
         },
       });
@@ -164,16 +164,16 @@ const CommodityTotals = () => {
       nextToken = cache.getQueryData("commodityTonTotalsYTD").nextToken
     ) => {
       const {
-        data: { ticketsByDate: ticketData },
+        data: { listTickets: ticketData },
       } = await API.graphql({
-        query: ticketsByDate,
+        query: listReportTickets,
         variables: {
           limit: 2000,
-          type: "Ticket",
-          ticketDate: {
-            between: [moment().startOf("year"), moment(endDate).endOf("day")],
+          filter: {
+            ticketDate: {
+              between: [moment().startOf("year"), moment(endDate).endOf("day")],
+            },
           },
-
           nextToken,
         },
       });
@@ -224,7 +224,7 @@ const CommodityTotals = () => {
         count++;
       }
     });
-    return (totals.reduce((a, cv) => a + cv.weekAvgTons, 0) / count).toFixed(2);
+    return totals.reduce((a, cv) => a + cv.weekAvgTons, 0) / count;
   };
 
   const computeYearTotalAvg = () => {
@@ -234,7 +234,7 @@ const CommodityTotals = () => {
         count++;
       }
     });
-    return (totals.reduce((a, cv) => a + cv.yearAvgTons, 0) / count).toFixed(2);
+    return totals.reduce((a, cv) => a + cv.yearAvgTons, 0) / count;
   };
 
   useEffect(() => {
@@ -437,7 +437,7 @@ const CommodityTotals = () => {
             !ytdCanFetchMore ? (
             <table>
               <thead>
-                <tr className="">
+                <tr>
                   <th>Commodity</th>
                   <th className="pr-2">Week Number Loads</th>
                   <th className="pr-2">Year Number Loads</th>
@@ -449,31 +449,31 @@ const CommodityTotals = () => {
                 {totals.map((total) => (
                   <tr>
                     <td className="px-2 py-1">{total.commodity}</td>
-                    <td className="px-2 py-1">{total.weekNumLoads}</td>
+                    <td className="px-2 py-1"> {total.weekNumLoads}</td>
                     <td className="px-2 py-1">{total.yearNumLoads}</td>
                     <td className="px-2 py-1">{total.weekAvgTons}</td>
                     <td className="px-2 py-1">{total.yearAvgTons}</td>
                   </tr>
                 ))}
                 <tr>
-                  <td className=" border-t-4 border-gray-700">Totals:</td>
-                  <td className=" border-t-4 border-gray-700">
+                  <td className="border-t-4 border-gray-600">Totals:</td>
+                  <td className="border-t-4 border-gray-600">
                     {totals.reduce(
                       (accumulator, cv) => accumulator + cv.weekNumLoads,
                       0
                     )}
                   </td>
-                  <td className=" border-t-4 border-gray-700">
+                  <td className="border-t-4 border-gray-600">
                     {totals.reduce(
                       (accumulator, cv) => accumulator + cv.yearNumLoads,
                       0
                     )}
                   </td>
-                  <td className=" border-t-4 border-gray-700">
-                    {totals.length && computeWeekTotalAvg()}
+                  <td className="border-t-4 border-gray-600">
+                    {totals.length && computeWeekTotalAvg().toFixed(2)}
                   </td>
-                  <td className=" border-t-4 border-gray-700">
-                    {totals.length && computeYearTotalAvg()}
+                  <td className="border-t-4 border-gray-600">
+                    {totals.length && computeYearTotalAvg().toFixed(2)}
                   </td>
                 </tr>
               </tbody>
