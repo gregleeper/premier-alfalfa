@@ -44,6 +44,14 @@ const CreatePayment = () => {
       value: "CREDITCARD",
       label: "Credit Card",
     },
+    {
+      value: "EFT",
+      label: "EFT",
+    },
+    {
+      value: "WIRE",
+      label: "Wire",
+    },
   ]);
 
   const [mutate, { data, error, isSuccess }] = useMutation(
