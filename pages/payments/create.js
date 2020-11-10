@@ -285,6 +285,7 @@ const CreatePayment = () => {
                   },
                 });
               });
+              router.back();
             }}
           >
             {({
