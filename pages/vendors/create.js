@@ -232,7 +232,7 @@ const CreateVendor = () => {
                     <Field
                       className="form-input w-full"
                       name="attention"
-                      placeholder="67951"
+                      placeholder="John Doe"
                     />
                     {errors.attention && touched.dateSigned ? (
                       <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">

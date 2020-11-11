@@ -16,10 +16,8 @@ export const CreateTicketSchema = Yup.object().shape({
   ladingNumber: Yup.string("must be a string").min(2, "Should be longer"),
   driver: Yup.string("must be a string").min(2, "Should be longer"),
   truckNumber: Yup.string("string not entered"),
-  grossWeight: Yup.number("needs to be a number"),
-  tareWeight: Yup.number("needs to be a number"),
-  netWeight: Yup.number("needs to be a number").required("Required"),
-  netTons: Yup.number("needs to be a number").required("Required"),
+  grossWeight: Yup.number("needs to be a number").required("Required"),
+  tareWeight: Yup.number("needs to be a number").required("Required"),
 });
 
 export const CreateCommoditySchema = Yup.object().shape({

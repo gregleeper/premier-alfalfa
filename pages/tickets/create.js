@@ -17,6 +17,9 @@ const CreateTicket = () => {
   const [contracts, setContracts] = useState([]);
   const [correspondingContracts, setCorrespondingContracts] = useState([]);
   const [ticketDate, setTicketDate] = useState(new Date());
+  const [ticketSuccess1, setTicketSuccess1] = useState(false);
+  const [ticketSuccess2, setTicketSuccess2] = useState(false);
+  const [ticketError, setTicketError] = useState(null);
 
   const [mutate, { data, error, isSuccess }] = useMutation(
     async (input) => {
@@ -39,8 +42,6 @@ const CreateTicket = () => {
       },
     }
   );
-
-  console.log(ticketDate);
 
   const { data: contractsData } = useQuery(
     "contracts",
@@ -99,6 +100,8 @@ const CreateTicket = () => {
             }}
             validationSchema={CreateTicketSchema}
             onSubmit={async (values, actions) => {
+              let netWeight = values.grossWeight - values.tareWeight;
+              let netTons = netWeight / 2000;
               const input1 = {
                 contractId: values.contractId,
                 correspondingContractId: values.correspondingContractId,
@@ -112,11 +115,17 @@ const CreateTicket = () => {
                 truckNumber: values.truckNumber,
                 grossWeight: values.grossWeight,
                 tareWeight: values.tareWeight,
-                netWeight: values.netWeight,
-                netTons: values.netTons,
+                netWeight,
+                netTons,
               };
-
-              mutate(input1);
+              try {
+                mutate(input1);
+                setTicketSuccess1(true);
+              } catch (err) {
+                if (err) {
+                  setTicketError(err);
+                }
+              }
 
               const input2 = {
                 contractId: values.correspondingContractId,
@@ -131,15 +140,25 @@ const CreateTicket = () => {
                 truckNumber: values.truckNumber,
                 grossWeight: values.grossWeight,
                 tareWeight: values.tareWeight,
-                netWeight: values.netWeight,
-                netTons: values.netTons,
+                netWeight,
+                netTons,
               };
-              mutate(input2);
-
+              try {
+                mutate(input2);
+                setTicketSuccess2(true);
+              } catch (err) {
+                if (err) {
+                  setTicketError(err);
+                }
+              }
+              setTimeout(() => {
+                setTicketSuccess1(false);
+                setTicketSuccess2(false);
+              }, 1000);
               actions.resetForm();
             }}
           >
-            {({ isSubmitting, errors, touched }) => (
+            {({ isSubmitting, errors, touched, values }) => (
               <Form>
                 <div className="w-7/12 mx-auto">
                   <div className="flex justify-between items-center mb-4">
@@ -153,6 +172,8 @@ const CreateTicket = () => {
                       className="form-input w-full"
                       name="ticketNumber"
                       placeholder="Ticket Number"
+                      autoComplete="ticketNumber"
+                      autoCorrect="off"
                     />
                     {errors.ticketNumber && touched.ticketNumber ? (
                       <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
@@ -348,16 +369,13 @@ const CreateTicket = () => {
                     >
                       Net Weight
                     </label>
-                    <Field
-                      className="form-input w-full"
-                      name="netWeight"
-                      type="number"
-                    />
-                    {errors.netWeight && touched.netWeight ? (
-                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
-                        {errors.netWeight}
-                      </div>
-                    ) : null}
+                    <div>
+                      <span>
+                        {values.grossWeight && values.tareWeight
+                          ? (values.grossWeight - values.tareWeight).toFixed(2)
+                          : "Not calculated"}
+                      </span>
+                    </div>
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <label
@@ -366,16 +384,16 @@ const CreateTicket = () => {
                     >
                       Net Tons
                     </label>
-                    <Field
-                      className="form-input w-full"
-                      name="netTons"
-                      type="number"
-                    />
-                    {errors.netTons && touched.netTons ? (
-                      <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
-                        {errors.netTons}
-                      </div>
-                    ) : null}
+                    <div>
+                      <span>
+                        {values.grossWeight && values.tareWeight
+                          ? (
+                              (values.grossWeight - values.tareWeight) /
+                              2000
+                            ).toFixed(2)
+                          : "Not calculated"}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="flex justify-center mt-12">
@@ -397,6 +415,13 @@ const CreateTicket = () => {
               </Form>
             )}
           </Formik>
+          {ticketSuccess1 && ticketSuccess2 ? (
+            <div className="mx-auto text-white bg-green-500 bg-opacity-75 h-24 w-3/12">
+              Successfully created ticet.
+            </div>
+          ) : (
+            <div></div>
+          )}
           <ReactQueryDevtools />
         </div>
       </div>

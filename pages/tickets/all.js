@@ -2,9 +2,10 @@ import Layout from "../../components/layout";
 import { useMemo, useEffect, useState } from "react";
 import { API, withSSRContext } from "aws-amplify";
 import { ticketsByDate } from "../../src/graphql/customQueries";
-import { listContracts } from "../../src/graphql/queries.ts";
+import { ticketsByContract, listContracts } from "../../src/graphql/queries.ts";
 import Link from "next/link";
 import Table from "../../components/table";
+import ReactSelect from "react-select";
 import moment from "moment";
 import {
   useQueryCache,
@@ -14,7 +15,7 @@ import {
 } from "react-query";
 import { ReactQueryDevtools } from "react-query-devtools";
 
-const AllTickets = () => {
+const Tickets = () => {
   const cache = useQueryCache();
   const [tickets, setTickets] = useState([]);
   const [contractFilter, setContractFilter] = useState();
@@ -33,34 +34,81 @@ const AllTickets = () => {
     return myContracts;
   });
 
-  const { data, isFetched, isSuccess, refetch } = useQuery(
+  const { data: initTicketsData, refetch } = useQuery(
     "tickets",
     async () => {
       const {
-        data: {
-          ticketsByDate: { items: myTickets },
-        },
+        data: { ticketsByDate: initTickets },
       } = await API.graphql({
         query: ticketsByDate,
         variables: {
           type: "Ticket",
           sortDirection: "DESC",
-          limit: 500,
+          limit: 10,
         },
       });
-      return myTickets;
+      return initTickets;
     },
     {
-      cacheTime: 1000 * 60 * 5,
+      enabled: false,
+      cacheTime: 1000 * 60 * 59,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchIntervalInBackground: false,
       refetchOnReconnect: true,
     }
   );
 
-  useEffect(() => {
-    if (data && isFetched) {
-      setTickets(data);
+  const {
+    status,
+    data,
+    error,
+    isFetching,
+    isFetchingMore,
+    isFetched,
+    fetchMore,
+    canFetchMore,
+  } = useInfiniteQuery(
+    "tickets",
+    async (key, nextToken = cache.getQueryData("tickets").nextToken) => {
+      const {
+        data: { ticketsByDate: ticketData },
+      } = await API.graphql({
+        query: ticketsByDate,
+        variables: {
+          type: "Ticket",
+          limit: 2000,
+          nextToken,
+          sortDirection: "DESC",
+        },
+      });
+      return ticketData;
+    },
+    {
+      enabled: false,
+      getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
+      cacheTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: false,
     }
-  }, [data]);
+  );
+
+  useEffect(() => {
+    if (!queryCache.getQueryData("tickets")) {
+      refetch();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (initTicketsData) {
+      fetchMore();
+    }
+    if (initTicketsData && canFetchMore && !isFetchingMore) {
+      fetchMore();
+    }
+    if (data && data.length && isFetched) {
+      compileData();
+    }
+  }, [data, initTicketsData]);
 
   useEffect(() => {
     if (contractsData) {
@@ -74,6 +122,26 @@ const AllTickets = () => {
       setContracts(options);
     }
   }, [contractsData]);
+
+  const compileData = () => {
+    if (isInitialLoad) {
+      let array = [...tickets];
+
+      data &&
+        data.map((group, i) => {
+          group.items.map((item) => array.push(item));
+        });
+      setTickets(array);
+      setIsInitialLoad(false);
+    } else {
+      let array = [];
+      data &&
+        data.map((group, i) => {
+          group.items.map((item) => array.push(item));
+        });
+      setTickets(array);
+    }
+  };
 
   const columns = useMemo(
     () => [
@@ -192,22 +260,13 @@ const AllTickets = () => {
         <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
           <h3>Tickets</h3>
         </div>
-        <div className="">
-          <div className="my-6 flex justify-between items-center">
-            <div>
-              <Link href="/tickets/create">
-                <a className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white">
-                  Create New
-                </a>
-              </Link>
-            </div>
-            <div>
-              <Link href="/tickets/all">
-                <a className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white">
-                  Get All Tickets
-                </a>
-              </Link>
-            </div>
+        <div className="flex justify-start items-center">
+          <div className="my-6">
+            <Link href="/tickets/create">
+              <a className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white">
+                Create New
+              </a>
+            </Link>
           </div>
           {/* <div className="w-1/4">
             <label htmlFor="ticketsByContract">Filter By Contract</label>
@@ -222,7 +281,7 @@ const AllTickets = () => {
           </div> */}
         </div>
         <div>
-          {isFetched ? (
+          {isFetched && !isFetchingMore ? (
             <Table data={tickets} columns={columns} />
           ) : (
             <p className="text-2xl text-gray-900">
@@ -257,4 +316,4 @@ export async function getServerSideProps({ req, res }) {
   }
 }
 
-export default AllTickets;
+export default Tickets;

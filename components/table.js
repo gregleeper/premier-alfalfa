@@ -130,6 +130,7 @@ function Table({ columns, data }) {
             desc: true,
           },
         ],
+        pageSize: 20,
       },
     },
     useFilters,

@@ -119,7 +119,8 @@ const EditTicket = () => {
               }}
               validationSchema={CreateTicketSchema}
               onSubmit={async (values, actions) => {
-                console.log(ticketDate);
+                let netWeight = values.grossWeight - values.tareWeight;
+                let netTons = netWeight / 2000;
 
                 let input = {
                   id,
@@ -135,8 +136,8 @@ const EditTicket = () => {
                   truckNumber: values.truckNumber,
                   grossWeight: values.grossWeight,
                   tareWeight: values.tareWeight,
-                  netWeight: values.netWeight,
-                  netTons: values.netTons,
+                  netWeight,
+                  netTons,
                 };
 
                 mutate(input);
@@ -144,7 +145,7 @@ const EditTicket = () => {
                 router.push("/tickets");
               }}
             >
-              {({ isSubmitting, errors, touched }) => (
+              {({ isSubmitting, errors, touched, values }) => (
                 <Form>
                   <div className="w-7/12 mx-auto">
                     <div className="flex justify-between items-center mb-4">
@@ -361,16 +362,15 @@ const EditTicket = () => {
                       >
                         Net Weight
                       </label>
-                      <Field
-                        className="form-input w-full"
-                        name="netWeight"
-                        type="number"
-                      />
-                      {errors.netWeight && touched.netWeight ? (
-                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
-                          {errors.netWeight}
-                        </div>
-                      ) : null}
+                      <div>
+                        <span>
+                          {values.grossWeight && values.tareWeight
+                            ? (values.grossWeight - values.tareWeight).toFixed(
+                                2
+                              )
+                            : "Not calculated"}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -379,16 +379,16 @@ const EditTicket = () => {
                       >
                         Net Tons
                       </label>
-                      <Field
-                        className="form-input w-full"
-                        name="netTons"
-                        type="number"
-                      />
-                      {errors.netTons && touched.netTons ? (
-                        <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
-                          {errors.netTons}
-                        </div>
-                      ) : null}
+                      <div>
+                        <span>
+                          {values.grossWeight && values.tareWeight
+                            ? (
+                                (values.grossWeight - values.tareWeight) /
+                                2000
+                              ).toFixed(2)
+                            : "Not calculated"}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="flex justify-center mt-12 pb-24">
