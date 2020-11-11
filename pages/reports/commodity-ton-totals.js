@@ -376,8 +376,19 @@ const CommodityTotals = () => {
         <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
           <h3>Commodity Ton Totals</h3>
         </div>
-        <div className="w-4/12 mx-auto">
-          <div className="flex justify-between items-end">
+        <ReactToPrint
+          trigger={() => (
+            <a
+              href="#"
+              className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
+            >
+              Print Report
+            </a>
+          )}
+          content={() => toPrint}
+        />
+        <div className="w-7/12 mx-auto">
+          <div className="flex justify-between items-end w-1/2 mx-auto">
             <div>
               <span>Begin Date</span>
               <DatePicker
@@ -408,82 +419,88 @@ const CommodityTotals = () => {
               </button>
             </div>
           </div>
-        </div>
-        <div>
-          <div>
-            <span className="text-gray-600 text-sm">Beginning Date: </span>
-            <span className="mx-1 text-base text-gray-900">
-              {moment(beginDate).isValid()
-                ? moment(beginDate).format("MM/DD/YY")
-                : `Not Set`}
-            </span>
+
+          <div className="pt-6 mx-12" ref={(el) => (toPrint = el)}>
+            <h6 className="font-semibold text-xl text-center">
+              Commodity Ton Totals
+            </h6>
+            <div>
+              <div>
+                <span className="text-gray-600 text-sm">Beginning Date: </span>
+                <span className="mx-1 text-base text-gray-900">
+                  {moment(beginDate).isValid()
+                    ? moment(beginDate).format("MM/DD/YY")
+                    : `Not Set`}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-600 text-sm">End Date: </span>
+                <span className="mx-1 text-base text-gray-900 ">
+                  {" "}
+                  {moment(beginDate).isValid()
+                    ? moment(endDate).format("MM/DD/YY")
+                    : `Not Set`}
+                </span>
+              </div>
+            </div>
+            <div className="">
+              {!isFetched ? (
+                <p>Choose dates to generate report.</p>
+              ) : isSuccess &&
+                ytdInfiniteIsSuccess &&
+                !canFetchMore &&
+                !ytdCanFetchMore ? (
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Commodity</th>
+                      <th className="pr-2">Week Number Loads</th>
+                      <th className="pr-2">Year Number Loads</th>
+                      <th className="pr-2">Week Avg Tons</th>
+                      <th className="pr-2"> Year Avg Tons</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {totals.map((total) => (
+                      <tr>
+                        <td className="px-2 py-1">{total.commodity}</td>
+                        <td className="px-2 py-1"> {total.weekNumLoads}</td>
+                        <td className="px-2 py-1">{total.yearNumLoads}</td>
+                        <td className="px-2 py-1">{total.weekAvgTons}</td>
+                        <td className="px-2 py-1">{total.yearAvgTons}</td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td className="border-t-4 border-gray-600">Totals:</td>
+                      <td className="border-t-4 border-gray-600">
+                        {totals.reduce(
+                          (accumulator, cv) => accumulator + cv.weekNumLoads,
+                          0
+                        )}
+                      </td>
+                      <td className="border-t-4 border-gray-600">
+                        {totals.reduce(
+                          (accumulator, cv) => accumulator + cv.yearNumLoads,
+                          0
+                        )}
+                      </td>
+                      <td className="border-t-4 border-gray-600">
+                        {totals.length && computeWeekTotalAvg().toFixed(2)}
+                      </td>
+                      <td className="border-t-4 border-gray-600">
+                        {totals.length && computeYearTotalAvg().toFixed(2)}
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tbody></tbody>
+                </table>
+              ) : (
+                <p>Loading...</p>
+              )}
+            </div>
           </div>
-          <div>
-            <span className="text-gray-600 text-sm">End Date: </span>
-            <span className="mx-1 text-base text-gray-900 ">
-              {" "}
-              {moment(beginDate).isValid()
-                ? moment(endDate).format("MM/DD/YY")
-                : `Not Set`}
-            </span>
-          </div>
+          <ReactQueryDevtools />
         </div>
-        <div className="px-12">
-          {!isFetched ? (
-            <p>Choose dates to generate report.</p>
-          ) : isSuccess &&
-            ytdInfiniteIsSuccess &&
-            !canFetchMore &&
-            !ytdCanFetchMore ? (
-            <table>
-              <thead>
-                <tr>
-                  <th>Commodity</th>
-                  <th className="pr-2">Week Number Loads</th>
-                  <th className="pr-2">Year Number Loads</th>
-                  <th className="pr-2">Week Avg Tons</th>
-                  <th className="pr-2"> Year Avg Tons</th>
-                </tr>
-              </thead>
-              <tbody>
-                {totals.map((total) => (
-                  <tr>
-                    <td className="px-2 py-1">{total.commodity}</td>
-                    <td className="px-2 py-1"> {total.weekNumLoads}</td>
-                    <td className="px-2 py-1">{total.yearNumLoads}</td>
-                    <td className="px-2 py-1">{total.weekAvgTons}</td>
-                    <td className="px-2 py-1">{total.yearAvgTons}</td>
-                  </tr>
-                ))}
-                <tr>
-                  <td className="border-t-4 border-gray-600">Totals:</td>
-                  <td className="border-t-4 border-gray-600">
-                    {totals.reduce(
-                      (accumulator, cv) => accumulator + cv.weekNumLoads,
-                      0
-                    )}
-                  </td>
-                  <td className="border-t-4 border-gray-600">
-                    {totals.reduce(
-                      (accumulator, cv) => accumulator + cv.yearNumLoads,
-                      0
-                    )}
-                  </td>
-                  <td className="border-t-4 border-gray-600">
-                    {totals.length && computeWeekTotalAvg().toFixed(2)}
-                  </td>
-                  <td className="border-t-4 border-gray-600">
-                    {totals.length && computeYearTotalAvg().toFixed(2)}
-                  </td>
-                </tr>
-              </tbody>
-              <tbody></tbody>
-            </table>
-          ) : (
-            <p>Loading...</p>
-          )}
-        </div>
-        <ReactQueryDevtools />
       </div>
     </Layout>
   );

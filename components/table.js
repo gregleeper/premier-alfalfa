@@ -149,7 +149,7 @@ function Table({ columns, data }) {
       </div>
       <table
         {...getTableProps()}
-        className="bg-white text-gray-900 border shadow mt-8 w-full text-sm pb-16"
+        className="bg-white text-gray-900 border shadow mt-8 w-full text-sm pb-16 prose-lg"
       >
         <thead className=" border-b-2 border-gray-400 ">
           {headers.map((column) => (

@@ -110,7 +110,7 @@ const Payments = () => {
       disableFilters: true,
       Cell: ({ value }) => (
         <Link href="/payments/edit/[id]" as={`/payments/edit/${value}`}>
-          <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline">
+          <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline px-2">
             {" "}
             View
           </a>
