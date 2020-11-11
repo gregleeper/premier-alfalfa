@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
+import ReactToPrint from "react-to-print";
 import { API, withSSRContext } from "aws-amplify";
 import moment from "moment";
 import Layout from "../../components/layout";
@@ -6,8 +7,8 @@ import {
   listContracts,
   listCommoditys,
   listTickets,
-  contractsByType,
 } from "../../src/graphql/queries.ts";
+import { contractsByType } from "../../src/graphql/customQueries";
 import {
   groupBy,
   computeSum,
@@ -18,6 +19,7 @@ import Table from "../../components/table";
 import { useQuery } from "react-query";
 
 const StatusReport = () => {
+  let toPrint = useRef(null);
   const [date, setDate] = useState(new Date());
   const [tickets, setTickets] = useState([]);
 
@@ -26,21 +28,7 @@ const StatusReport = () => {
   const [commodities, setCommodities] = useState([]);
   const [summary, setSummary] = useState([]);
 
-  // const getActiveContracts = async () => {
-  //   const {data: {listContracts: {items: myActiveContracts}}} = await API.graphql({
-  //     query: listContracts,
-  //     variables: {
-  //       filter: {
-  //         contractState: {eq: "ACTIVE"},
-  //         contractType: {eq: "PURCHASE"}
-  //       },
-  //       limit: 30000
-  //     }
-  //   })
-  //   setActiveContracts(myActiveContracts)
-  // }
-
-  const { data: activeContractsData } = useQuery(
+  const { data: activeContractsData, isFetched } = useQuery(
     "activePurchaseContracts",
     async () => {
       const {
@@ -59,79 +47,17 @@ const StatusReport = () => {
     }
   );
 
-  const {
-    data: ticketsData,
-    refetch,
-    isSuccess,
-    isLoading,
-    isFetched,
-  } = useQuery(
-    "ticketsForActivePurchaseContracts",
-    async () => {
-      let array = [...ticketsForContracts];
-      activeContracts.map(async (contract) => {
-        const {
-          data: {
-            listTickets: { items: contractTickets },
-          },
-        } = await API.graphql({
-          query: listTickets,
-          variables: {
-            filter: {
-              contractId: {
-                eq: contract.id,
-              },
-            },
-            limit: 50000,
-          },
-        });
-        array.push({ contract, contractTickets });
-      });
-      return array;
-    },
-    {
-      enabled: false,
-      cacheTime: 1000 * 60 * 59,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchIntervalInBackground: false,
-      refetchOnReconnect: true,
-      forceFetchOnMount: false,
-      keepPreviousData: false,
-    }
-  );
-
-  // const getTicketsForContracts = async () => {
-  //   let array = [...ticketsForContracts]
-  //   activeContracts.map(async (contract) => {
-  //     const {data: {listTickets: {items: contractTickets}}} = await API.graphql({
-  //       query: listTickets,
-  //       variables: {
-  //         filter: {
-  //           contractId: {
-  //             eq: contract.id
-  //           }
-  //         },
-  //         limit: 30000
-  //       }
-  //     })
-  //     array.push({contract, contractTickets})
-  //     setTicketsForContracts(array)
-  //   })
-
-  // }
-
   const computeTotals = () => {
-    let groupedTotals = [];
     let activeCommodities = [];
     const commoditiesGroup = groupBy(
-      ticketsForContracts,
-      (item) => item.contract.commodity.name
+      activeContracts,
+      (item) => item.commodity.name
     );
     commoditiesGroup.forEach((i) =>
-      activeCommodities.push(i[0].contract.commodity.name)
+      activeCommodities.push(i[0].commodity.name)
     );
     setCommodities(activeCommodities);
+    console.log(commodities);
     let commodityTotals = [];
     activeCommodities.map((c) => {
       const commodity = commoditiesGroup.get(c);
@@ -139,141 +65,32 @@ const StatusReport = () => {
       let commoditySummary = { commodity: c, contracts: [] };
       commodity.map((i) => {
         let contract = {};
-        let tonsHauled = computeSum(i.contractTickets);
-        let avgPrice = computeAvgContractPrice(i.contractTickets);
-        contract.contractNumber = i.contract.contractNumber;
-        contract.purchasedFrom = i.contract.purchasedFrom;
-        contract.commodity = i.contract.commodity.name;
-        contract.dueDate = moment(i.contract.endDate).format("MM/DD/YY");
-        contract.daysRemaining = moment(i.contract.endDate).diff(
-          new Date(),
-          "days"
-        );
-        contract.contractDate = moment(i.contract.beginDate).format("MM/DD/YY");
-        contract.quantity = i.contract.quantity;
-        contract.contractPrice = i.contract.contractPrice;
+        let tonsHauled = computeSum(i.tickets.items);
+        let avgPrice = computeAvgContractPrice(i.tickets.items);
+        contract.contractNumber = i.contractNumber;
+        contract.purchasedFrom = i.purchasedFrom;
+        contract.commodity = i.commodity.name;
+        contract.dueDate = moment(i.endDate).format("MM/DD/YY");
+        contract.daysRemaining = moment(i.endDate).diff(new Date(), "days");
+        contract.contractDate = moment(i.beginDate).format("MM/DD/YY");
+        contract.quantity = i.quantity;
+        contract.contractPrice = i.contractPrice;
         contract.avgPrice = avgPrice;
-        contract.quantityRemaining = i.contract.quantity - tonsHauled;
-        contract.amount = i.contract.contractPrice * contract.quantityRemaining;
+        contract.quantityRemaining = i.quantity - tonsHauled;
+        contract.amount = i.contractPrice * contract.quantityRemaining;
         commoditySummary.contracts.push(contract);
       });
       commodityTotals.push(commoditySummary);
     });
     setSummary(commodityTotals);
   };
+  console.log(summary);
 
   useEffect(() => {
     if (activeContractsData) {
       setActiveContracts(activeContractsData.items);
     }
   }, [activeContractsData]);
-
-  useEffect(() => {
-    if (activeContracts.length > 0) {
-      refetch();
-    }
-  }, [activeContracts]);
-
-  useEffect(() => {
-    if (ticketsData && isSuccess) {
-      setTicketsForContracts(ticketsData);
-    }
-  }, [ticketsData]);
-
-  const columns = useMemo(() => [
-    {
-      Header: "Contract Number",
-      accessor: "contractNumber",
-    },
-    {
-      Header: "Purchased From",
-      accessor: "purchasedFrom",
-    },
-    {
-      Header: "Commodity",
-      accessor: "commodity",
-    },
-    {
-      Header: "Due Date",
-      accessor: "dueDate",
-    },
-    {
-      Header: "Days Remaining",
-      accessor: "daysRemaining",
-    },
-    {
-      Header: "Contract Date",
-      accessor: "contractDate",
-      disableFilters: true,
-    },
-    {
-      Header: "Quantity",
-      accessor: "quantity",
-      disableFilters: true,
-    },
-    {
-      Header: "Price",
-      accessor: "contractPrice",
-      disableFilters: true,
-      Footer: ({ rows }) => {
-        let avgPrice = 0;
-        let sum = 0;
-        let itemsFound = 0;
-        const len = rows.length;
-        let item = null;
-        for (let i = 0; i < len; i++) {
-          item = rows[i].values;
-          if (item && item.contractPrice > 0) {
-            sum = item.contractPrice + sum;
-            itemsFound++;
-          }
-          avgPrice = sum / itemsFound;
-        }
-        return (
-          <div className="py-2 text-center flex justify-around items-center border-t-4 border-gray-900">
-            <div>
-              <span className="text-gray-600">Avg:</span>{" "}
-            </div>
-            <div>
-              <span className="text-lg font-bold">
-                {isNaN(avgPrice)
-                  ? formatMoney.format(0)
-                  : formatMoney.format(avgPrice)}
-              </span>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      Header: "Quantity Remaining",
-      accessor: "quantityRemaining",
-      disableFilters: true,
-    },
-    {
-      Header: "Amount",
-      accessor: "amount",
-      Cell: ({ value }) => <span>{formatMoney.format(value)}</span>,
-      Footer: ({ rows }) => {
-        const total = useMemo(
-          () => rows.reduce((sum, row) => row.values.amount + sum, 0),
-          [rows]
-        );
-        return (
-          <div className="py-2 text-center flex justify-around items-center border-t-4 border-gray-900">
-            <div>
-              <span className="text-gray-600">Total:</span>{" "}
-            </div>
-            <div>
-              <span className="text-lg font-bold">
-                {formatMoney.format(total)}
-              </span>
-            </div>
-          </div>
-        );
-      },
-    },
-  ]);
 
   return (
     <Layout>
@@ -282,7 +99,7 @@ const StatusReport = () => {
           <h3>Status Report - Purchases</h3>
         </div>
         <div>
-          <div>
+          <div className="mb-8">
             {!isFetched ? (
               <p>Loading....</p>
             ) : (
@@ -295,11 +112,101 @@ const StatusReport = () => {
               </button>
             )}
           </div>
-          <div className=" pt-12">
+          <ReactToPrint
+            trigger={() => (
+              <a
+                href="#"
+                className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
+              >
+                Print Report
+              </a>
+            )}
+            content={() => toPrint}
+          />
+          <div
+            ref={(el) => (toPrint = el)}
+            className="mb-24 pt-12 w-11/12 mx-auto"
+          >
+            <div className="text-center">
+              <h6 className="text-xl">Status Report - Purchases</h6>
+              <p className="text-base text-gray-800">
+                {moment().format("MM/DD/YYYY")}
+              </p>
+            </div>
             {summary.map((c, i) => (
               <div key={i}>
                 <h6 className="font-bold text-xl">{c.commodity}</h6>
-                <Table columns={columns} data={c.contracts} />
+                <table className="mr-4">
+                  <thead>
+                    <tr>
+                      <th className="px-1">Contract Number</th>
+                      <th className="px-1">Sold to</th>
+                      <th className="px-1">Commodity</th>
+                      <th className="px-1">Due Date</th>
+                      <th className="px-1">Days Remaining</th>
+                      <th className="px-1">Contract Date</th>
+                      <th className="px-1">Quantity</th>
+                      <th className="px-1">Price</th>
+                      <th className="px-1">Quantity Remaining</th>
+                      <th className="px-1">Amount</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {c.contracts.map((contract) => (
+                      <tr>
+                        {console.log(c)}
+                        <td className="px-1">{contract.contractNumber}</td>
+                        <td className="px-1">{contract.soldTo}</td>
+                        <td className="px-1">{contract.commodity}</td>
+                        <td className="px-1">{contract.dueDate}</td>
+                        <td className="px-1">{contract.daysRemaining}</td>
+                        <td className="px-1">{contract.contractDate}</td>
+                        <td className="px-1">{contract.quantity}</td>
+                        <td className="px-1">
+                          {formatMoney.format(contract.contractPrice)}
+                        </td>
+                        <td className="px-1 text-center">
+                          {contract.quantityRemaining.toFixed(2)}
+                        </td>
+                        <td className="px-1">
+                          {formatMoney.format(contract.amount)}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="border-t-2 border-gray-700 py-1">
+                      <td>Totals:</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td className="text-center">
+                        {c.contracts
+                          .reduce((acc, cv) => acc + cv.quantity, 0)
+                          .toFixed(2)}
+                      </td>
+                      <td className="text-center">
+                        {formatMoney.format(
+                          c.contracts.reduce(
+                            (acc, cv) => acc + cv.contractPrice,
+                            0
+                          ) /
+                            (c.contracts.length -
+                              c.contracts.filter(
+                                (contract) => contract.contractPrice == 0
+                              ).length)
+                        )}
+                      </td>
+                      <td className="text-center">
+                        {c.contracts
+                          .reduce((acc, cv) => acc + cv.quantityRemaining, 0)
+                          .toFixed(2)}
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             ))}
           </div>
