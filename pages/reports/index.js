@@ -41,6 +41,11 @@ const Reports = () => {
               </Link>
             </li>
             <li>
+              <Link href="reports/accounts-payable">
+                <a>Accounts Payable</a>
+              </Link>
+            </li>
+            <li>
               <Link href="reports/settlements">
                 <a>Settlements</a>
               </Link>
