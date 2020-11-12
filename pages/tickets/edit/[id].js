@@ -395,6 +395,7 @@ const EditTicket = () => {
                       <button
                         className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
                         onClick={() => router.back()}
+                        type="button"
                       >
                         Cancel
                       </button>
