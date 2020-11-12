@@ -109,12 +109,13 @@ const CreateTicket = () => {
               onSubmit={async (values, actions) => {
                 let netWeight = values.grossWeight - values.tareWeight;
                 let netTons = netWeight / 2000;
+
                 const input1 = {
                   contractId: values.contractId,
                   correspondingContractId: values.correspondingContractId,
                   ticketDate: ticketDate,
                   fieldNum: values.fieldNum,
-                  baleCount: values.baleCount,
+                  baleCount: values.baleCount === "" ? null : values.baleCount,
                   ticketNumber: values.ticketNumber,
                   ladingNumber: values.ladingNumber,
                   driver: values.driver,
@@ -139,7 +140,7 @@ const CreateTicket = () => {
                   correspondingContractId: values.contractId,
                   ticketDate: ticketDate,
                   fieldNum: values.fieldNum,
-                  baleCount: values.baleCount,
+                  baleCount: values.baleCount === "" ? null : values.baleCount,
                   ticketNumber: values.ticketNumber,
                   ladingNumber: values.ladingNumber,
                   driver: values.driver,
