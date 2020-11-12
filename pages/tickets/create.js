@@ -172,8 +172,7 @@ const CreateTicket = () => {
                       className="form-input w-full"
                       name="ticketNumber"
                       placeholder="Ticket Number"
-                      autoComplete="ticketNumber"
-                      autoCorrect="off"
+                      autoComplete="on"
                     />
                     {errors.ticketNumber && touched.ticketNumber ? (
                       <div className="text-red-700 ml-2 bg-red-200 px-2 py-1 rounded-sm">
