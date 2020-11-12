@@ -21,11 +21,7 @@ const CreateTicket = () => {
   const [ticketSuccess1, setTicketSuccess1] = useState(false);
   const [ticketSuccess2, setTicketSuccess2] = useState(false);
   const [ticketError, setTicketError] = useState(null);
-  const [lastChosenContractId, setLastChosenContractId] = useState("");
-  const [
-    lastChosenCorrespondingContractId,
-    setLastChosenCorrespondingContractId,
-  ] = useState("");
+
   const [createdTickets, setCreatedTickets] = useState([]);
 
   const [mutate, { data, error, isSuccess }] = useMutation(
@@ -42,7 +38,7 @@ const CreateTicket = () => {
       onSuccess: ({ createTicket }) => {
         let ticketsCreated = [...createdTickets];
         ticketsCreated.push(createTicket);
-        console.log(ticketsCreated);
+
         setCreatedTickets(ticketsCreated);
         const lengthOfGroups = queryCache.getQueryData("tickets").length;
 
@@ -91,12 +87,12 @@ const CreateTicket = () => {
         <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
           <h3>Create Ticket</h3>
         </div>
-        <div className="flex justify-around ">
+        <div className="flex justify-around relative ">
           <div className="w-1/2">
             <Formik
               initialValues={{
-                contractId: lastChosenContractId,
-                correspondingContractId: lastChosenCorrespondingContractId,
+                contractId: "",
+                correspondingContractId: "",
                 ticketDate: ticketDate,
                 fieldNum: "",
                 baleCount: 0,
@@ -162,10 +158,7 @@ const CreateTicket = () => {
                     setTicketError(err);
                   }
                 }
-                setLastChosenContractId(values.contractId);
-                setLastChosenCorrespondingContractId(
-                  values.correspondingContractId
-                );
+
                 setTimeout(() => {
                   setTicketSuccess1(false);
                   setTicketSuccess2(false);
@@ -440,8 +433,10 @@ const CreateTicket = () => {
               <div></div>
             )}
             {ticketSuccess1 && ticketSuccess2 ? (
-              <div className="mx-auto text-white bg-green-500 bg-opacity-75 h-24 w-3/12">
-                Successfully created ticet.
+              <div className="absolute inset-0 flex items-center justify-center ">
+                <div className=" w-64 h-24 text-white bg-green-500 bg-opacity-75 py-8">
+                  <span className="px-4">Successfully created ticet.</span>
+                </div>
               </div>
             ) : (
               <div></div>
