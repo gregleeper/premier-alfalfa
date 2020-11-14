@@ -16,5 +16,24 @@
         "premierAlfalfaProd": {}
       }
     }
+  },
+  "newdev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-premieralfalfaprod-newdev-154750-authRole",
+      "UnauthRoleArn": "arn:aws:iam::110023552828:role/amplify-premieralfalfaprod-newdev-154750-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::110023552828:role/amplify-premieralfalfaprod-newdev-154750-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-premieralfalfaprod-newdev-154750-deployment",
+      "UnauthRoleName": "amplify-premieralfalfaprod-newdev-154750-unauthRole",
+      "StackName": "amplify-premieralfalfaprod-newdev-154750",
+      "StackId": "arn:aws:cloudformation:us-east-1:110023552828:stack/amplify-premieralfalfaprod-newdev-154750/b6d7b560-2530-11eb-acd3-127f049a8fed",
+      "AmplifyAppId": "d1wvc305lyys4k"
+    },
+    "categories": {
+      "auth": {
+        "userPoolGroups": {},
+        "premierAlfalfaProd": {}
+      }
+    }
   }
 }

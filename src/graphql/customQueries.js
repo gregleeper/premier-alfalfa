@@ -775,6 +775,7 @@ export const getContractAndTickets = /* GraphQL */ `
         invoiceId
         ticketDate
         netTons
+        fieldNum
         ticketNumber
         contractId
         correspondingContractId

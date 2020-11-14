@@ -84,6 +84,10 @@ const ContractInfo = () => {
         ),
       },
       {
+        Header: "Field",
+        accessor: "fieldNum",
+      },
+      {
         Header: "Company Name",
         accessor: "contract.contractTo.companyReportName",
       },
@@ -254,6 +258,7 @@ const ContractInfo = () => {
           </div>
           <div className="px-6">
             <div>
+              {console.log(tickets)}
               <Table columns={columns} data={tickets} />
             </div>
           </div>

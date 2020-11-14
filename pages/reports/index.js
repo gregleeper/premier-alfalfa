@@ -60,6 +60,11 @@ const Reports = () => {
                 <a>Inventory Reduction</a>
               </Link>
             </li>
+            <li>
+              <Link href="reports/active-contracts-list">
+                <a>Active Contracts List</a>
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

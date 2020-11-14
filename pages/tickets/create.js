@@ -1,11 +1,12 @@
 import { Formik, Field, Form } from "formik";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import { FormikSelect } from "../../components/formikSelect";
+import { FormikSelect } from "../../components/formikSelectTickets";
 import Layout from "../../components/layout";
 import { API, withSSRContext } from "aws-amplify";
 import { createTicket } from "../../src/graphql/mutations.ts";
 import { listContracts } from "../../src/graphql/queries.ts";
+import { ticketsByContract } from "../../src/graphql/customQueries";
 import DatePicker from "react-datepicker";
 import { truncateString } from "../../utils";
 import { useQuery, useMutation, useQueryCache } from "react-query";
@@ -20,6 +21,13 @@ const CreateTicket = () => {
   const [ticketDate, setTicketDate] = useState(new Date());
   const [ticketSuccess1, setTicketSuccess1] = useState(false);
   const [ticketSuccess2, setTicketSuccess2] = useState(false);
+  const [contractId, setContractId] = useState(null);
+  const [
+    purchasedFromQtyRemaining,
+    setPurchasedFromQuantityRemaining,
+  ] = useState(null);
+  const [soldToQtyRemaining, setSoldToQuantityRemaining] = useState(null);
+  const [correspondingContractId, setCorrespondingContractId] = useState(null);
   const [ticketError, setTicketError] = useState(null);
 
   const [createdTickets, setCreatedTickets] = useState([]);
@@ -46,6 +54,9 @@ const CreateTicket = () => {
         previousData[lengthOfGroups - 1].items.push(createTicket);
         return () => queryCache.setQueryData("tickets", () => [previousData]);
       },
+      onError: ({ ticketError }) => {
+        setTicketError(ticketError);
+      },
     }
   );
 
@@ -67,6 +78,91 @@ const CreateTicket = () => {
     }
   );
 
+  const getPurchasedFromTickets = async () => {
+    const {
+      data: {
+        ticketsByContract: { items: purchasedFromTickets },
+      },
+    } = await API.graphql({
+      query: ticketsByContract,
+      variables: {
+        contractId,
+        limit: 1000,
+      },
+    });
+    if (purchasedFromTickets.length > 0) {
+      const contractNumber = purchasedFromTickets[0].contract.contractNumber;
+      const contractedQty = purchasedFromTickets[0].contract.quantity;
+      const qtyRemaining =
+        contractedQty -
+        purchasedFromTickets.reduce((acc, cv) => acc + cv.netTons, 0);
+
+      setPurchasedFromQuantityRemaining({
+        contractNumber,
+        contractedQty,
+        qtyRemaining,
+      });
+    } else {
+      const contract = contractsData.items.findIndex(
+        (contract) => contract.id === contractId
+      );
+      const myContract = contractsData.items[contract];
+      console.log(myContract);
+      setPurchasedFromQuantityRemaining({
+        contractNumber: myContract.contractNumber,
+        contractedQty: myContract.quantity,
+        qtyRemaining: myContract.quantity,
+      });
+    }
+  };
+
+  const getSoldToTickets = async () => {
+    const {
+      data: {
+        ticketsByContract: { items: soldToTickets },
+      },
+    } = await API.graphql({
+      query: ticketsByContract,
+      variables: {
+        contractId: correspondingContractId,
+        limit: 1000,
+      },
+    });
+
+    if (soldToTickets.length > 0) {
+      const contractNumber = soldToTickets[0].contract.contractNumber;
+      const contractedQty = soldToTickets[0].contract.quantity;
+      const qtyRemaining =
+        contractedQty - soldToTickets.reduce((acc, cv) => acc + cv.netTons, 0);
+
+      setSoldToQuantityRemaining({
+        contractNumber,
+        contractedQty,
+        qtyRemaining,
+      });
+    } else {
+      const contract = contractsData.items.findIndex(
+        (contract) => contract.id === correspondingContractId
+      );
+      const myContract = contractsData.items[contract];
+      console.log(myContract);
+      setSoldToQuantityRemaining({
+        contractNumber: myContract.contractNumber,
+        contractedQty: myContract.quantity,
+        qtyRemaining: myContract.quantity,
+      });
+    }
+  };
+
+  const handleContractIdChange = (value) => {
+    setContractId(value);
+  };
+
+  const handleCorrespondingContractIdChange = (value) => {
+    console.log(value);
+    setCorrespondingContractId(value);
+  };
+
   useEffect(() => {
     if (contractsData) {
       let options = [];
@@ -80,6 +176,15 @@ const CreateTicket = () => {
       setCorrespondingContracts(options);
     }
   }, [contractsData]);
+
+  useEffect(() => {
+    if (contractId) {
+      getPurchasedFromTickets();
+    }
+    if (correspondingContractId) {
+      getSoldToTickets();
+    }
+  }, [contractId, correspondingContractId]);
 
   return (
     <Layout>
@@ -163,12 +268,18 @@ const CreateTicket = () => {
                 setTimeout(() => {
                   setTicketSuccess1(false);
                   setTicketSuccess2(false);
+                  setCorrespondingContractId(null);
+                  setContractId(null);
                 }, 2000);
                 actions.resetForm();
               }}
             >
               {({ isSubmitting, errors, touched, values }) => (
                 <Form>
+                  {/* {values.contractId ? setContractId(values.contractId) : null}
+                  {values.correspondingContractId
+                    ? setCorrespondingContractId(values.correspondingContractId)
+                    : null} */}
                   <div className="w-full mx-auto">
                     <div className="flex justify-between items-center mb-4">
                       <label
@@ -201,6 +312,7 @@ const CreateTicket = () => {
                         component={FormikSelect}
                         options={contracts}
                         name="contractId"
+                        handleChange={handleContractIdChange}
                         placeholder="Contract Number"
                       />
                       {errors.contractId && touched.contractId ? (
@@ -220,6 +332,7 @@ const CreateTicket = () => {
                         className="form-select w-full"
                         component={FormikSelect}
                         options={correspondingContracts}
+                        handleChange={handleCorrespondingContractIdChange}
                         name="correspondingContractId"
                         placeholder="Contract Number"
                       />
@@ -415,9 +528,15 @@ const CreateTicket = () => {
                         Cancel
                       </button>
                       <button
-                        className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
+                        className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:opacity-25"
                         type="submit"
-                        disabled={isSubmitting}
+                        disabled={
+                          isSubmitting ||
+                          (purchasedFromQtyRemaining &&
+                            purchasedFromQtyRemaining.qtyRemaining <= 0) ||
+                          (soldToQtyRemaining &&
+                            soldToQtyRemaining.qtyRemaining < 0.01)
+                        }
                       >
                         Submit
                       </button>
@@ -443,22 +562,77 @@ const CreateTicket = () => {
               <div></div>
             )}
           </div>
-          <div className="w-2/12">
-            <div className="border-b-4 w-full border-gray-600 mb-3 text-center">
-              <h6 className="text-gray-900 text-lg">Created Tickets</h6>
+          <div>
+            <div className="w-2/12">
+              <div className="border-b-4 w-full border-gray-600 mb-3 text-center">
+                <h6 className="text-gray-900 text-lg">Created Tickets</h6>
+              </div>
+              <div>
+                <ul>
+                  {createdTickets.length ? (
+                    createdTickets.map((ticket) => (
+                      <li>{`${truncateString(ticket.id, 7)} - ${
+                        ticket.ticketNumber
+                      }`}</li>
+                    ))
+                  ) : (
+                    <div>0</div>
+                  )}
+                </ul>
+              </div>
             </div>
             <div>
-              <ul>
-                {createdTickets.length ? (
-                  createdTickets.map((ticket) => (
-                    <li>{`${truncateString(ticket.id, 7)} - ${
-                      ticket.ticketNumber
-                    }`}</li>
-                  ))
-                ) : (
-                  <div>0</div>
-                )}
-              </ul>
+              <div className="mt-8 border-b-4 border-gray-600 mb-2">
+                <h6>Chosen Contract Values</h6>
+              </div>
+              {purchasedFromQtyRemaining ? (
+                <div className="bg-blue-300 bg-opacity-50 px-2 py-2">
+                  <p>Purchased From:</p>
+                  <div>
+                    <span>{purchasedFromQtyRemaining.contractNumber}</span>
+                  </div>
+                  <div>
+                    <span>Contract Qty: </span>
+                    <span>{purchasedFromQtyRemaining.contractedQty}</span>
+                  </div>
+                  <div>
+                    <span>Qty Remaining: </span>
+                    <span
+                      className={`${
+                        purchasedFromQtyRemaining.qtyRemaining < 25
+                          ? "text-red-500"
+                          : "text-gray-900"
+                      }`}
+                    >
+                      {purchasedFromQtyRemaining.qtyRemaining.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              ) : null}
+              {soldToQtyRemaining ? (
+                <div className="bg-green-300 bg-opacity-50 px-2 py-2 mt-2">
+                  <p>Sold To:</p>
+                  <div>
+                    <span>{soldToQtyRemaining.contractNumber}</span>
+                  </div>
+                  <div>
+                    <span>Contract Qty: </span>
+                    <span>{soldToQtyRemaining.contractedQty}</span>
+                  </div>
+                  <div>
+                    <span>Qty Remaining: </span>
+                    <span
+                      className={`${
+                        soldToQtyRemaining.qtyRemaining < 25
+                          ? "text-red-500"
+                          : "text-gray-900"
+                      }`}
+                    >
+                      {soldToQtyRemaining.qtyRemaining.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
