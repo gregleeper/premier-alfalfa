@@ -138,7 +138,7 @@ const AllTickets = () => {
       },
       {
         Header: "Field #",
-        accessor: "fieldNumber",
+        accessor: "fieldNum",
         disableFilters: true,
       },
       {
