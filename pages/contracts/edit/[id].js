@@ -289,13 +289,26 @@ const EditContract = () => {
                     <div className="flex justify-between items-center mb-4">
                       <label
                         className="w-1/4 text-gray-900 md:w-1/2"
-                        htmlFor="price"
+                        htmlFor="contractPrice"
                       >
-                        Price
+                        Contract Price
                       </label>
                       <Field
                         className="form-input w-full"
-                        name="price"
+                        name="contractPrice"
+                        type="number"
+                      />
+                    </div>
+                    <div className="flex justify-between items-center mb-4">
+                      <label
+                        className="w-1/4 text-gray-900 md:w-1/2"
+                        htmlFor="salePrice"
+                      >
+                        Sale Price
+                      </label>
+                      <Field
+                        className="form-input w-full"
+                        name="salePrice"
                         type="number"
                       />
                     </div>
