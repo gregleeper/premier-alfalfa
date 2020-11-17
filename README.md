@@ -1,30 +1,35 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Custom built ticketing application for Premier Alfalfa.
 
-## Getting Started
+## Workflow
 
-First, run the development server:
+- Tickets are entered and connected to a purchasing contract and sales contract
+- As a ticket is entered, the app calcualtes the remaining quantity of commodity on the contract to not exceed the contracted quantity.
+- Once ticket is submitted, it is duplicated for tracking purposes
+- Contracts are entered in the contracts section.
+- Vendors are entered in the vendors section. A Contract will have a Vendor.
+- Commodities are entered in the commodities section. A Contract will have a Commodity.
+- Payments are entered in the payments section. A Payment will have multiple Tickets tied to it.
+- Various reports on the ticketing data is found in the Reports section.
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+## Stack Used
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The frontend of the app uses React by way of [NextJS](https://nextjs.org/). The frontend is hosted on [Vercel](https://vercel.com/).
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+The backend of the app was built using [AWS Amplify](https://aws.amazon.com/amplify/) and uses various resources from AWS, including:
 
-## Learn More
+- DynamoDB
+- Appsync
+- Cognito
 
-To learn more about Next.js, take a look at the following resources:
+The API is GraphQL built using Amplify and Appsync and secured via Cognito with the `@auth` directive in Amplify.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Frontend Libraries Used
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+I used several OSS libraries in this app, including:
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/import?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- React Query - used for cache management
+- React Table - used for tabulating data easily
+- React Select - used for searchable options in forms
+- React DatePicker - used for date selection in forms
+- Fromik
+- TailwindCSS
