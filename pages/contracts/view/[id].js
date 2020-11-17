@@ -58,7 +58,7 @@ const ContractInfo = () => {
         disableFilters: true,
         Cell: ({ value }) => (
           <Link href="/tickets/edit/[id]" as={`/tickets/edit/${value}`}>
-            <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline">
+            <a className="text-blue-600 underline hover:text-blue-800 hover:no-underline px-2">
               {" "}
               Edit
             </a>
@@ -252,6 +252,58 @@ const ContractInfo = () => {
                       ? contractInfo.contractTo.zipCode
                       : ""}
                   </span>
+                </div>
+                <div className="mt-6">
+                  <div>
+                    <h6 className="text-gray-900 font-light text-xl text-center">
+                      Running Totals{" "}
+                    </h6>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 mr-2">Number of Loads:</span>
+                    <span className="text-lg text-gray-900">
+                      {tickets.length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 mr-2">
+                      Total Tons Hauled:
+                    </span>
+                    <span className="text-lg text-gray-900">
+                      {tickets.length &&
+                        tickets
+                          .reduce((acc, cv) => acc + cv.netTons, 0)
+                          .toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 mr-2">Qty Remaining:</span>
+                    <span
+                      className={`text-lg ${
+                        tickets.length &&
+                        contractInfo.quantity -
+                          tickets.reduce((acc, cv) => acc + cv.netTons, 0) >=
+                          0
+                          ? "text-gray-900"
+                          : "text-red-600"
+                      } `}
+                    >
+                      {(
+                        contractInfo.quantity -
+                        tickets.reduce((acc, cv) => acc + cv.netTons, 0)
+                      ).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 mr-2">Avg Load Size:</span>
+                    <span className="text-lg text-gray-900">
+                      {tickets.length &&
+                        (
+                          tickets.reduce((acc, cv) => acc + cv.netTons, 0) /
+                          tickets.length
+                        ).toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
