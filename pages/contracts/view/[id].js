@@ -14,6 +14,7 @@ const ContractInfo = () => {
   const { id } = router.query;
   const [tickets, setTickets] = useState([]);
   const [contractInfo, setContractInfo] = useState();
+  const [tonsCredit, setTonsCredit] = useState(0);
 
   const { data: info, refetch } = useQuery(
     ["contractInfo", id],
@@ -36,6 +37,17 @@ const ContractInfo = () => {
       refetchOnMount: false,
     }
   );
+
+  const getPaidTicketsTotalNetTons = () => {
+    const paidTickets = tickets.filter((ticket) => ticket.paymentId);
+    setTonsCredit(paidTickets.reduce((acc, cv) => acc + cv.netTons, 0));
+  };
+
+  useEffect(() => {
+    if (tickets.length) {
+      getPaidTicketsTotalNetTons();
+    }
+  }, [tickets]);
 
   useEffect(() => {
     if (info) {
@@ -132,6 +144,22 @@ const ContractInfo = () => {
             </div>
           );
         },
+      },
+      {
+        Header: "Paid",
+        accessor: "paymentId",
+        disableFilters: true,
+        Cell: ({ row, value }) =>
+          value ? (
+            <Link
+              href="/payments/edit/[id]"
+              as={`/payments/edit/${row.original.paymentId}`}
+            >
+              <a className="text-blue-800 underline hover:text-blue-600 hover:no-underline ">
+                View
+              </a>
+            </Link>
+          ) : null,
       },
     ],
     []
@@ -304,13 +332,18 @@ const ContractInfo = () => {
                         ).toFixed(2)}
                     </span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 mr-2">Tons Credited:</span>
+                    <span className="text-lg text-gray-900">
+                      {tonsCredit.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
           <div className="px-6">
             <div>
-              {console.log(tickets)}
               <Table columns={columns} data={tickets} />
             </div>
           </div>

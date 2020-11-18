@@ -49,6 +49,7 @@ const TicketsByContract = () => {
     } = await API.graphql({
       query: ticketsByContract,
       variables: {
+        limit: 3000,
         contractId,
         sortDirection: "DESC",
         ticketDate: {
@@ -75,6 +76,7 @@ const TicketsByContract = () => {
     } = await API.graphql({
       query: ticketsByContract,
       variables: {
+        limit: 3000,
         contractId,
         sortDirection: "DESC",
         filter: {
@@ -95,6 +97,7 @@ const TicketsByContract = () => {
     } = await API.graphql({
       query: ticketsByContract,
       variables: {
+        limit: 3000,
         contractId,
         ticketDate: {
           between: [
@@ -118,6 +121,7 @@ const TicketsByContract = () => {
     } = await API.graphql({
       query: ticketsByContract,
       variables: {
+        limit: 3000,
         contractId,
         sortDirection: "DESC",
       },
@@ -253,37 +257,70 @@ const TicketsByContract = () => {
           </div>
         </div>
         <div>
-          <table>
-            <thead>
-              <tr>
-                <th>Ticket Number</th>
-                <th>Contract Number</th>
-                <th>Field #</th>
-                <th>Ticket Date</th>
+          {tickets.length ? (
+            <table className="mx-2">
+              <thead>
+                <tr className="">
+                  <th className="px-2">Ticket Number</th>
+                  <th className="px-2">Contract Number</th>
+                  <th className="px-2">Field #</th>
+                  <th className="px-2">Ticket Date</th>
 
-                <th>Gross Weight</th>
-                <th>Tare Wegiht</th>
-                <th>Net Weight</th>
-                <th>Net Tons</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tickets
-                ? tickets.map((ticket) => (
-                    <tr>
-                      <td>{ticket.ticketNumber}</td>
-                      <td>{ticket.contractNumber}</td>
-                      <td>{ticket.fieldNum}</td>
-                      <td>{ticket.ticketDate}</td>
-                      <td>{ticket.grossWeight}</td>
-                      <td>{ticket.tareWeight}</td>
-                      <td>{ticket.netWeight}</td>
-                      <td>{ticket.netTons}</td>
-                    </tr>
-                  ))
-                : null}
-            </tbody>
-          </table>
+                  <th className="px-2">Gross Weight</th>
+                  <th className="px-2">Tare Wegiht</th>
+                  <th className="px-2">Net Weight</th>
+                  <th className="px-2">Net Tons</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tickets
+                  ? tickets.map((ticket) => (
+                      <tr>
+                        <td className="text-center">{ticket.ticketNumber}</td>
+                        <td className="text-center">
+                          {ticket.contract.contractNumber}
+                        </td>
+                        <td className="text-center">{ticket.fieldNum}</td>
+                        <td className="text-center">
+                          {moment(ticket.ticketDate).format("MM/DD/YYYY")}
+                        </td>
+                        <td className="text-center">{ticket.grossWeight}</td>
+                        <td className="text-center">{ticket.tareWeight}</td>
+                        <td className="text-center">{ticket.netWeight}</td>
+                        <td className="text-center">{ticket.netTons}</td>
+                      </tr>
+                    ))
+                  : null}
+                {tickets.length ? (
+                  <tr>
+                    <td className="text-center">Totals:</td>
+                    <td className="text-center"></td>
+
+                    <td className="text-center"></td>
+                    <td className="text-center"></td>
+                    <td className="text-center">
+                      {tickets.reduce((acc, cv) => acc + cv.grossWeight, 0)}
+                    </td>
+                    <td className="text-center">
+                      {tickets.reduce((acc, cv) => acc + cv.tareWeight, 0)}
+                    </td>
+                    <td className="text-center">
+                      {tickets.reduce((acc, cv) => acc + cv.netWeight, 0)}
+                    </td>
+                    <td className="text-center">
+                      {tickets
+                        .reduce((acc, cv) => acc + cv.netTons, 0)
+                        .toFixed(2)}
+                    </td>
+                  </tr>
+                ) : null}
+                <tr>
+                  <td className="text-center">Number of tickets: </td>
+                  <td className="text-center">{tickets.length}</td>
+                </tr>
+              </tbody>
+            </table>
+          ) : null}
         </div>
       </div>
     </Layout>

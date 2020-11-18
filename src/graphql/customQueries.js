@@ -448,6 +448,7 @@ export const ticketsByDate = /* GraphQL */ `
         baleCount
         ticketNumber
         ladingNumber
+        paymentId
         driver
         truckNumber
         grossWeight
@@ -838,6 +839,7 @@ export const getContractAndTickets = /* GraphQL */ `
         fieldNum
         fieldNum
         ticketNumber
+        paymentId
         contractId
         correspondingContractId
         contract {

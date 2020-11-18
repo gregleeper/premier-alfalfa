@@ -182,6 +182,21 @@ const AllTickets = () => {
           );
         },
       },
+      {
+        Header: "Paid",
+        accessor: "paymentId",
+        Cell: ({ row, value }) =>
+          value ? (
+            <Link
+              href="/payments/edit/[id]"
+              as={`/payments/edit/${row.original.paymentId}`}
+            >
+              <a className="text-blue-800 underline hover:text-blue-600 hover:no-underline ">
+                View
+              </a>
+            </Link>
+          ) : null,
+      },
     ],
     []
   );
