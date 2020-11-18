@@ -708,6 +708,66 @@ export const invoicesByContract = /* GraphQL */ `
   }
 `;
 
+export const listContracts = /* GraphQL */ `
+  query ListContracts(
+    $filter: ModelContractFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listContracts(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
 export const getContractAndTickets = /* GraphQL */ `
   query GetContractAndTickets(
     $id: ID!
@@ -775,6 +835,7 @@ export const getContractAndTickets = /* GraphQL */ `
         invoiceId
         ticketDate
         netTons
+        fieldNum
         fieldNum
         ticketNumber
         contractId

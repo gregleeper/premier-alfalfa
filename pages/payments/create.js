@@ -84,6 +84,7 @@ const CreatePayment = () => {
         query: ticketsByContract,
         variables: {
           contractId,
+          limit: 3000,
         },
       });
       return myTickets;
