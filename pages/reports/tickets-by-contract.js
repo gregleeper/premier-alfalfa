@@ -174,8 +174,8 @@ const TicketsByContract = () => {
   return (
     <Layout>
       <div>
-        <div>
-          <h6>Tickets By Contract</h6>
+        <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
+          <h3>Tickets By Contract</h3>
         </div>
         <div className="w-1/2 mx-auto">
           <div>
