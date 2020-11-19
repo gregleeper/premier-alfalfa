@@ -102,6 +102,7 @@ const EditContract = () => {
                 contractType: (contract && contract.contractType) || "",
                 contractState: (contract && contract.contractState) || "",
                 vendorId: contract.vendorId || "",
+                soldTo: contract.soldTo || "",
                 commodityId: (contract && contract.commodityId) || "",
                 quantity: (contract && contract.quantity) || 0,
                 contractPrice: (contract && contract.contractPrice) || 0,
@@ -123,6 +124,7 @@ const EditContract = () => {
                       contractType: values.contractType,
                       contractState: values.contractState,
                       vendorId: values.vendorId,
+                      soldTo: values.soldTo,
                       commodityId: values.commodityId,
                       quantity: values.quantity,
                       contractPrice: values.contractPrice,
@@ -251,6 +253,19 @@ const EditContract = () => {
                         as="select"
                         options={vendorOptions}
                       ></Field>
+                    </div>
+                    <div className="flex justify-between items-center mb-4">
+                      <label
+                        className="text-gray-900 w-1/4 md:w-1/2"
+                        htmlFor="soldTo"
+                      >
+                        Sold To
+                      </label>
+                      <Field
+                        className="form-input w-full"
+                        name="soldTo"
+                        placeholder="Sold To"
+                      />
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label
