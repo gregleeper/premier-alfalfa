@@ -65,6 +65,11 @@ const Reports = () => {
                 <a>Active Contracts List</a>
               </Link>
             </li>
+            <li>
+              <Link href="reports/tickets-by-contract">
+                <a>Tickets By Contract</a>
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import ReactToPrint from "react-to-print";
 import {
   ticketsByContract,
   listContracts,
@@ -9,8 +10,10 @@ import ReactSelect from "react-select";
 import DatePicker from "react-datepicker";
 import { API } from "aws-amplify";
 import Layout from "../../components/layout";
+import { formatMoney } from "../../utils";
 
 const TicketsByContract = () => {
+  let toPrint = useRef(null);
   const [contracts, setContracts] = useState([]);
   const [contractOptions, setContractOptions] = useState([]);
   const [beginDate, setBeginDate] = useState(new Date());
@@ -256,70 +259,168 @@ const TicketsByContract = () => {
             </div>
           </div>
         </div>
-        <div>
+        <div className="px-12 py-4">
+          <ReactToPrint
+            trigger={() => (
+              <a
+                href="#"
+                className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
+              >
+                Print Report
+              </a>
+            )}
+            content={() => toPrint}
+          />
+        </div>
+        <div ref={(el) => (toPrint = el)}>
           {tickets.length ? (
-            <table className="mx-2">
-              <thead>
-                <tr className="">
-                  <th className="px-2">Ticket Number</th>
-                  <th className="px-2">Contract Number</th>
-                  <th className="px-2">Field #</th>
-                  <th className="px-2">Ticket Date</th>
+            <div className="my-6 w-3/4 mx-auto">
+              <div className="flex justify-between text-lg border-2 my-2 border-gray-500">
+                <div className="text-gray-800">
+                  <span className="mx-4">
+                    {tickets[0].contract.contractTo.companyReportName}
+                  </span>
+                  <span>{tickets[0].contract.contractNumber}</span>
+                </div>
+                <div className="text-gray-800 mx-4">
+                  <span>{tickets[0].contract.commodity.name}</span>
+                </div>
+                <div className="mx-4">
+                  <span className="text-lg">{`Price ${
+                    tickets[0].contract.contractPrice
+                      ? formatMoney.format(tickets[0].contract.contractPrice)
+                      : formatMoney.format(tickets[0].contract.salePrice)
+                  }`}</span>
+                </div>
+                <div>
+                  <span className="text-center">Number of tickets: </span>
+                  <span className="text-center">{tickets.length}</span>
+                </div>
+              </div>
+              <table className="mx-2">
+                <thead>
+                  <tr className="text-graty-800 font-semibold">
+                    <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
+                      Ticket Number
+                    </th>
+                    <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
+                      Contract Number
+                    </th>
+                    <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
+                      Field Num
+                    </th>
+                    <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
+                      Ticket Date
+                    </th>
 
-                  <th className="px-2">Gross Weight</th>
-                  <th className="px-2">Tare Wegiht</th>
-                  <th className="px-2">Net Weight</th>
-                  <th className="px-2">Net Tons</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tickets
-                  ? tickets.map((ticket) => (
-                      <tr>
-                        <td className="text-center">{ticket.ticketNumber}</td>
-                        <td className="text-center">
-                          {ticket.contract.contractNumber}
-                        </td>
-                        <td className="text-center">{ticket.fieldNum}</td>
-                        <td className="text-center">
-                          {moment(ticket.ticketDate).format("MM/DD/YYYY")}
-                        </td>
-                        <td className="text-center">{ticket.grossWeight}</td>
-                        <td className="text-center">{ticket.tareWeight}</td>
-                        <td className="text-center">{ticket.netWeight}</td>
-                        <td className="text-center">{ticket.netTons}</td>
-                      </tr>
-                    ))
-                  : null}
-                {tickets.length ? (
+                    <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
+                      Gross Weight
+                    </th>
+                    <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
+                      Tare Wegiht
+                    </th>
+                    <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
+                      Net Weight
+                    </th>
+                    <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
+                      Net Tons
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tickets
+                    ? tickets.map((ticket) => (
+                        <tr>
+                          <td className="text-center">{ticket.ticketNumber}</td>
+                          <td className="text-center">
+                            {ticket.contract.contractNumber}
+                          </td>
+                          <td className="text-center">{ticket.fieldNum}</td>
+                          <td className="text-center">
+                            {moment(ticket.ticketDate).format("MM/DD/YYYY")}
+                          </td>
+                          <td className="text-center">{ticket.grossWeight}</td>
+                          <td className="text-center">{ticket.tareWeight}</td>
+                          <td className="text-center">{ticket.netWeight}</td>
+                          <td className="text-center">{ticket.netTons}</td>
+                        </tr>
+                      ))
+                    : null}
+                  {tickets.length ? (
+                    <tr className="border-t-2 border-gray-800">
+                      <td className="text-center pt-2">Totals:</td>
+                      <td className="text-center pt-2"></td>
+
+                      <td className="text-center pt-2"></td>
+                      <td className="text-center pt-2"></td>
+                      <td className="text-center pt-2">
+                        {tickets
+                          .reduce((acc, cv) => acc + cv.grossWeight, 0)
+                          .toLocaleString(undefined, {
+                            minimumFractionDigits: 0,
+                          })}
+                      </td>
+                      <td className="text-center pt-2">
+                        {tickets
+                          .reduce((acc, cv) => acc + cv.tareWeight, 0)
+                          .toLocaleString(undefined, {
+                            minimumFractionDigits: 0,
+                          })}
+                      </td>
+                      <td className="text-center pt-2">
+                        {tickets
+                          .reduce((acc, cv) => acc + cv.netWeight, 0)
+                          .toLocaleString(undefined, {
+                            minimumFractionDigits: 0,
+                          })}
+                      </td>
+                      <td className="text-center pt-2">
+                        {tickets
+                          .reduce((acc, cv) => acc + cv.netTons, 0)
+
+                          .toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
+                      </td>
+                    </tr>
+                  ) : null}
                   <tr>
-                    <td className="text-center">Totals:</td>
-                    <td className="text-center"></td>
-
-                    <td className="text-center"></td>
-                    <td className="text-center"></td>
-                    <td className="text-center">
-                      {tickets.reduce((acc, cv) => acc + cv.grossWeight, 0)}
-                    </td>
-                    <td className="text-center">
-                      {tickets.reduce((acc, cv) => acc + cv.tareWeight, 0)}
-                    </td>
-                    <td className="text-center">
-                      {tickets.reduce((acc, cv) => acc + cv.netWeight, 0)}
-                    </td>
-                    <td className="text-center">
-                      {tickets
-                        .reduce((acc, cv) => acc + cv.netTons, 0)
-                        .toFixed(2)}
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td className="font-semibold">Contract Quantity:</td>
+                    <td></td>
+                    <td className="font-semibold text-center">
+                      {tickets[0].contract.quantity.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}
                     </td>
                   </tr>
-                ) : null}
-                <tr>
-                  <td className="text-center">Number of tickets: </td>
-                  <td className="text-center">{tickets.length}</td>
-                </tr>
-              </tbody>
-            </table>
+                  {filterByFieldNum || filterByDateRange ? null : (
+                    <tr>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td className="font-semibold">Remaining:</td>
+                      <td className="font-semibold text-center">
+                        {(
+                          tickets[0].contract.quantity -
+                          tickets.reduce((acc, cv) => acc + cv.netTons, 0)
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
+                      </td>
+                    </tr>
+                  )}
+                  <tr></tr>
+                </tbody>
+              </table>
+            </div>
           ) : null}
         </div>
       </div>

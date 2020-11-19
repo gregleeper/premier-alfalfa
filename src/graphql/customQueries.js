@@ -1099,6 +1099,12 @@ export const ticketsByContract = /* GraphQL */ `
           commodityId
           quantity
           contractPrice
+          contractTo {
+            companyReportName
+          }
+          commodity {
+            name
+          }
           salePrice
           terms
           weights
