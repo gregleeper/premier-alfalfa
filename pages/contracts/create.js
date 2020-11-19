@@ -81,6 +81,7 @@ const CreateContract = () => {
                 contractType: "",
                 contractState: "",
                 vendorId: "",
+                soldTo: "",
                 commodityId: "",
                 quantity: 0,
                 contractPrice: 0,
@@ -103,6 +104,7 @@ const CreateContract = () => {
                       contractType: values.contractType,
                       contractState: values.contractState,
                       vendorId: values.vendorId,
+                      soldTo: values.soldTo,
                       commodityId: values.commodityId,
                       quantity: values.quantity,
                       contractPrice: values.contractPrice,
@@ -264,6 +266,19 @@ const CreateContract = () => {
                           {errors.vendorId}
                         </div>
                       ) : null}
+                    </div>
+                    <div className="flex justify-between items-center mb-4">
+                      <label
+                        className="text-gray-900 w-1/4 md:w-1/2"
+                        htmlFor="soldTo"
+                      >
+                        Sold To
+                      </label>
+                      <Field
+                        className="form-input w-full"
+                        name="soldTo"
+                        placeholder="Sold To"
+                      />
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <label

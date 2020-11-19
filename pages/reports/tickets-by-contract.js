@@ -325,6 +325,9 @@ const TicketsByContract = () => {
                     <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
                       Net Tons
                     </th>
+                    <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
+                      Corresponding Contract
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -343,6 +346,9 @@ const TicketsByContract = () => {
                           <td className="text-center">{ticket.tareWeight}</td>
                           <td className="text-center">{ticket.netWeight}</td>
                           <td className="text-center">{ticket.netTons}</td>
+                          <td className="text-center">
+                            {ticket.corresondingContract.contractNumber}
+                          </td>
                         </tr>
                       ))
                     : null}
