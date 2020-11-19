@@ -16,13 +16,19 @@ const TicketsByContract = () => {
   let toPrint = useRef(null);
   const [contracts, setContracts] = useState([]);
   const [contractOptions, setContractOptions] = useState([]);
+  const [allContractTickets, setAllContractTickets] = useState([]);
   const [beginDate, setBeginDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [fieldNum, setFieldNum] = useState("");
+  const [correspondingContractId, setCorrespondingContractId] = useState(null);
   const [ticketDate, setTicketDate] = useState(null);
   const [contractId, setContractId] = useState(null);
   const [filterByDateRange, setFilterByDateRange] = useState(false);
   const [filterByFieldNum, setFilterByFielNum] = useState(false);
+  const [
+    filterByCorrespondingContract,
+    setFilterByCorrespondingContract,
+  ] = useState(false);
   const [tickets, setTickets] = useState([]);
 
   const { data: contractsData } = useQuery(
@@ -68,6 +74,7 @@ const TicketsByContract = () => {
     });
     if (myTickets?.items?.length) {
       setTickets(myTickets.items);
+      setAllContractTickets(myTickets.items);
     } else {
       setTickets([]);
     }
@@ -89,6 +96,7 @@ const TicketsByContract = () => {
     });
     if (myTickets?.items?.length) {
       setTickets(myTickets.items);
+      setAllContractTickets(myTickets.items);
     } else {
       setTickets([]);
     }
@@ -113,6 +121,7 @@ const TicketsByContract = () => {
     });
     if (myTickets?.items?.length) {
       setTickets(myTickets.items);
+      setAllContractTickets(myTickets.items);
     } else {
       setTickets([]);
     }
@@ -131,9 +140,18 @@ const TicketsByContract = () => {
     });
     if (myTickets?.items?.length) {
       setTickets(myTickets.items);
+      setAllContractTickets(myTickets.items);
     } else {
       setTickets([]);
     }
+  };
+
+  const handleFilterByCorrespondingContract = (id) => {
+    setCorrespondingContractId(id);
+  };
+
+  const handleClearCorrespondingContract = () => {
+    setCorrespondingContractId(null);
   };
 
   const handleFetchQueries = () => {
@@ -146,6 +164,7 @@ const TicketsByContract = () => {
     } else {
       getTickets();
     }
+    setCorrespondingContractId(null);
   };
 
   const handleFieldNumChange = (e) => {
@@ -169,7 +188,17 @@ const TicketsByContract = () => {
     }
   }, [contractsData]);
 
-  console.log(tickets);
+  useEffect(() => {
+    if (correspondingContractId) {
+      setTickets(
+        tickets.filter(
+          (ticket) => ticket.corresondingContract.id === correspondingContractId
+        )
+      );
+    } else {
+      setTickets(allContractTickets);
+    }
+  }, [correspondingContractId]);
 
   return (
     <Layout>
@@ -259,6 +288,16 @@ const TicketsByContract = () => {
             </div>
           </div>
         </div>
+        <div className="w-1/2 mx-auto mt-4">
+          {correspondingContractId ? (
+            <button
+              className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:opacity-25"
+              onClick={() => handleClearCorrespondingContract()}
+            >
+              Clear Corresponding Contract Filter
+            </button>
+          ) : null}
+        </div>
         <div className="px-12 py-4">
           <ReactToPrint
             trigger={() => (
@@ -274,30 +313,30 @@ const TicketsByContract = () => {
         </div>
         <div ref={(el) => (toPrint = el)}>
           {tickets.length ? (
-            <div className="my-6 w-3/4 mx-auto">
-              <div className="flex justify-between text-lg border-2 my-2 border-gray-500">
+            <div className="my-6 ">
+              <div className="flex justify-between text-lg border-2 my-2 border-gray-500 mx-4">
                 <div className="text-gray-800">
-                  <span className="mx-4">
+                  <span className="mx-2">
                     {tickets[0].contract.contractTo.companyReportName}
                   </span>
                   <span>{tickets[0].contract.contractNumber}</span>
                 </div>
-                <div className="text-gray-800 mx-4">
+                <div className="text-gray-800 mx-2">
                   <span>{tickets[0].contract.commodity.name}</span>
                 </div>
-                <div className="mx-4">
+                <div className="mx-2">
                   <span className="text-lg">{`Price ${
                     tickets[0].contract.contractPrice
                       ? formatMoney.format(tickets[0].contract.contractPrice)
                       : formatMoney.format(tickets[0].contract.salePrice)
                   }`}</span>
                 </div>
-                <div>
+                <div className="mx-2">
                   <span className="text-center">Number of tickets: </span>
                   <span className="text-center">{tickets.length}</span>
                 </div>
               </div>
-              <table className="mx-2">
+              <table className="mx-4">
                 <thead>
                   <tr className="text-graty-800 font-semibold">
                     <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
@@ -347,7 +386,16 @@ const TicketsByContract = () => {
                           <td className="text-center">{ticket.netWeight}</td>
                           <td className="text-center">{ticket.netTons}</td>
                           <td className="text-center">
-                            {ticket.corresondingContract.contractNumber}
+                            <button
+                              className=" text-blue-800 no-underline hover:underline hover:text-blue-600"
+                              onClick={() =>
+                                handleFilterByCorrespondingContract(
+                                  ticket.corresondingContract.id
+                                )
+                              }
+                            >
+                              {ticket.corresondingContract.contractNumber}
+                            </button>
                           </td>
                         </tr>
                       ))
@@ -404,7 +452,9 @@ const TicketsByContract = () => {
                       })}
                     </td>
                   </tr>
-                  {filterByFieldNum || filterByDateRange ? null : (
+                  {filterByFieldNum ||
+                  filterByDateRange ||
+                  correspondingContractId ? null : (
                     <tr>
                       <td></td>
                       <td></td>
