@@ -10,12 +10,12 @@ import {
   invoicesSorted,
   ticketsByContract,
 } from "../../src/graphql/customQueries";
+import DatePicker from "react-datepicker";
 
 const AccountsPayable = () => {
-  const [invoices, setInvoices] = useState([]);
   const [activePurchaseContracts, setActivePurchaseContracts] = useState([]);
-  const [activeContractIds, setActiveContractIds] = useState([]);
   const [contractsTotals, setContractsTotals] = useState([]);
+  const [endDate, setEndDate] = useState(new Date());
   const [totals, setTotals] = useState([]);
   const [vendorTotals, setVendorTotals] = useState([]);
   let toPrint = useRef(null);
@@ -58,6 +58,7 @@ const AccountsPayable = () => {
           type: "Ticket",
           sortDirection: "DESC",
           limit: 2000,
+          ticketDate: { le: endDate },
           filter: {
             paymentId: { attributeExists: false },
           },
@@ -83,6 +84,11 @@ const AccountsPayable = () => {
     getTicketsByContract();
   };
 
+  const clearReport = () => {
+    setContractsTotals([]);
+    setVendorTotals([]);
+  };
+
   useEffect(() => {
     if (contractData) {
       setActivePurchaseContracts(contractData.items);
@@ -102,41 +108,59 @@ const AccountsPayable = () => {
       obj.contracts = myContracts;
       array.push(obj);
     });
-
+    array.sort((a, b) => {
+      let nameA = a.company;
+      let nameB = b.company;
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      return 0;
+    });
     setVendorTotals(array);
   };
 
   const getZeroToSevenDaysOld = (tickets) => {
     return tickets.filter(
-      (ticket) => moment().diff(moment(ticket.ticketDate), "days") < 8
+      (ticket) => moment(endDate).diff(moment(ticket.ticketDate), "days") < 8
     );
   };
 
   const getEightToFourteenDaysOld = (tickets) => {
     return tickets.filter(
       (ticket) =>
-        moment().diff(moment(ticket.ticketDate), "days") >= 8 &&
-        moment().diff(moment(ticket.ticketDate), "days") < 15
+        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 8 &&
+        moment(endDate).diff(moment(ticket.ticketDate), "days") < 15
     );
   };
 
   const getFifteenToTwentyOneDaysOld = (tickets) => {
     return tickets.filter(
       (ticket) =>
-        moment().diff(moment(ticket.ticketDate), "days") >= 15 &&
-        moment().diff(moment(ticket.ticketDate), "days") < 22
+        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 15 &&
+        moment(endDate).diff(moment(ticket.ticketDate), "days") < 22
     );
   };
 
   const getTwentyTwoandOverDays = (tickets) => {
     return tickets.filter(
-      (ticket) => moment().diff(moment(ticket.ticketDate), "days") >= 22
+      (ticket) => moment(endDate).diff(moment(ticket.ticketDate), "days") >= 22
     );
   };
 
   return (
     <Layout>
       <div className="mx-16">
+        <div>
+          <span>End Date</span>
+          <DatePicker
+            selected={endDate}
+            onChange={(date) => setEndDate(date)}
+            className="form-input w-full"
+          />
+        </div>
         <div className="px-12 py-4">
           <ReactToPrint
             trigger={() => (
@@ -157,11 +181,21 @@ const AccountsPayable = () => {
               Get Data
             </button>
           </div>
+          <div className="mt-4">
+            <button
+              className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
+              onClick={() => clearReport()}
+            >
+              Clear
+            </button>
+          </div>
         </div>
         <div ref={(el) => (toPrint = el)}>
           <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
             <h3>Accounts Payable Report</h3>
-            <span>{moment().format("MM/DD/YY")}</span>
+            <span className="text-gray-900 font-light">
+              Ending: {moment(endDate).format("MM/DD/YY")}
+            </span>
           </div>
 
           <div className="mx-12 mb-12">

@@ -247,6 +247,7 @@ const CommodityTotals = () => {
   };
 
   const computeWeekTotalAvg = () => {
+    console.log(totals);
     let count = 0;
     totals.map((t) => {
       if (t.weekAvgTons) {
