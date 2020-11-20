@@ -58,7 +58,7 @@ const AccountsPayable = () => {
           type: "Ticket",
           sortDirection: "DESC",
           limit: 2000,
-          ticketDate: { le: endDate },
+          ticketDate: { le: moment(endDate).endOf("date") },
           filter: {
             paymentId: { attributeExists: false },
           },
