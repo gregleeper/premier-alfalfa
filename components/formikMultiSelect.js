@@ -11,7 +11,6 @@ export function FormikMultiSelect({
   isClearable,
   ...props
 }) {
-  console.log(value);
   const handleChange = (value) => {
     onChange(componentName, value);
   };

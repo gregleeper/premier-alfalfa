@@ -25,6 +25,7 @@ const CreatePayment = () => {
   const [dateEntered, setDateEntered] = useState(new Date());
   const [contractId, setContractId] = useState(null);
   const [tickets, setTickets] = useState([]);
+  const [chosenTickets, setChosenTickets] = useState([]);
   const [ticketOptions, setTicketOptions] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [totalPounds, setTotalPounds] = useState(0);
@@ -65,6 +66,23 @@ const CreatePayment = () => {
     },
     {
       onSuccess: ({ createPayment }) => {
+        if (chosenTickets.length) {
+          chosenTickets.map(async (ticket) => {
+            const {
+              data: { updateTicket: myTicket },
+            } = await API.graphql({
+              query: updateTicket,
+              variables: {
+                input: {
+                  id: ticket.value,
+                  paymentId: createPayment.id,
+                },
+              },
+            });
+            console.log(myTicket);
+          });
+        }
+
         const lengthOfGroups = cache.getQueryData("payments").length;
         // const items =  cache.getQueryData("payments")[lengthOfGroups - 1]
         //   .items;
@@ -218,7 +236,7 @@ const CreatePayment = () => {
       (accumulator, currentValue) => accumulator + currentValue.netWeight,
       0
     );
-    console.log(total);
+
     setTotalPounds(total);
   };
 
@@ -261,19 +279,7 @@ const CreatePayment = () => {
             }}
             validationSchema={CreatePaymentSchema}
             onSubmit={async (values, actions) => {
-              values.tickets.map(async (ticket) => {
-                const {
-                  data: { updateTicket: myTicket },
-                } = await API.graphql({
-                  query: updateTicket,
-                  variables: {
-                    input: {
-                      id: ticket.value,
-                      paymentId: id,
-                    },
-                  },
-                });
-              });
+              setChosenTickets(values.tickets);
               let input = {
                 type: "Payment",
                 tFileNumber: values.tFileNumber,
@@ -287,17 +293,6 @@ const CreatePayment = () => {
               };
               mutate(input);
 
-              values.tickets.map(async (ticket) => {
-                const {
-                  data: { updateTicket: myTicket },
-                } = await API.graphql({
-                  query: updateTicket,
-                  variables: {
-                    id: ticket.value,
-                    paymentId: payment.id,
-                  },
-                });
-              });
               router.back();
             }}
           >
@@ -310,7 +305,6 @@ const CreatePayment = () => {
               setFieldValue,
             }) => (
               <Form>
-                {console.log("values: ", values)}
                 {values.contractId ? setContractId(values.contractId) : null}
                 {values.tickets && values.tickets.length
                   ? (computeTotalPounds(values.tickets),
