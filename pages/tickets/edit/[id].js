@@ -3,13 +3,25 @@ import { useState, useEffect } from "react";
 import Layout from "../../../components/layout";
 import { FormikSelect } from "../../../components/formikSelect";
 import { API, withSSRContext } from "aws-amplify";
-import { updateTicket } from "../../../src/graphql/mutations.ts";
+import { updateTicket, deleteTicket } from "../../../src/graphql/mutations.ts";
 import { listContracts, getTicket } from "../../../src/graphql/queries.ts";
 import { ticketsByContract } from "../../../src/graphql/customQueries";
 import DatePicker from "react-datepicker";
 import { useRouter } from "next/router";
 import { QueryCache, useQuery, useMutation } from "react-query";
+import Modal from "react-modal";
 import { CreateTicketSchema } from "../../../components/validationSchema";
+
+const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+  },
+};
 
 const EditTicket = () => {
   const queryCache = new QueryCache();
@@ -25,6 +37,7 @@ const EditTicket = () => {
   const [soldToQtyRemaining, setSoldToQuantityRemaining] = useState(null);
   const [correspondingContractId, setCorrespondingContractId] = useState(null);
   const router = useRouter();
+  const [modalIsOpen, setIsOpen] = useState(false);
   const { id } = router.query;
 
   const [mutate, { data, error, isSuccess }] = useMutation(
@@ -45,6 +58,27 @@ const EditTicket = () => {
         let previousData = queryCache.getQueryData("tickets");
         previousData[lengthOfGroups - 1].items.push(updateTicket);
         return () => queryCache.setQueryData("tickets", () => [previousData]);
+      },
+    }
+  );
+
+  const [
+    deleteTicketMutation,
+    { data: deletedTicket, error: errorDeleting, isSuccess: deleteSuccess },
+  ] = useMutation(
+    async () => {
+      const { data: ticketData } = await API.graphql({
+        query: deleteTicket,
+        variables: {
+          input: { id },
+        },
+      });
+      return ticketData;
+    },
+    {
+      onSuccess: () => {
+        queryCache.invalidateQueries("tickets");
+        router.back();
       },
     }
   );
@@ -196,11 +230,50 @@ const EditTicket = () => {
     setCorrespondingContractId(value);
   };
 
+  const handleDeleteTicket = () => {
+    deleteTicketMutation();
+  };
+
+  const openModal = () => {
+    setIsOpen(true);
+  };
+  const closeModal = () => {
+    setIsOpen(false);
+  };
   return (
     <Layout>
       <div className="">
         <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
           <h3>Edit Ticket</h3>
+        </div>
+
+        <div>
+          <Modal
+            isOpen={modalIsOpen}
+            onRequestClose={() => closeModal}
+            style={customStyles}
+            contentLabel="Delete ticket"
+          >
+            <div>
+              <p>Are you sure you want to delete this ticket?</p>
+              <div>
+                <button
+                  className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+                  type="button"
+                  onClick={() => handleDeleteTicket()}
+                >
+                  Delete Ticket
+                </button>
+                <button
+                  className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
+                  type="button"
+                  onClick={() => closeModal()}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </Modal>
         </div>
         <div className="flex justify-around relative">
           <div className="w-3/4">
@@ -572,6 +645,15 @@ const EditTicket = () => {
                 </div>
               </div>
             ) : null}
+            <div className="mt-24">
+              <button
+                className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+                type="button"
+                onClick={() => openModal()}
+              >
+                Delete Ticket
+              </button>
+            </div>
           </div>
         </div>
       </div>

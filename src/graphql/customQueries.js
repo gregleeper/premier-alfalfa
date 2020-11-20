@@ -588,16 +588,67 @@ export const contractsByType = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
-        tickets(filter: $ticketFilter, limit: 5000) {
+        tickets(filter: $ticketFilter, limit: 2000) {
           items {
             id
             ticketDate
+
             netTons
             netWeight
             tareWeight
             ticketNumber
             updatedAt
             invoiceId
+            contract {
+              id
+              contractNumber
+              contractType
+              contractState
+              contractTo {
+                companyReportName
+              }
+              vendorId
+              commodityId
+              commodity {
+                name
+              }
+              quantity
+              contractPrice
+              salePrice
+              terms
+              weights
+              basis
+              remarks
+              beginDate
+              endDate
+              dateSigned
+              purchasedFrom
+              soldTo
+              createdAt
+              updatedAt
+            }
+            corresondingContract {
+              id
+              contractNumber
+              contractType
+              contractState
+              vendorId
+              commodityId
+              quantity
+              contractPrice
+              salePrice
+              terms
+              weights
+              basis
+              remarks
+              beginDate
+              endDate
+              dateSigned
+              purchasedFrom
+              soldTo
+              createdAt
+              updatedAt
+            }
           }
           nextToken
         }
@@ -1151,6 +1202,75 @@ export const ticketsByContract = /* GraphQL */ `
         tareWeight
         netWeight
         netTons
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+export const paymentsByContract = /* GraphQL */ `
+  query PaymentsByContract(
+    $contractId: ID
+    $date: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelPaymentFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    paymentsByContract(
+      contractId: $contractId
+      date: $date
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        type
+        tFileNumber
+        contractId
+        contract {
+          id
+          contractNumber
+          contractType
+          contractState
+          vendorId
+          commodityId
+          quantity
+          contractPrice
+          salePrice
+          terms
+          weights
+          basis
+          remarks
+          beginDate
+          endDate
+          dateSigned
+          purchasedFrom
+          soldTo
+          createdAt
+          updatedAt
+        }
+        tickets {
+          items {
+            ticketNumber
+            netTons
+            netWeight
+            id
+          }
+          nextToken
+        }
+        checkNumber
+        date
+        amount
+        totalPounds
+        invoiceId
+        settlementId
+        tonsCredit
+        paymentType
         createdAt
         updatedAt
       }

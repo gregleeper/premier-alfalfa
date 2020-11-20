@@ -6,11 +6,13 @@ import DatePicker from "react-datepicker";
 import { computeAvgNetTons, groupBy } from "../../utils";
 import moment from "moment";
 import Layout from "../../components/layout";
-import { listReportTickets } from "../../src/graphql/customQueries";
+import {
+  ticketsByDate,
+  contractsByType,
+} from "../../src/graphql/customQueries";
 import { listCommoditys } from "../../src/graphql/queries.ts";
 import { useQuery, useInfiniteQuery, useQueryCache } from "react-query";
 import { ReactQueryDevtools } from "react-query-devtools";
-import { TypeFormatFlags } from "typescript";
 
 const CommodityTotals = () => {
   const cache = useQueryCache();
@@ -40,97 +42,104 @@ const CommodityTotals = () => {
     return myCommodities;
   });
 
-  const { data: initTicketsData, refetch, isFetched } = useQuery(
-    "commodityTonTotals",
-    async () => {
-      const {
-        data: { listTickets: initTickets },
-      } = await API.graphql({
-        query: listReportTickets,
-        variables: {
-          limit: 2000,
-          filter: {
-            ticketDate: {
-              between: [
-                moment(beginDate).startOf("day"),
-                moment(endDate).endOf("day"),
-              ],
-            },
-          },
-        },
-      });
-      return initTickets;
-    },
-    {
-      enabled: false,
-      cacheTime: 1000 * 60 * 59,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchIntervalInBackground: false,
-      refetchOnReconnect: true,
-      forceFetchOnMount: false,
-      keepPreviousData: false,
-    }
-  );
+  // const { data: initTicketsData, refetch, isFetched } = useQuery(
+  //   "commodityTonTotals",
+  //   async () => {
+  //     const {
+  //       data: { ticketsByDate: initTickets },
+  //     } = await API.graphql({
+  //       query: listReportTickets,
+  //       variables: {
+  //         limit: 2000,
+  //         filter: {
+  //           ticketDate: {
+  //             between: [
+  //               moment(beginDate).startOf("day"),
+  //               moment(endDate).endOf("day"),
+  //             ],
+  //           },
+  //         },
+  //       },
+  //     });
+  //     return initTickets;
+  //   },
+  //   {
+  //     enabled: false,
+  //     cacheTime: 1000 * 60 * 59,
+  //     refetchOnWindowFocus: false,
+  //     refetchOnMount: false,
+  //     refetchIntervalInBackground: false,
+  //     refetchOnReconnect: true,
+  //     forceFetchOnMount: false,
+  //     keepPreviousData: false,
+  //   }
+  // );
 
-  const {
-    status,
-    data: ticketsDataInfinite,
-    error,
-    isFetching,
-    isFetchingMore,
-    isSuccess,
-    fetchMore,
-    canFetchMore,
-  } = useInfiniteQuery(
-    "commodityTonTotals",
-    async (
-      key,
-      nextToken = cache.getQueryData("commodityTonTotals").nextToken
-    ) => {
-      const {
-        data: { listTickets: ticketData },
-      } = await API.graphql({
-        query: listReportTickets,
-        variables: {
-          limit: 2000,
-          filter: {
-            ticketDate: {
-              between: [
-                moment(beginDate).startOf("day"),
-                moment(endDate).endOf("day"),
-              ],
-            },
-          },
-          nextToken,
-        },
-      });
-      return ticketData;
-    },
-    {
-      enabled: false,
-      getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
-      cacheTime: 1000 * 60 * 60,
-      refetchOnWindowFocus: false,
-      forceFetchOnMount: false,
-      keepPreviousData: false,
-    }
-  );
+  // const {
+  //   status,
+  //   data: ticketsDataInfinite,
+  //   error,
+  //   isFetching,
+  //   isFetchingMore,
+  //   isSuccess,
+  //   fetchMore,
+  //   canFetchMore,
+  // } = useInfiniteQuery(
+  //   "commodityTonTotals",
+  //   async (
+  //     key,
+  //     nextToken = cache.getQueryData("commodityTonTotals").nextToken
+  //   ) => {
+  //     const {
+  //       data: { ticketsByDate: ticketData },
+  //     } = await API.graphql({
+  //       query: listReportTickets,
+  //       variables: {
+  //         limit: 2000,
+  //         filter: {
+  //           ticketDate: {
+  //             between: [
+  //               moment(beginDate).startOf("day"),
+  //               moment(endDate).endOf("day"),
+  //             ],
+  //           },
+  //         },
+  //         nextToken,
+  //       },
+  //     });
+  //     return ticketData;
+  //   },
+  //   {
+  //     enabled: false,
+  //     getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
+  //     cacheTime: 1000 * 60 * 60,
+  //     refetchOnWindowFocus: false,
+  //     forceFetchOnMount: false,
+  //     keepPreviousData: false,
+  //   }
+  // );
 
   const { data: ytdTicketsData, refetch: refetchYTD } = useQuery(
     "commodityTonTotalsYTD",
     async () => {
       const {
-        data: { listTickets: initTicketsYTD },
+        data: { contractsByType: initTicketsYTD },
       } = await API.graphql({
-        query: listReportTickets,
+        query: contractsByType,
         variables: {
-          limit: 2000,
+          limit: 20,
           filter: {
+            contractState: { eq: "ACTIVE" },
+          },
+          ticketFilter: {
             ticketDate: {
-              between: [moment().startOf("year"), moment(endDate).endOf("day")],
+              between: [
+                moment().startOf("year"),
+                moment(endDate).endOf("date"),
+              ],
             },
           },
+          contractType: "SALE",
         },
       });
 
@@ -143,8 +152,6 @@ const CommodityTotals = () => {
       refetchOnMount: false,
       refetchIntervalInBackground: false,
       refetchOnReconnect: true,
-      forceFetchOnMount: false,
-      keepPreviousData: false,
     }
   );
 
@@ -152,11 +159,12 @@ const CommodityTotals = () => {
     status: ytdStatus,
     data: ytdData,
     error: ytdError,
+    isFetched,
     isFetching: ytdIsFetching,
     isFetchingMore: ytdIsFetchingMore,
     fetchMore: ytdFetchMore,
-    canFetchMore: ytdCanFetchMore,
-    isSuccess: ytdInfiniteIsSuccess,
+    canFetchMore,
+    isSuccess,
   } = useInfiniteQuery(
     "commodityTonTotalsYTD",
     async (
@@ -164,16 +172,21 @@ const CommodityTotals = () => {
       nextToken = cache.getQueryData("commodityTonTotalsYTD").nextToken
     ) => {
       const {
-        data: { listTickets: ticketData },
+        data: { contractsByType: ticketData },
       } = await API.graphql({
-        query: listReportTickets,
+        query: contractsByType,
         variables: {
-          limit: 2000,
+          limit: 20,
+          contractType: "SALE",
           filter: {
+            contractState: { eq: "ACTIVE" },
+          },
+          ticketFilter: {
             ticketDate: {
               between: [moment().startOf("year"), moment(endDate).endOf("day")],
             },
           },
+
           nextToken,
         },
       });
@@ -184,32 +197,48 @@ const CommodityTotals = () => {
       getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
       cacheTime: 1000 * 60 * 60,
       refetchOnWindowFocus: false,
-      forceFetchOnMount: false,
-      keepPreviousData: false,
     }
   );
 
   const computeTotals = () => {
+    const startBeginDate = moment(beginDate).startOf("date");
+    const endOfEndDate = moment(endDate).endOf("date");
+
+    const filteredByWeek = ticketsYTD.filter(
+      (ticket) =>
+        moment(ticket.ticketDate).isSameOrAfter(startBeginDate) &&
+        moment(ticket.ticketDate).isSameOrBefore(endOfEndDate)
+    );
+    console.log("week: ", filteredByWeek);
     const groupedYTD = groupBy(
       ticketsYTD,
       (ticket) => ticket.contract.commodity.name
     );
     const grouped = groupBy(
-      tickets,
+      filteredByWeek,
       (ticket) => ticket.contract.commodity.name
     );
     let array = [];
     commodities.map((c) => {
       let commodityTotal = {};
       const group = grouped.get(c.name);
+      console.log(group);
       const ytdGroup = groupedYTD.get(c.name);
       commodityTotal.commodity = c.name;
 
       commodityTotal.weekNumLoads = group ? group.length : 0;
       commodityTotal.yearNumLoads = ytdGroup ? ytdGroup.length : 0;
 
-      commodityTotal.weekAvgTons = group ? computeAvgNetTons(group) : 0;
-      commodityTotal.yearAvgTons = ytdGroup ? computeAvgNetTons(ytdGroup) : 0;
+      commodityTotal.weekAvgTons = group
+        ? (
+            group.reduce((acc, cv) => acc + cv.netTons, 0) / group.length
+          ).toFixed(2)
+        : 0;
+      commodityTotal.yearAvgTons = ytdGroup
+        ? (
+            ytdGroup.reduce((acc, cv) => acc + cv.netTons, 0) / ytdGroup.length
+          ).toFixed(2)
+        : 0;
 
       array.push(commodityTotal);
     });
@@ -245,7 +274,6 @@ const CommodityTotals = () => {
 
   useEffect(() => {
     if (totals.length) {
-      console.log(totals);
       totals.sort((a, b) => {
         let nameA = a.commodity;
         let nameB = b.commodity;
@@ -264,65 +292,64 @@ const CommodityTotals = () => {
     if (ytdTicketsData) {
       ytdFetchMore();
     }
-    if (ytdCanFetchMore && !ytdIsFetching) {
+    if (ytdTicketsData && canFetchMore && !ytdIsFetchingMore) {
       ytdFetchMore();
     }
-    if (ytdTicketsData && ytdTicketsData.length && !ytdCanFetchMore) {
+    if (ytdTicketsData && ytdTicketsData.length && !canFetchMore) {
       compileDataYTD();
     }
   }, [ytdTicketsData]);
 
-  useEffect(() => {
-    if (initTicketsData) {
-      fetchMore();
-    }
-    if (initTicketsData && canFetchMore && !isFetchingMore) {
-      fetchMore();
-    }
+  // useEffect(() => {
+  //   if (initTicketsData) {
+  //     fetchMore();
+  //   }
+  //   if (initTicketsData && canFetchMore && !isFetchingMore) {
+  //     fetchMore();
+  //   }
 
-    if (initTicketsData && initTicketsData.length && !canFetchMore) {
-      compileData();
-    }
-  }, [initTicketsData]);
+  //   if (initTicketsData && initTicketsData.length && !canFetchMore) {
+  //     compileData();
+  //   }
+  // }, [initTicketsData]);
 
   useEffect(() => {
-    if (tickets.length > 0 && ticketsYTD.length > 0) {
+    if (ticketsYTD.length > 0) {
       computeTotals();
       cache.setQueryData("cctDates", {
         beginDate: beginDate,
         endDate: endDate,
       });
     }
-  }, [tickets, ticketsYTD]);
+  }, [ticketsYTD]);
 
   const handleFetchQueries = () => {
     setTickets([]);
     setTicketsYTD([]);
     setTotals([]);
 
-    refetch();
     refetchYTD();
   };
 
-  const compileData = () => {
-    if (isInitialLoad) {
-      let array = [...tickets];
+  // const compileData = () => {
+  //   if (isInitialLoad) {
+  //     let array = [...tickets];
 
-      ticketsDataInfinite &&
-        ticketsDataInfinite.map((group, i) => {
-          group.items.map((item) => array.push(item));
-        });
-      setTickets(array);
-      setIsInitialLoad(false);
-    } else {
-      let array = [];
-      ticketsDataInfinite &&
-        ticketsDataInfinite.map((group, i) => {
-          group.items.map((item) => array.push(item));
-        });
-      setTickets(array);
-    }
-  };
+  //     ticketsDataInfinite &&
+  //       ticketsDataInfinite.map((group, i) => {
+  //         group.items.map((item) => array.push(item));
+  //       });
+  //     setTickets(array);
+  //     setIsInitialLoad(false);
+  //   } else {
+  //     let array = [];
+  //     ticketsDataInfinite &&
+  //       ticketsDataInfinite.map((group, i) => {
+  //         group.items.map((item) => array.push(item));
+  //       });
+  //     setTickets(array);
+  //   }
+  // };
 
   const compileDataYTD = () => {
     if (isInitialLoad) {
@@ -330,20 +357,26 @@ const CommodityTotals = () => {
 
       ytdData &&
         ytdData.map((group, i) => {
-          group.items.map((item) => array.push(item));
+          group.items.map((item) => {
+            item.tickets.items.length ? array.push(item.tickets.items) : null;
+          });
         });
-      setTicketsYTD(array);
+
+      setTicketsYTD(array.flat());
+
       setIsInitialLoad(false);
     } else {
       let array = [];
       ytdData &&
         ytdData.map((group, i) => {
-          group.items.map((item) => array.push(item));
+          group.items.map((item) => {
+            item.tickets.items.length ? array.push(item.tickets.items) : null;
+          });
         });
-      setTicketsYTD(array);
+      setTicketsYTD(array.flat());
     }
   };
-
+  console.log(ticketsYTD);
   const columns = useMemo(
     () => [
       {
@@ -446,10 +479,7 @@ const CommodityTotals = () => {
             <div className="">
               {!isFetched ? (
                 <p>Choose dates to generate report.</p>
-              ) : isSuccess &&
-                ytdInfiniteIsSuccess &&
-                !canFetchMore &&
-                !ytdCanFetchMore ? (
+              ) : isSuccess && !canFetchMore ? (
                 <table>
                   <thead>
                     <tr>
