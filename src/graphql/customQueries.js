@@ -229,6 +229,10 @@ export const getInvoice = /* GraphQL */ `
       id
       beginDate
       invoiceNumber
+      contractId
+      contract {
+        salePrice
+      }
       endDate
       tickets {
         items {

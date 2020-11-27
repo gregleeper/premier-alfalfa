@@ -5,7 +5,8 @@ import moment from "moment";
 import Layout from "../../../components/layout";
 import {
   getSettlement,
-  settlementsByContract,
+  paymentsByContract,
+  ticketsByContract,
 } from "../../../src/graphql/customQueries";
 import { formatMoney } from "../../../utils";
 import ReactToPrint from "react-to-print";
@@ -13,11 +14,14 @@ const Settlement = () => {
   const router = useRouter();
   const { id } = router.query;
   const [settlement, setSettlement] = useState();
+  const [contractId, setContractId] = useState(null);
   const [tickets, setTickets] = useState([]);
-  const [beginningBalance, setBeginningBalance] = useState(0);
-  const [previousUnpaidSettlements, setPreviousUnpaidSettlements] = useState(
-    []
-  );
+  const [beginningBalance, setBeginningBalance] = useState({
+    balanceDue: 0,
+    totalPounds: 0,
+    totalTons: 0,
+  });
+  const [payments, setPayments] = useState([]);
   let toPrint = useRef(null);
 
   const getRequestedSettlement = async () => {
@@ -29,34 +33,65 @@ const Settlement = () => {
         id,
       },
     });
+    setContractId(mySettlement.contractId);
     setSettlement(mySettlement);
+  };
+  console.log(settlement);
+  const getPaymentsOnContract = async () => {
+    const {
+      data: { paymentsByContract: myPayments },
+    } = await API.graphql({
+      query: paymentsByContract,
+      variables: {
+        contractId,
+        date: {
+          between: [
+            moment(settlement?.endDate).subtract(7, "days"),
+            settlement?.endDate,
+          ],
+        },
+      },
+    });
+    setPayments(myPayments.items);
   };
 
   const getUnpaidBalanceForContract = async (contractId) => {
     const {
       data: {
-        settlementsByContract: { items: contractSettlements },
+        ticketsByContract: { items: unpaidTickets },
       },
     } = await API.graphql({
-      query: settlementsByContract,
+      query: ticketsByContract,
       variables: {
         contractId,
         filter: {
-          isPaid: { eq: false },
+          paymentId: { attributeExists: false },
+          settlementId: { attributeExists: false },
         },
         limit: 5000,
       },
     });
 
-    if (contractSettlements.length) {
+    if (unpaidTickets.length) {
       let array = [];
-      contractSettlements.map((mySettlement) => {
-        if (mySettlement.dueDate < settlement.dueDate) {
-          array.push(mySettlement);
-          setBeginningBalance(beginningBalance + mySettlement.amountOwed);
+
+      unpaidTickets.map((ticket) => {
+        if (
+          moment(ticket.ticketDate).isBefore(
+            moment(settlement.dueDate).subtract(7, "days")
+          )
+        ) {
+          array.push(ticket);
         }
       });
-      setPreviousUnpaidSettlements(array);
+      console.log(array);
+      setBeginningBalance({
+        balanceDue:
+          array.reduce((acc, cv) => acc + cv.netTons, 0) *
+          settlement.contract.contractPrice,
+        totalPounds: array.reduce((acc, cv) => acc + cv.netWeight, 0),
+        totalTons: array.reduce((acc, cv) => acc + cv.netTons, 0),
+      });
     }
   };
 
@@ -69,6 +104,7 @@ const Settlement = () => {
   useEffect(() => {
     if (settlement) {
       setTickets(settlement.tickets.items);
+      getPaymentsOnContract();
     }
   }, [settlement]);
 
@@ -93,7 +129,25 @@ const Settlement = () => {
     });
     return total.toFixed(2);
   };
+  let runningLbs = beginningBalance.totalPounds;
+  let runningTons = beginningBalance.totalTons;
+  let runningBalance = beginningBalance.balanceDue;
+  const addToTotalPounds = (lbs) => {
+    return (runningLbs += lbs).toLocaleString(undefined);
+  };
+  const addToTotalTons = (tons) => {
+    return (runningTons += tons).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+    });
+  };
 
+  const addToBalanceDue = (amount) => {
+    return formatMoney.format((runningBalance += amount));
+  };
+
+  const subtractFromBalanceDue = (amount) => {
+    return formatMoney.format((runningBalance -= amount));
+  };
   return (
     <Layout>
       <div className="flex items-center">
@@ -171,27 +225,7 @@ const Settlement = () => {
                 {tickets[0].contract.contractPrice}/Ton
               </p>
             </div>
-            <div className="mt-3">
-              <p className="font-semibold">Unpaid Settlements: </p>
-              {previousUnpaidSettlements.map((settlement) => (
-                <div>
-                  <span className="mr-4">
-                    Settlement Number: {settlement.settlementNumber}
-                  </span>
-                  <span className="mr-4">
-                    Net Tons:{" "}
-                    {settlement.tickets.items
-                      .reduce(function (accumulator, currentValue) {
-                        return accumulator + currentValue.netTons;
-                      }, 0)
-                      .toFixed(2)}
-                  </span>
-                  <span>
-                    Amount Owed: {formatMoney.format(settlement.amountOwed)}
-                  </span>
-                </div>
-              ))}
-            </div>
+
             <div className="w-full mx-auto mt-4">
               <div>
                 <h6 className="font-semibold text-lg">Tickets:</h6>
@@ -207,15 +241,41 @@ const Settlement = () => {
                       <th>Tare</th>
                       <th>Net Weight</th>
                       <th>NetTons</th>
-                      {/* <th>Tons Credit</th>
-                      <th>Credit Amount</th> */}
+                      <th>Total Pounds</th>
+                      <th>Total Tons</th>
+                      <th>Tons Credit</th>
+                      <th>Credit Amount</th>
                       <th>Balance Due</th>
                     </tr>
                   </thead>
                   <tbody>
+                    <tr className="text-center">
+                      <td className="px-2 font-bold pt-3">
+                        Beginning Balance:
+                      </td>
+                      <td className="px-4"></td>
+                      <td className="px-4"></td>
+                      <td className="px-4"></td>
+                      <td className="px-4"></td>
+                      <td className="px-4"></td>
+                      <td className="px-4"></td>
+                      <td className="px-4">
+                        {beginningBalance.totalPounds.toLocaleString(undefined)}
+                      </td>
+                      <td className="px-4">
+                        {beginningBalance.totalTons.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
+                      </td>
+                      <td className="px-4"></td>
+                      <td className="px-4"></td>
+                      <td className="px-4">
+                        {formatMoney.format(beginningBalance.balanceDue)}
+                      </td>
+                    </tr>
                     {tickets.map((ticket) => {
                       return (
-                        <tr>
+                        <tr className="text-center">
                           <td className="px-2">
                             {moment(ticket.ticketDate).format("MM/DD/YY")}
                           </td>
@@ -225,45 +285,55 @@ const Settlement = () => {
                           <td className="px-4">{ticket.tareWeight}</td>
                           <td className="px-4">{ticket.netWeight}</td>
                           <td className="px-4">{ticket.netTons}</td>
+                          <td>{addToTotalPounds(ticket.netWeight)}</td>
+                          <td>{addToTotalTons(ticket.netTons)}</td>
+                          <td></td>
+                          <td></td>
                           <td className="px-4">
-                            {formatMoney.format(
+                            {addToBalanceDue(
                               ticket.netTons * ticket.contract.contractPrice
                             )}
                           </td>
                         </tr>
                       );
                     })}
-                    <tr className="border-t border-gray-700">
-                      <td className="px-4 font-bold pt-3">
-                        Settlement Totals:{" "}
-                      </td>
-                      <td className="px-4"></td>
-                      <td className="px-4"></td>
-                      <td className="px-4"></td>
-                      <td className="px-4"></td>
-                      <td className="px-4">{computeTotalPounds()}</td>
-                      <td className="px-4">{computeTotalTons()}</td>
-                      <td className="px-4 font-bold">
-                        {formatMoney.format(settlement.amountOwed)}
-                      </td>
-                    </tr>
-                    {previousUnpaidSettlements.map((upSettlement) => (
-                      <tr>
-                        <td className="px-4">
-                          {upSettlement.settlementNumber}{" "}
-                        </td>
-                        <td className="px-4"></td>
-                        <td className="px-4"></td>
-                        <td className="px-4"></td>
-                        <td className="px-4"></td>
-                        <td className="px-4"></td>
-                        <td className="px-4"></td>
-                        <td className="px-4">
-                          {formatMoney.format(upSettlement.amountOwed)}
-                        </td>
-                      </tr>
-                    ))}
-                    <tr>
+                    {payments
+                      ? payments.map((payment) => (
+                          <tr key="payment.id" className="text-center">
+                            <td className="px-2">
+                              {moment(payment.date).format("MM/DD/YY")}
+                            </td>
+                            <td className="px-4">{payment.checkNumber}</td>
+                            <td className="px-4"></td>
+                            <td className="px-4"></td>
+                            <td className="px-4"></td>
+                            <td></td>
+                            <td></td>
+                            <td className="px-2">
+                              {(
+                                runningLbs - payment.totalPounds
+                              ).toLocaleString(undefined)}
+                            </td>
+                            <td className="px-2">
+                              {(
+                                runningTons - payment.tonsCredit
+                              ).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                              })}
+                            </td>
+                            <td className="px-2">{payment.tonsCredit}</td>
+                            <td className="px-4">
+                              {" "}
+                              {formatMoney.format(payment.amount)}
+                            </td>
+                            <td className="px-4">
+                              {subtractFromBalanceDue(payment.amount)}
+                            </td>
+                          </tr>
+                        ))
+                      : null}
+
+                    <tr className="text-center">
                       <td className="px-4 font-bold text-lg">Total: </td>
                       <td className="px-4"></td>
                       <td className="px-4"></td>
@@ -271,16 +341,12 @@ const Settlement = () => {
                       <td className="px-4"></td>
                       <td className="px-4"></td>
                       <td className="px-4"></td>
-                      <td className="px-4 font-bold text-lg">
-                        {formatMoney.format(
-                          previousUnpaidSettlements.reduce(function (
-                            accumulator,
-                            currentValue
-                          ) {
-                            return accumulator + currentValue.amountOwed;
-                          },
-                          settlement.amountOwed)
-                        )}
+                      <td className="px-4"></td>
+                      <td className="px-4"></td>
+                      <td className="px-4"></td>
+                      <td className="px-4"></td>
+                      <td className="px-4">
+                        {formatMoney.format(runningBalance)}
                       </td>
                     </tr>
                   </tbody>

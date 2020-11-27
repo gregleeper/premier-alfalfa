@@ -6,7 +6,10 @@ import Table from "../../../components/table";
 import Link from "next/link";
 import moment from "moment";
 import { API, withSSRContext } from "aws-amplify";
-import { getContractAndTickets } from "../../../src/graphql/customQueries";
+import {
+  getContractAndTickets,
+  paymentsByContract,
+} from "../../../src/graphql/customQueries";
 import Layout from "../../../components/layout";
 
 const ContractInfo = () => {
@@ -15,6 +18,7 @@ const ContractInfo = () => {
   const [tickets, setTickets] = useState([]);
   const [contractInfo, setContractInfo] = useState();
   const [tonsCredit, setTonsCredit] = useState(0);
+  const [totalPaid, setTotalPaid] = useState(0);
 
   const { data: info, refetch } = useQuery(
     ["contractInfo", id],
@@ -38,6 +42,30 @@ const ContractInfo = () => {
     }
   );
 
+  const { data: paymentsData, refetch: fetchPayments } = useQuery(
+    ["contractPayments", id],
+    async () => {
+      const {
+        data: { paymentsByContract: myPayments },
+      } = await API.graphql({
+        query: paymentsByContract,
+        variables: {
+          contractId: id,
+          limit: 3000,
+          sortDirection: "DESC",
+        },
+      });
+      return myPayments;
+    },
+    {
+      enabled: false,
+      cacheTime: 1000 * 60 * 30,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+    }
+  );
+
   const getPaidTicketsTotalNetTons = () => {
     const paidTickets = tickets.filter((ticket) => ticket.paymentId);
     setTonsCredit(paidTickets.reduce((acc, cv) => acc + cv.netTons, 0));
@@ -50,6 +78,12 @@ const ContractInfo = () => {
   }, [tickets]);
 
   useEffect(() => {
+    if (paymentsData?.items?.length) {
+      setTotalPaid(paymentsData.items.reduce((acc, cv) => acc + cv.amount, 0));
+    }
+  }, [paymentsData]);
+
+  useEffect(() => {
     if (info) {
       setTickets(info.ticketsByContract.items);
       setContractInfo(info.getContract);
@@ -59,6 +93,7 @@ const ContractInfo = () => {
   useEffect(() => {
     if (id) {
       refetch();
+      fetchPayments();
     }
   }, [id]);
 
@@ -333,9 +368,35 @@ const ContractInfo = () => {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600 mr-2">Tons Credited:</span>
+                    <span className="text-gray-600 mr-2">
+                      Tons Credit Used:
+                    </span>
                     <span className="text-lg text-gray-900">
                       {tonsCredit.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 mr-2">Total Paid:</span>
+                    <span className="text-lg text-gray-900">
+                      {formatMoney.format(totalPaid)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 mr-2">
+                      Tons Credit Paid:
+                    </span>
+                    <span className="text-lg text-gray-900">
+                      {contractInfo.contractPrice
+                        ? (
+                            totalPaid / contractInfo.contractPrice
+                          ).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })
+                        : (
+                            totalPaid / contractInfo.salePrice
+                          ).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
                     </span>
                   </div>
                 </div>
