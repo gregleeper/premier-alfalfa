@@ -68,16 +68,17 @@ const Invoice = () => {
         contractId,
         filter: {
           paymentId: { attributeExists: false },
-          invoiceId: { attributeExists: false },
+          invoiceId: { ne: id },
         },
         limit: 5000,
       },
     });
-    console.log("up tickets", unpaidTickets);
+
     if (unpaidTickets.length) {
       let array = [];
 
       unpaidTickets.map((ticket) => {
+        console.log(ticket);
         if (
           moment(ticket.ticketDate).isBefore(
             moment(invoice.dueDate).subtract(7, "days")
