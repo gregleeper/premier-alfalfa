@@ -7,12 +7,28 @@ import {
   getInvoice,
   paymentsByContract,
   ticketsByContract,
-  invoicesByContract,
 } from "../../../src/graphql/customQueries";
+import { deleteInvoice, updateTicket } from "../../../src/graphql/mutations.ts";
 import { formatMoney } from "../../../utils";
 import ReactToPrint from "react-to-print";
+import { useMutation, useQueryCache } from "react-query";
+import Modal from "react-modal";
+
+const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+  },
+};
+
 const Invoice = () => {
+  let toPrint = useRef(null);
   const router = useRouter();
+  const queryCache = useQueryCache();
   const { id } = router.query;
   const [invoice, setInvoice] = useState(null);
   const [contractId, setContractId] = useState(null);
@@ -24,7 +40,16 @@ const Invoice = () => {
   });
   const [payments, setPayments] = useState([]);
   const [previousUnpaidInvoices, setPreviousUnpaidInvoices] = useState([]);
-  let toPrint = useRef(null);
+
+  const [modalIsOpen, setIsOpen] = React.useState(false);
+
+  function openModal() {
+    setIsOpen(true);
+  }
+
+  function closeModal() {
+    setIsOpen(false);
+  }
 
   const getRequestedInvoice = async () => {
     const {
@@ -38,6 +63,49 @@ const Invoice = () => {
     setContractId(myInvoice.contractId);
     setInvoice(myInvoice);
   };
+
+  const [
+    deleteInvoiceMutation,
+    { data: deletedInvoice, error: errorDeleting, isSuccess: deleteSuccess },
+  ] = useMutation(
+    async () => {
+      const { data: invoiceData } = await API.graphql({
+        query: deleteInvoice,
+        variables: {
+          input: { id },
+        },
+      });
+      return invoiceData;
+    },
+    {
+      onSuccess: () => {
+        queryCache.invalidateQueries("invoices");
+        router.back();
+      },
+    }
+  );
+
+  const [updateTicketMutation, { data, error, isSuccess }] = useMutation(
+    async (input) => {
+      const { data: ticketData } = await API.graphql({
+        query: updateTicket,
+        variables: {
+          input,
+        },
+      });
+      return ticketData;
+    },
+    {
+      onSuccess: ({ updateTicket }) => {
+        const lengthOfGroups = queryCache.getQueryData("tickets").length;
+        const items = queryCache.getQueryData("tickets")[lengthOfGroups - 1]
+          .items;
+        let previousData = queryCache.getQueryData("tickets");
+        previousData[lengthOfGroups - 1].items.push(updateTicket);
+        return () => queryCache.setQueryData("tickets", () => [previousData]);
+      },
+    }
+  );
 
   const getPaymentsOnContract = async () => {
     const {
@@ -130,22 +198,6 @@ const Invoice = () => {
     }
   }, [payments]);
 
-  const computeTotalPounds = () => {
-    let total = 0;
-    tickets.map((ticket) => {
-      total = ticket.netWeight + total;
-    });
-    return total;
-  };
-
-  const computeTotalTons = () => {
-    let total = 0;
-    tickets.map((ticket) => {
-      total = ticket.netTons + total;
-    });
-    return total.toFixed(2);
-  };
-
   let runningLbs = beginningBalance.totalPounds;
   let runningTons = beginningBalance.totalTons;
   let runningBalance = beginningBalance.balanceDue;
@@ -166,6 +218,26 @@ const Invoice = () => {
     return formatMoney.format((runningBalance -= amount));
   };
 
+  const handleDeleteInvoice = () => {
+    tickets.map((ticket) => {
+      try {
+        updateTicketMutation({
+          input: {
+            id: ticket.id,
+            invoiceId: null,
+          },
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    deleteInvoiceMutation({
+      input: {
+        id,
+      },
+    });
+  };
+
   return (
     <Layout>
       <div className="flex items-center">
@@ -182,7 +254,7 @@ const Invoice = () => {
             content={() => toPrint}
           />
         </div>
-        <div>
+        <div className="px-6">
           <button
             className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white focus:outline-none"
             onClick={() => router.back()}
@@ -190,7 +262,42 @@ const Invoice = () => {
             Back
           </button>
         </div>
+        <div className="px-6 ">
+          <button
+            className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+            onClick={() => openModal()}
+          >
+            Delete
+          </button>
+        </div>
       </div>
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        style={customStyles}
+        contentLabel="Delete Invoice"
+      >
+        <p>Are you sure you want to delete this invoice?</p>
+        <div className="flex justify-around items-center py-4">
+          <div className="px-4">
+            <button
+              className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white focus:outline-none"
+              onClick={() => closeModal()}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+          <div>
+            <button
+              className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+              onClick={() => handleDeleteInvoice()}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
       <div ref={(el) => (toPrint = el)} className="px-12 py-6">
         <div>
           <p>Date: {moment().format("MM/DD/YY")}</p>

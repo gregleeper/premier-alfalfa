@@ -117,9 +117,11 @@ const StatusReport = () => {
             ref={(el) => (toPrint = el)}
             className="mb-24 pt-12 w-11/12 mx-auto"
           >
-            <div>
-              <h6>Status Report - Purchases</h6>
-              <p>{moment().format("MM/DD/YYYY")}</p>
+            <div className="w-1/2 mx-auto">
+              <h6 className="text-gray-900 text-2xl font-semibold text-center">
+                Status Report - Sold
+              </h6>
+              <p className="text-center">{moment().format("MM/DD/YYYY")}</p>
             </div>
             {summary.map((c, i) => (
               <div className="mr-4 mb-12" key={i}>
@@ -133,9 +135,9 @@ const StatusReport = () => {
                       <th className="px-1">Due Date</th>
                       <th className="px-1">Days Remaining</th>
                       <th className="px-1">Contract Date</th>
-                      <th className="px-1">Quantity</th>
+                      <th className="px-1">Qty</th>
                       <th className="px-1">Price</th>
-                      <th className="px-1">Quantity Remaining</th>
+                      <th className="px-1">Qty Remaining</th>
                       <th className="px-1">Amount</th>
                     </tr>
                   </thead>
@@ -143,21 +145,22 @@ const StatusReport = () => {
                   <tbody>
                     {c.contracts.map((contract) => (
                       <tr>
-                        {console.log(c)}
                         <td className="px-1">{contract.contractNumber}</td>
                         <td className="px-1">{contract.soldTo}</td>
                         <td className="px-1">{contract.commodity}</td>
                         <td className="px-1">{contract.dueDate}</td>
                         <td className="px-1">{contract.daysRemaining}</td>
                         <td className="px-1">{contract.contractDate}</td>
-                        <td className="px-1">{contract.quantity}</td>
-                        <td className="px-1">
+                        <td className="pr-2 pl-4 text-right ">
+                          {contract.quantity}
+                        </td>
+                        <td className="pr-2 pl-4 text-right">
                           {formatMoney.format(contract.salePrice)}
                         </td>
-                        <td className="px-1 text-center">
+                        <td className="pr-2 pl-4 text-right">
                           {contract.quantityRemaining.toFixed(2)}
                         </td>
-                        <td className="px-1">
+                        <td className="pr-2 pl-4 text-right">
                           {formatMoney.format(contract.amount)}
                         </td>
                       </tr>
@@ -169,10 +172,14 @@ const StatusReport = () => {
                       <td></td>
                       <td></td>
                       <td></td>
-                      <td className="text-center">
-                        {c.contracts.reduce((acc, cv) => acc + cv.quantity, 0)}
+                      <td className="text-right">
+                        {c.contracts
+                          .reduce((acc, cv) => acc + cv.quantity, 0)
+                          .toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
                       </td>
-                      <td className="text-center">
+                      <td className="text-right">
                         {formatMoney.format(
                           c.contracts.reduce(
                             (acc, cv) => acc + cv.salePrice,
@@ -184,10 +191,12 @@ const StatusReport = () => {
                               ).length)
                         )}
                       </td>
-                      <td className="text-center">
+                      <td className="text-right">
                         {c.contracts
                           .reduce((acc, cv) => acc + cv.quantityRemaining, 0)
-                          .toFixed(2)}
+                          .toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
                       </td>
                       <td></td>
                     </tr>

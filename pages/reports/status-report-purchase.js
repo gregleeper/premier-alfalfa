@@ -134,7 +134,7 @@ const StatusReport = () => {
               </p>
             </div>
             {summary.map((c, i) => (
-              <div key={i}>
+              <div key={i} className="mt-4">
                 <h6 className="font-bold text-xl">{c.commodity}</h6>
                 <table className="mr-4">
                   <thead>
@@ -145,9 +145,9 @@ const StatusReport = () => {
                       <th className="px-1">Due Date</th>
                       <th className="px-1">Days Remaining</th>
                       <th className="px-1">Contract Date</th>
-                      <th className="px-1">Quantity</th>
+                      <th className="px-1">Qty</th>
                       <th className="px-1">Price</th>
-                      <th className="px-1">Quantity Remaining</th>
+                      <th className="px-1">Qty Remaining</th>
                       <th className="px-1">Amount</th>
                     </tr>
                   </thead>
@@ -162,14 +162,16 @@ const StatusReport = () => {
                         <td className="px-1">{contract.dueDate}</td>
                         <td className="px-1">{contract.daysRemaining}</td>
                         <td className="px-1">{contract.contractDate}</td>
-                        <td className="px-1">{contract.quantity}</td>
-                        <td className="px-1">
+                        <td className="pr-2 pl-4 text-right">
+                          {contract.quantity}
+                        </td>
+                        <td className="pr-2 pl-4 text-right">
                           {formatMoney.format(contract.contractPrice)}
                         </td>
-                        <td className="px-1 text-center">
+                        <td className="pr-2 pl-4 text-right">
                           {contract.quantityRemaining.toFixed(2)}
                         </td>
-                        <td className="px-1">
+                        <td className="pr-2 pl-4 text-right">
                           {formatMoney.format(contract.amount)}
                         </td>
                       </tr>
@@ -181,12 +183,14 @@ const StatusReport = () => {
                       <td></td>
                       <td></td>
                       <td></td>
-                      <td className="text-center">
+                      <td className="text-right">
                         {c.contracts
                           .reduce((acc, cv) => acc + cv.quantity, 0)
-                          .toFixed(2)}
+                          .toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
                       </td>
-                      <td className="text-center">
+                      <td className="text-right">
                         {formatMoney.format(
                           c.contracts.reduce(
                             (acc, cv) => acc + cv.contractPrice,
@@ -198,10 +202,12 @@ const StatusReport = () => {
                               ).length)
                         )}
                       </td>
-                      <td className="text-center">
+                      <td className="text-right">
                         {c.contracts
                           .reduce((acc, cv) => acc + cv.quantityRemaining, 0)
-                          .toFixed(2)}
+                          .toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
                       </td>
                       <td></td>
                     </tr>

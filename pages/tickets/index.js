@@ -224,17 +224,6 @@ const AllTickets = () => {
               </Link>
             </div>
           </div>
-          {/* <div className="w-1/4">
-            <label htmlFor="ticketsByContract">Filter By Contract</label>
-            <ReactSelect
-              name="ticketsByContract"
-              className="w-full"
-              onChange={(target) => target ? setContractFilter(target.value) : (setContractFilter(), getAllTickets()) }
-              options={contracts}
-              isClearable
-              
-            />
-          </div> */}
         </div>
         <div>
           {isFetched ? (
