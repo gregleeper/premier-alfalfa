@@ -546,6 +546,8 @@ export const contractsByType = /* GraphQL */ `
     $sortDirection: ModelSortDirection
     $filter: ModelContractFilterInput
     $ticketFilter: ModelTicketFilterInput
+    $paymentDate: ModelStringKeyConditionInput
+    $paymentFilter: ModelPaymentFilterInput
     $limit: Int
     $nextToken: String
   ) {
@@ -592,6 +594,25 @@ export const contractsByType = /* GraphQL */ `
         endDate
         dateSigned
         purchasedFrom
+        payments(date: $paymentDate, filter: $paymentFilter, limit: 3000) {
+          items {
+            id
+            type
+            tFileNumber
+            contractId
+            checkNumber
+            date
+            amount
+            totalPounds
+            invoiceId
+            settlementId
+            tonsCredit
+            paymentType
+            createdAt
+            updatedAt
+          }
+          nextToken
+        }
         tickets(filter: $ticketFilter, limit: 2000) {
           items {
             id
@@ -1264,6 +1285,7 @@ export const paymentsByContract = /* GraphQL */ `
             netTons
             netWeight
             id
+            ticketDate
           }
           nextToken
         }

@@ -195,6 +195,9 @@ export const getSettlement = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -373,6 +376,9 @@ export const getInvoice = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -579,6 +585,25 @@ export const getContract = /* GraphQL */ `
         }
         nextToken
       }
+      payments {
+        items {
+          id
+          type
+          tFileNumber
+          contractId
+          checkNumber
+          date
+          amount
+          totalPounds
+          invoiceId
+          settlementId
+          tonsCredit
+          paymentType
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       soldTo
       commodity {
         id
@@ -642,6 +667,9 @@ export const listContracts = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -702,6 +730,9 @@ export const getPayment = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -855,6 +886,9 @@ export const getTicket = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -904,6 +938,9 @@ export const getTicket = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -1535,6 +1572,9 @@ export const contractsByStatus = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1605,6 +1645,9 @@ export const contractsByVendor = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -1679,6 +1722,9 @@ export const contractsByCommodity = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1749,6 +1795,9 @@ export const contractsByType = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo

@@ -14,7 +14,7 @@ import ReactToPrint from "react-to-print";
 const Invoice = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [invoice, setInvoice] = useState();
+  const [invoice, setInvoice] = useState(null);
   const [contractId, setContractId] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [beginningBalance, setBeginningBalance] = useState({
@@ -74,11 +74,10 @@ const Invoice = () => {
       },
     });
 
-    if (unpaidTickets.length) {
+    if (unpaidTickets.length || payments.length) {
       let array = [];
 
       unpaidTickets.map((ticket) => {
-        console.log(ticket);
         if (
           moment(ticket.ticketDate).isBefore(
             moment(invoice.dueDate).subtract(7, "days")
@@ -87,13 +86,21 @@ const Invoice = () => {
           array.push(ticket);
         }
       });
-      console.log(array);
+      let paymentTickets = [];
+      payments.map((p) => paymentTickets.push(p.tickets.items));
+      let paymentTicketsFlattened = paymentTickets.flat();
+
       setBeginningBalance({
         balanceDue:
-          array.reduce((acc, cv) => acc + cv.netTons, 0) *
+          (array.reduce((acc, cv) => acc + cv.netTons, 0) +
+            paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netTons, 0)) *
           invoice.contract.salePrice,
-        totalPounds: array.reduce((acc, cv) => acc + cv.netWeight, 0),
-        totalTons: array.reduce((acc, cv) => acc + cv.netTons, 0),
+        totalPounds:
+          array.reduce((acc, cv) => acc + cv.netWeight, 0) +
+          paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netWeight, 0),
+        totalTons:
+          array.reduce((acc, cv) => acc + cv.netTons, 0) +
+          paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netTons, 0),
       });
     }
   };
@@ -116,6 +123,12 @@ const Invoice = () => {
       getUnpaidBalanceForContract(contractId);
     }
   }, [tickets]);
+
+  useEffect(() => {
+    if (payments.length && contractId && invoice) {
+      getUnpaidBalanceForContract(contractId);
+    }
+  }, [payments]);
 
   const computeTotalPounds = () => {
     let total = 0;
@@ -278,7 +291,7 @@ const Invoice = () => {
                     </tr>
                     {tickets.map((ticket) => {
                       return (
-                        <tr className="text-center">
+                        <tr key={ticket.id} className="text-center">
                           <td className="px-2">
                             {moment(ticket.ticketDate).format("MM/DD/YY")}
                           </td>
@@ -302,7 +315,7 @@ const Invoice = () => {
                     })}
                     {payments
                       ? payments.map((payment) => (
-                          <tr key="payment.id" className="text-center">
+                          <tr key={payment.id} className="text-center">
                             <td className="px-2">
                               {moment(payment.date).format("MM/DD/YY")}
                             </td>

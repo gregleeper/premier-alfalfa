@@ -147,6 +147,7 @@ type Contract
   dateSigned: AWSDateTime
   purchasedFrom: String
   tickets: [Ticket] @connection(keyName: "byContract", fields: ["id"])
+  payments: [Payment] @connection(keyName: "byContract", fields: ["id"])
   soldTo: String
   commodity: Commodity! @connection(fields: ["commodityId"])
 }
@@ -154,6 +155,7 @@ type Contract
 type Payment
   @model
   @auth(rules: [{ allow: groups, groups: ["admin"] }])
+  @key(name: "byContract", fields: ["contractId", "date"])
   @key(
     name: "paymentsByContract"
     fields: ["contractId", "date"]

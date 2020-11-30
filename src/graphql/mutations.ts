@@ -85,6 +85,25 @@ export const batchAddContracts = /* GraphQL */ `
         }
         nextToken
       }
+      payments {
+        items {
+          id
+          type
+          tFileNumber
+          contractId
+          checkNumber
+          date
+          amount
+          totalPounds
+          invoiceId
+          settlementId
+          tonsCredit
+          paymentType
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       soldTo
       commodity {
         id
@@ -151,6 +170,9 @@ export const batchAddTickets = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -200,6 +222,9 @@ export const batchAddTickets = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -274,6 +299,9 @@ export const batchAddPayments = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -606,6 +634,9 @@ export const createSettlement = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -719,6 +750,9 @@ export const updateSettlement = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -836,6 +870,9 @@ export const deleteSettlement = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -949,6 +986,9 @@ export const createInvoice = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -1066,6 +1106,9 @@ export const updateInvoice = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1179,6 +1222,9 @@ export const deleteInvoice = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -1343,6 +1389,25 @@ export const createContract = /* GraphQL */ `
         }
         nextToken
       }
+      payments {
+        items {
+          id
+          type
+          tFileNumber
+          contractId
+          checkNumber
+          date
+          amount
+          totalPounds
+          invoiceId
+          settlementId
+          tonsCredit
+          paymentType
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       soldTo
       commodity {
         id
@@ -1421,6 +1486,25 @@ export const updateContract = /* GraphQL */ `
           tareWeight
           netWeight
           netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      payments {
+        items {
+          id
+          type
+          tFileNumber
+          contractId
+          checkNumber
+          date
+          amount
+          totalPounds
+          invoiceId
+          settlementId
+          tonsCredit
+          paymentType
           createdAt
           updatedAt
         }
@@ -1509,6 +1593,25 @@ export const deleteContract = /* GraphQL */ `
         }
         nextToken
       }
+      payments {
+        items {
+          id
+          type
+          tFileNumber
+          contractId
+          checkNumber
+          date
+          amount
+          totalPounds
+          invoiceId
+          settlementId
+          tonsCredit
+          paymentType
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       soldTo
       commodity {
         id
@@ -1573,6 +1676,9 @@ export const createPayment = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -1674,6 +1780,9 @@ export const updatePayment = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1771,6 +1880,9 @@ export const deletePayment = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -1875,6 +1987,9 @@ export const createTicket = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -1924,6 +2039,9 @@ export const createTicket = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -2006,6 +2124,9 @@ export const updateTicket = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -2055,6 +2176,9 @@ export const updateTicket = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo
@@ -2137,6 +2261,9 @@ export const deleteTicket = /* GraphQL */ `
         tickets {
           nextToken
         }
+        payments {
+          nextToken
+        }
         soldTo
         commodity {
           id
@@ -2186,6 +2313,9 @@ export const deleteTicket = /* GraphQL */ `
         dateSigned
         purchasedFrom
         tickets {
+          nextToken
+        }
+        payments {
           nextToken
         }
         soldTo

@@ -51,6 +51,15 @@ export enum ContractState {
 }
 
 
+export enum PaymentType {
+  CHECKS = "CHECKS",
+  CASH = "CASH",
+  CREDITCARD = "CREDITCARD",
+  EFT = "EFT",
+  WIRE = "WIRE",
+}
+
+
 export type CreateTicketInput = {
   id?: string | null,
   contractId: string,
@@ -83,15 +92,6 @@ export type CreatePaymentInput = {
   invoiceId?: string | null,
   paymentType?: PaymentType | null,
 };
-
-export enum PaymentType {
-  CHECKS = "CHECKS",
-  CASH = "CASH",
-  CREDITCARD = "CREDITCARD",
-  EFT = "EFT",
-  WIRE = "WIRE",
-}
-
 
 export type CreateCompanyInfoInput = {
   id?: string | null,
@@ -811,6 +811,27 @@ export type BatchAddContractsMutation = {
       } | null > | null,
       nextToken: string | null,
     } | null,
+    payments:  {
+      __typename: "ModelPaymentConnection",
+      items:  Array< {
+        __typename: "Payment",
+        id: string,
+        type: string,
+        tFileNumber: string | null,
+        contractId: string,
+        checkNumber: string,
+        date: string,
+        amount: number,
+        totalPounds: number | null,
+        invoiceId: string | null,
+        settlementId: string | null,
+        tonsCredit: number | null,
+        paymentType: PaymentType | null,
+        createdAt: string,
+        updatedAt: string,
+      } | null > | null,
+      nextToken: string | null,
+    } | null,
     soldTo: string | null,
     commodity:  {
       __typename: "Commodity",
@@ -886,6 +907,10 @@ export type BatchAddTicketsMutation = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -939,6 +964,10 @@ export type BatchAddTicketsMutation = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -1021,6 +1050,10 @@ export type BatchAddPaymentsMutation = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -1382,6 +1415,10 @@ export type CreateSettlementMutation = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -1504,6 +1541,10 @@ export type UpdateSettlementMutation = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -1630,6 +1671,10 @@ export type DeleteSettlementMutation = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -1752,6 +1797,10 @@ export type CreateInvoiceMutation = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -1878,6 +1927,10 @@ export type UpdateInvoiceMutation = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -2000,6 +2053,10 @@ export type DeleteInvoiceMutation = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -2176,6 +2233,27 @@ export type CreateContractMutation = {
       } | null > | null,
       nextToken: string | null,
     } | null,
+    payments:  {
+      __typename: "ModelPaymentConnection",
+      items:  Array< {
+        __typename: "Payment",
+        id: string,
+        type: string,
+        tFileNumber: string | null,
+        contractId: string,
+        checkNumber: string,
+        date: string,
+        amount: number,
+        totalPounds: number | null,
+        invoiceId: string | null,
+        settlementId: string | null,
+        tonsCredit: number | null,
+        paymentType: PaymentType | null,
+        createdAt: string,
+        updatedAt: string,
+      } | null > | null,
+      nextToken: string | null,
+    } | null,
     soldTo: string | null,
     commodity:  {
       __typename: "Commodity",
@@ -2261,6 +2339,27 @@ export type UpdateContractMutation = {
         tareWeight: number | null,
         netWeight: number | null,
         netTons: number | null,
+        createdAt: string,
+        updatedAt: string,
+      } | null > | null,
+      nextToken: string | null,
+    } | null,
+    payments:  {
+      __typename: "ModelPaymentConnection",
+      items:  Array< {
+        __typename: "Payment",
+        id: string,
+        type: string,
+        tFileNumber: string | null,
+        contractId: string,
+        checkNumber: string,
+        date: string,
+        amount: number,
+        totalPounds: number | null,
+        invoiceId: string | null,
+        settlementId: string | null,
+        tonsCredit: number | null,
+        paymentType: PaymentType | null,
         createdAt: string,
         updatedAt: string,
       } | null > | null,
@@ -2356,6 +2455,27 @@ export type DeleteContractMutation = {
       } | null > | null,
       nextToken: string | null,
     } | null,
+    payments:  {
+      __typename: "ModelPaymentConnection",
+      items:  Array< {
+        __typename: "Payment",
+        id: string,
+        type: string,
+        tFileNumber: string | null,
+        contractId: string,
+        checkNumber: string,
+        date: string,
+        amount: number,
+        totalPounds: number | null,
+        invoiceId: string | null,
+        settlementId: string | null,
+        tonsCredit: number | null,
+        paymentType: PaymentType | null,
+        createdAt: string,
+        updatedAt: string,
+      } | null > | null,
+      nextToken: string | null,
+    } | null,
     soldTo: string | null,
     commodity:  {
       __typename: "Commodity",
@@ -2427,6 +2547,10 @@ export type CreatePaymentMutation = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -2536,6 +2660,10 @@ export type UpdatePaymentMutation = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -2641,6 +2769,10 @@ export type DeletePaymentMutation = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -2753,6 +2885,10 @@ export type CreateTicketMutation = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -2806,6 +2942,10 @@ export type CreateTicketMutation = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -2894,6 +3034,10 @@ export type UpdateTicketMutation = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -2947,6 +3091,10 @@ export type UpdateTicketMutation = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -3035,6 +3183,10 @@ export type DeleteTicketMutation = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -3088,6 +3240,10 @@ export type DeleteTicketMutation = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -3340,6 +3496,10 @@ export type GetSettlementQuery = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -3535,6 +3695,10 @@ export type GetInvoiceQuery = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -3762,6 +3926,27 @@ export type GetContractQuery = {
       } | null > | null,
       nextToken: string | null,
     } | null,
+    payments:  {
+      __typename: "ModelPaymentConnection",
+      items:  Array< {
+        __typename: "Payment",
+        id: string,
+        type: string,
+        tFileNumber: string | null,
+        contractId: string,
+        checkNumber: string,
+        date: string,
+        amount: number,
+        totalPounds: number | null,
+        invoiceId: string | null,
+        settlementId: string | null,
+        tonsCredit: number | null,
+        paymentType: PaymentType | null,
+        createdAt: string,
+        updatedAt: string,
+      } | null > | null,
+      nextToken: string | null,
+    } | null,
     soldTo: string | null,
     commodity:  {
       __typename: "Commodity",
@@ -3832,6 +4017,10 @@ export type ListContractsQuery = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -3900,6 +4089,10 @@ export type GetPaymentQuery = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -4068,6 +4261,10 @@ export type GetTicketQuery = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -4121,6 +4318,10 @@ export type GetTicketQuery = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -4750,6 +4951,10 @@ export type ContractsByStatusQuery = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -4819,6 +5024,10 @@ export type ContractsByVendorQuery = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -4892,6 +5101,10 @@ export type ContractsByCommodityQuery = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -4961,6 +5174,10 @@ export type ContractsByTypeQuery = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -5626,6 +5843,10 @@ export type OnCreateSettlementSubscription = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -5743,6 +5964,10 @@ export type OnUpdateSettlementSubscription = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -5864,6 +6089,10 @@ export type OnDeleteSettlementSubscription = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -5981,6 +6210,10 @@ export type OnCreateInvoiceSubscription = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -6102,6 +6335,10 @@ export type OnUpdateInvoiceSubscription = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -6219,6 +6456,10 @@ export type OnDeleteInvoiceSubscription = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -6375,6 +6616,27 @@ export type OnCreateContractSubscription = {
       } | null > | null,
       nextToken: string | null,
     } | null,
+    payments:  {
+      __typename: "ModelPaymentConnection",
+      items:  Array< {
+        __typename: "Payment",
+        id: string,
+        type: string,
+        tFileNumber: string | null,
+        contractId: string,
+        checkNumber: string,
+        date: string,
+        amount: number,
+        totalPounds: number | null,
+        invoiceId: string | null,
+        settlementId: string | null,
+        tonsCredit: number | null,
+        paymentType: PaymentType | null,
+        createdAt: string,
+        updatedAt: string,
+      } | null > | null,
+      nextToken: string | null,
+    } | null,
     soldTo: string | null,
     commodity:  {
       __typename: "Commodity",
@@ -6455,6 +6717,27 @@ export type OnUpdateContractSubscription = {
         tareWeight: number | null,
         netWeight: number | null,
         netTons: number | null,
+        createdAt: string,
+        updatedAt: string,
+      } | null > | null,
+      nextToken: string | null,
+    } | null,
+    payments:  {
+      __typename: "ModelPaymentConnection",
+      items:  Array< {
+        __typename: "Payment",
+        id: string,
+        type: string,
+        tFileNumber: string | null,
+        contractId: string,
+        checkNumber: string,
+        date: string,
+        amount: number,
+        totalPounds: number | null,
+        invoiceId: string | null,
+        settlementId: string | null,
+        tonsCredit: number | null,
+        paymentType: PaymentType | null,
         createdAt: string,
         updatedAt: string,
       } | null > | null,
@@ -6545,6 +6828,27 @@ export type OnDeleteContractSubscription = {
       } | null > | null,
       nextToken: string | null,
     } | null,
+    payments:  {
+      __typename: "ModelPaymentConnection",
+      items:  Array< {
+        __typename: "Payment",
+        id: string,
+        type: string,
+        tFileNumber: string | null,
+        contractId: string,
+        checkNumber: string,
+        date: string,
+        amount: number,
+        totalPounds: number | null,
+        invoiceId: string | null,
+        settlementId: string | null,
+        tonsCredit: number | null,
+        paymentType: PaymentType | null,
+        createdAt: string,
+        updatedAt: string,
+      } | null > | null,
+      nextToken: string | null,
+    } | null,
     soldTo: string | null,
     commodity:  {
       __typename: "Commodity",
@@ -6611,6 +6915,10 @@ export type OnCreatePaymentSubscription = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -6715,6 +7023,10 @@ export type OnUpdatePaymentSubscription = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -6815,6 +7127,10 @@ export type OnDeletePaymentSubscription = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -6922,6 +7238,10 @@ export type OnCreateTicketSubscription = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -6975,6 +7295,10 @@ export type OnCreateTicketSubscription = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -7058,6 +7382,10 @@ export type OnUpdateTicketSubscription = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -7111,6 +7439,10 @@ export type OnUpdateTicketSubscription = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,
@@ -7194,6 +7526,10 @@ export type OnDeleteTicketSubscription = {
         __typename: "ModelTicketConnection",
         nextToken: string | null,
       } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
+        nextToken: string | null,
+      } | null,
       soldTo: string | null,
       commodity:  {
         __typename: "Commodity",
@@ -7247,6 +7583,10 @@ export type OnDeleteTicketSubscription = {
       purchasedFrom: string | null,
       tickets:  {
         __typename: "ModelTicketConnection",
+        nextToken: string | null,
+      } | null,
+      payments:  {
+        __typename: "ModelPaymentConnection",
         nextToken: string | null,
       } | null,
       soldTo: string | null,

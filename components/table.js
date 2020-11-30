@@ -118,6 +118,10 @@ function Table({ columns, data }) {
             desc: true,
           },
           {
+            id: "dueDate",
+            desc: true,
+          },
+          {
             id: "totalSold",
             desc: true,
           },

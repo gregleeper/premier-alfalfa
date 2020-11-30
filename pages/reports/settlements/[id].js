@@ -8,14 +8,35 @@ import {
   paymentsByContract,
   ticketsByContract,
 } from "../../../src/graphql/customQueries";
+import {
+  deleteSettlement,
+  updateTicket,
+} from "../../../src/graphql/mutations.ts";
 import { formatMoney } from "../../../utils";
+import { useMutation, useQueryCache } from "react-query";
+import Modal from "react-modal";
 import ReactToPrint from "react-to-print";
+
+const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+  },
+};
+
 const Settlement = () => {
   const router = useRouter();
+  const queryCache = useQueryCache();
   const { id } = router.query;
   const [settlement, setSettlement] = useState();
   const [contractId, setContractId] = useState(null);
+  const [contract, setContract] = useState(null);
   const [tickets, setTickets] = useState([]);
+  const [settlementLoaded, setSettlementLoaded] = useState(false);
   const [beginningBalance, setBeginningBalance] = useState({
     balanceDue: 0,
     totalPounds: 0,
@@ -23,6 +44,15 @@ const Settlement = () => {
   });
   const [payments, setPayments] = useState([]);
   let toPrint = useRef(null);
+  const [modalIsOpen, setIsOpen] = React.useState(false);
+
+  function openModal() {
+    setIsOpen(true);
+  }
+
+  function closeModal() {
+    setIsOpen(false);
+  }
 
   const getRequestedSettlement = async () => {
     const {
@@ -33,17 +63,60 @@ const Settlement = () => {
         id,
       },
     });
-    setContractId(mySettlement.contractId);
+
     setSettlement(mySettlement);
   };
-  console.log(settlement);
+
+  const [
+    deleteSettlementMutation,
+    { data: deletedSettlement, error: errorDeleting, isSuccess: deleteSuccess },
+  ] = useMutation(
+    async () => {
+      const { data: settlementData } = await API.graphql({
+        query: deleteSettlement,
+        variables: {
+          input: { id },
+        },
+      });
+      return settlementData;
+    },
+    {
+      onSuccess: () => {
+        queryCache.invalidateQueries("settlements");
+        router.back();
+      },
+    }
+  );
+
+  const [updateTicketMutation, { data, error, isSuccess }] = useMutation(
+    async (input) => {
+      const { data: ticketData } = await API.graphql({
+        query: updateTicket,
+        variables: {
+          input,
+        },
+      });
+      return ticketData;
+    },
+    {
+      onSuccess: ({ updateTicket }) => {
+        const lengthOfGroups = queryCache.getQueryData("tickets").length;
+        const items = queryCache.getQueryData("tickets")[lengthOfGroups - 1]
+          .items;
+        let previousData = queryCache.getQueryData("tickets");
+        previousData[lengthOfGroups - 1].items.push(updateTicket);
+        return () => queryCache.setQueryData("tickets", () => [previousData]);
+      },
+    }
+  );
+
   const getPaymentsOnContract = async () => {
     const {
       data: { paymentsByContract: myPayments },
     } = await API.graphql({
       query: paymentsByContract,
       variables: {
-        contractId,
+        contractId: contractId,
         date: {
           between: [
             moment(settlement?.endDate).subtract(7, "days"),
@@ -65,14 +138,17 @@ const Settlement = () => {
       variables: {
         contractId,
         filter: {
-          paymentId: { attributeExists: false },
-          settlementId: { attributeExists: false },
+          paymentId: {
+            attributeExists: false,
+          },
+
+          settlementId: { ne: id },
         },
         limit: 5000,
       },
     });
 
-    if (unpaidTickets.length) {
+    if (unpaidTickets.length > 0 || payments.length > 0) {
       let array = [];
 
       unpaidTickets.map((ticket) => {
@@ -84,13 +160,21 @@ const Settlement = () => {
           array.push(ticket);
         }
       });
-      console.log(array);
+      let paymentTickets = [];
+      payments.map((p) => paymentTickets.push(p.tickets.items));
+      let paymentTicketsFlattened = paymentTickets.flat();
+      console.log(paymentTicketsFlattened);
       setBeginningBalance({
         balanceDue:
-          array.reduce((acc, cv) => acc + cv.netTons, 0) *
-          settlement.contract.contractPrice,
-        totalPounds: array.reduce((acc, cv) => acc + cv.netWeight, 0),
-        totalTons: array.reduce((acc, cv) => acc + cv.netTons, 0),
+          array.reduce((acc, cv) => acc + cv.netTons, 0) +
+          paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netTons, 0) *
+            settlement.contract.contractPrice,
+        totalPounds:
+          array.reduce((acc, cv) => acc + cv.netWeight, 0) +
+          paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netWeight, 0),
+        totalTons:
+          array.reduce((acc, cv) => acc + cv.netTons, 0) +
+          paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netTons, 0),
       });
     }
   };
@@ -104,15 +188,25 @@ const Settlement = () => {
   useEffect(() => {
     if (settlement) {
       setTickets(settlement.tickets.items);
-      getPaymentsOnContract();
+      setContractId(settlement.contractId);
+      setContract(settlement.contract);
+
+      setSettlementLoaded(true);
     }
   }, [settlement]);
 
   useEffect(() => {
-    if (tickets.length) {
-      getUnpaidBalanceForContract(tickets[0].contractId);
+    if (settlementLoaded && contractId && tickets.length) {
+      getUnpaidBalanceForContract(contractId);
+      getPaymentsOnContract();
     }
-  }, [tickets]);
+  }, [settlementLoaded]);
+
+  useEffect(() => {
+    if (contractId && payments.length) {
+      getUnpaidBalanceForContract(contractId);
+    }
+  }, [payments]);
 
   const computeTotalPounds = () => {
     let total = 0;
@@ -148,6 +242,27 @@ const Settlement = () => {
   const subtractFromBalanceDue = (amount) => {
     return formatMoney.format((runningBalance -= amount));
   };
+
+  const handleDeleteSettlement = () => {
+    tickets.map((ticket) => {
+      try {
+        updateTicketMutation({
+          input: {
+            id: ticket.id,
+            settlementId: null,
+          },
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    deleteSettlementMutation({
+      input: {
+        id,
+      },
+    });
+  };
+
   return (
     <Layout>
       <div className="flex items-center">
@@ -164,7 +279,7 @@ const Settlement = () => {
             content={() => toPrint}
           />
         </div>
-        <div>
+        <div className="px-6">
           <button
             className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white focus:outline-none"
             onClick={() => router.back()}
@@ -172,7 +287,42 @@ const Settlement = () => {
             Back
           </button>
         </div>
+        <div className="px-6 ">
+          <button
+            className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+            onClick={() => openModal()}
+          >
+            Delete
+          </button>
+        </div>
       </div>
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        style={customStyles}
+        contentLabel="Example Modal"
+      >
+        <p>Are you sure you want to delete this Settlement?</p>
+        <div className="flex justify-around items-center py-4">
+          <div className="px-4">
+            <button
+              className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white focus:outline-none"
+              onClick={() => closeModal()}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+          <div>
+            <button
+              className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+              onClick={() => handleDeleteSettlement()}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
       <div ref={(el) => (toPrint = el)} className="px-12 py-6">
         <div>
           <p>Date: {moment().format("MM/DD/YY")}</p>
@@ -192,7 +342,7 @@ const Settlement = () => {
           <p>Fax: 620-544-4510</p>
         </div>
 
-        {settlement && tickets.length > 0 ? (
+        {settlementLoaded ? (
           <div>
             <div className="py-3 w-full mx-auto flex justify-start items-start">
               <div className="mr-4">
@@ -218,11 +368,8 @@ const Settlement = () => {
               </p>
               <p>
                 Contract:{" "}
-                <span className="font-semibold">
-                  {tickets[0].contract.contractNumber}
-                </span>{" "}
-                {tickets[0].contract.commodity.name} @ $
-                {tickets[0].contract.contractPrice}/Ton
+                <span className="font-semibold">{contract.contractNumber}</span>{" "}
+                {contract.commodity.name} @ ${contract.contractPrice}/Ton
               </p>
             </div>
 
@@ -275,7 +422,7 @@ const Settlement = () => {
                     </tr>
                     {tickets.map((ticket) => {
                       return (
-                        <tr className="text-center">
+                        <tr key={ticket.id} className="text-center">
                           <td className="px-2">
                             {moment(ticket.ticketDate).format("MM/DD/YY")}
                           </td>
@@ -299,7 +446,7 @@ const Settlement = () => {
                     })}
                     {payments
                       ? payments.map((payment) => (
-                          <tr key="payment.id" className="text-center">
+                          <tr key={payment.id} className="text-center">
                             <td className="px-2">
                               {moment(payment.date).format("MM/DD/YY")}
                             </td>

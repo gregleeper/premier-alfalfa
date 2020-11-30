@@ -44,6 +44,10 @@ const GenerateSettlements = () => {
             },
           },
 
+          paymentDate: {
+            between: [beginDate, endDate],
+          },
+
           limit: 3000,
         },
       });
@@ -79,16 +83,21 @@ const GenerateSettlements = () => {
   const compileData = () => {
     let array = [];
     activePurchaseContracts.map((contract) => {
-      if (contract.tickets.items.length > 0 && contract.contractPrice > 0) {
+      if (
+        (contract.tickets.items.length > 0 ||
+          contract.payments.items.length > 0) &&
+        contract.contractPrice > 0
+      ) {
         array.push(contract);
       }
     });
     setContractsWithTickets(array);
   };
+  console.log(contractsWithTickets);
 
   const createSettlements = async () => {
     contractsWithTickets.map(async (contract, index) => {
-      if (!contract.tickets.items[0].settlementId) {
+      if (!contract.tickets?.items[0]?.settlementId) {
         let sumNetTons = 0;
         let total = 0;
 
@@ -132,7 +141,7 @@ const GenerateSettlements = () => {
         });
         setNumberOfSettlementsCreated(numberOfSettlementsCreated + 1);
       }
-      if (contract.tickets.items[0].settlementId) {
+      if (contract.tickets?.items[0]?.settlementId) {
         console.log("no settlement created");
       }
     });
@@ -196,7 +205,7 @@ const GenerateSettlements = () => {
                   <ul className="mt-2" className="">
                     {contractsWithTickets.map((contract) => (
                       <li key={contract.id}>
-                        {contract.tickets.items[0].settlementId ? (
+                        {contract.tickets?.items[0]?.settlementId ? (
                           <span className="text-red-600 mr-2">
                             Invoice Already Created!
                           </span>
