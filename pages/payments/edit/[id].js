@@ -621,7 +621,7 @@ const UpdatePayment = () => {
                         options={invoices}
                       ></Field>
                     </div> */}
-                      <div className="flex justify-between items-center mb-4 w-full">
+                      {/* <div className="flex justify-between items-center mb-4 w-full">
                         <label
                           className="text-gray-900 w-1/4 md:w-1/2 pr-4"
                           htmlFor="settlementId"
@@ -634,7 +634,7 @@ const UpdatePayment = () => {
                           component={FormikSelect}
                           options={settlements}
                         ></Field>
-                      </div>
+                      </div> */}
                       <div className="flex justify-between items-center mb-4">
                         <label
                           className="w-1/4 text-gray-900 md:w-1/2"
