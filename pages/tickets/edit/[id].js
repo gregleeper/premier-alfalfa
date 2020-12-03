@@ -133,8 +133,6 @@ const EditTicket = () => {
     }
   };
 
-  console.log(correspondingContractId);
-
   const getSoldToTickets = async () => {
     const {
       data: {

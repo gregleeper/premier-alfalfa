@@ -4,11 +4,13 @@ import { Formik, Form, Field, FieldArray } from "formik";
 import { FormikSelect } from "../../../components/formikSelect";
 import { FormikMultiSelect } from "../../../components/formikMultiSelect";
 import { API, label, withSSRContext } from "aws-amplify";
+import Modal from "react-modal";
 import {
   updatePayment,
   updateSettlement,
   updateTicket,
   updateInvoice,
+  deletePayment,
 } from "../../../src/graphql/mutations.ts";
 import { listContracts, getPayment } from "../../../src/graphql/queries.ts";
 import {
@@ -23,6 +25,18 @@ import { useQuery, useMutation } from "react-query";
 import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import { useQueryCache } from "react-query";
+import { isFunctionLike } from "typescript";
+
+const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+  },
+};
 
 const UpdatePayment = () => {
   const queryCache = useQueryCache();
@@ -39,6 +53,7 @@ const UpdatePayment = () => {
   const [payment, setPayment] = useState();
   const [ticketsOnPayment, setTicketsOnPayment] = useState([]);
   const [dateEntered, setDateEntered] = useState(new Date());
+  const [modalIsOpen, setIsOpen] = useState(false);
   const [paymentTypes, setPaymentTypes] = useState([
     {
       value: "CHECKS",
@@ -154,6 +169,27 @@ const UpdatePayment = () => {
         let previousData = queryCache.getQueryData("invoices");
         previousData[lengthOfGroups - 1].items.push(updateInvoice);
         return () => queryCache.setQueryData("invoices", () => [previousData]);
+      },
+    }
+  );
+
+  const [
+    deletePaymentMutation,
+    { data: deletedPayment, error: errorDeleting, isSuccess: deleteSuccess },
+  ] = useMutation(
+    async () => {
+      const { data: paymentData } = await API.graphql({
+        query: deletePayment,
+        variables: {
+          input: { id },
+        },
+      });
+      return paymentData;
+    },
+    {
+      onSuccess: () => {
+        queryCache.invalidateQueries("payments");
+        router.back();
       },
     }
   );
@@ -348,35 +384,93 @@ const UpdatePayment = () => {
     });
   }
 
+  const handleDeletePayment = () => {
+    // if payment has tickets, set paymentId to null on each ticket
+    if (payment.tickets.items.length) {
+      payment.tickets.items.map(async (ticket) => {
+        const {
+          data: { updateTicket: myTicket },
+        } = await API.graphql({
+          query: updateTicket,
+          variables: {
+            input: {
+              id: ticket.id,
+              paymentId: null,
+            },
+          },
+        });
+      });
+    }
+    // if payment has settlement, set paymentId to null on settlement
+    if (payment.settlementId) {
+      const input = {
+        id: payment.settlementId,
+        paymentId: null,
+      };
+      mutateSettlement(input);
+    }
+    if (payment.invoiceId) {
+      const input = {
+        id: payment.invoiceId,
+        paymentId: null,
+      };
+      mutateInvoice(input);
+    }
+
+    deletePaymentMutation();
+  };
+
+  const openModal = () => {
+    setIsOpen(true);
+  };
+  const closeModal = () => {
+    setIsOpen(false);
+  };
+
   return (
     <Layout>
       <div>
         <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
           <h3>Update Payment</h3>
         </div>
-        <div>
-          {payment && (
-            <Formik
-              initialValues={{
-                type: "Payment",
-                tFileNumber: payment.tFileNumber || "",
-                contractId: payment.contractId || "",
-                invoiceId: payment.invoiceId || "",
-                settlementId: payment.settlementId || "",
-                tickets: initialTickets || [],
-                checkNumber: payment.checkNumber || "",
-                date: (payment && payment.date) || "",
-                amount: (payment && payment.amount) || "",
-                totalPounds: (payment && payment.totalPounds) || "",
-                tonsCredit: (payment && payment.tonsCredit) || "",
-                paymentType: (payment && payment.paymentType) || "",
-              }}
-              onSubmit={async (values, actions) => {
-                let ticketArray = [];
-                values.tickets.map((item) => ticketArray.push(item.value));
+        <div className="flex">
+          <div className="w-11/12">
+            {payment && (
+              <Formik
+                initialValues={{
+                  type: "Payment",
+                  tFileNumber: payment.tFileNumber || "",
+                  contractId: payment.contractId || "",
+                  invoiceId: payment.invoiceId || "",
+                  settlementId: payment.settlementId || "",
+                  tickets: initialTickets || [],
+                  checkNumber: payment.checkNumber || "",
+                  date: (payment && payment.date) || "",
+                  amount: (payment && payment.amount) || "",
+                  totalPounds: (payment && payment.totalPounds) || "",
+                  tonsCredit: (payment && payment.tonsCredit) || "",
+                  paymentType: (payment && payment.paymentType) || "",
+                }}
+                onSubmit={async (values, actions) => {
+                  let ticketArray = [];
+                  values.tickets.map((item) => ticketArray.push(item.value));
 
-                initialTickets.forEach(async (ticket) => {
-                  if (!ticketArray.includes(ticket.value)) {
+                  initialTickets.forEach(async (ticket) => {
+                    if (!ticketArray.includes(ticket.value)) {
+                      const {
+                        data: { updateTicket: myTicket },
+                      } = await API.graphql({
+                        query: updateTicket,
+                        variables: {
+                          input: {
+                            id: ticket.value,
+                            paymentId: null,
+                          },
+                        },
+                      });
+                    }
+                  });
+                  values.tickets.map(async (ticket) => {
                     const {
                       data: { updateTicket: myTicket },
                     } = await API.graphql({
@@ -384,148 +478,136 @@ const UpdatePayment = () => {
                       variables: {
                         input: {
                           id: ticket.value,
-                          paymentId: null,
+                          paymentId: id,
                         },
                       },
                     });
-                  }
-                });
-                values.tickets.map(async (ticket) => {
-                  const {
-                    data: { updateTicket: myTicket },
-                  } = await API.graphql({
-                    query: updateTicket,
-                    variables: {
-                      input: {
-                        id: ticket.value,
-                        paymentId: id,
-                      },
-                    },
                   });
-                });
-                let input = {
-                  id,
-                  type: "Payment",
-                  tFileNumber: values.tFileNumber,
-                  contractId: values.contractId,
-                  invoiceId: values.invoiceId,
-                  settlementId: values.settlementId,
-                  checkNumber: values.checkNumber,
-                  date: dateEntered,
-                  amount: values.amount,
-                  totalPounds: values.totalPounds,
-                  tonsCredit: values.tonsCredit,
-                  paymentType: values.paymentType,
-                };
-                mutate(input);
-
-                if (
-                  values.settlementId !== payment.settlementId &&
-                  values.settlementId
-                ) {
-                  let input2 = {
-                    id: values.settlementId,
-                    isPaid: true,
+                  let input = {
+                    id,
+                    type: "Payment",
+                    tFileNumber: values.tFileNumber,
+                    contractId: values.contractId,
+                    invoiceId: values.invoiceId,
+                    settlementId: values.settlementId,
+                    checkNumber: values.checkNumber,
+                    date: dateEntered,
+                    amount: values.amount,
+                    totalPounds: values.totalPounds,
+                    tonsCredit: values.tonsCredit,
+                    paymentType: values.paymentType,
                   };
-                  mutateSettlement(input2);
-                }
+                  mutate(input);
 
-                if (
-                  values.invoiceId !== payment.invoiceId &&
-                  values.invoiceId
-                ) {
-                  let input3 = {
-                    id: values.invoiceId,
-                    isPaid: true,
-                  };
-                  mutateInvoice(input3);
-                }
-                router.back();
-              }}
-            >
-              {({ isSubmitting, values, setFieldValue, setFieldTouched }) => (
-                <Form>
-                  {values.contractId ? setContractId(values.contractId) : null}
-                  {values.tickets && values.tickets.length
-                    ? (computeTotalPounds(values.tickets),
-                      computeTotalTons(values.tickets))
-                    : (setTotalPounds(0), setTotalTons(0))}
+                  if (
+                    values.settlementId !== payment.settlementId &&
+                    values.settlementId
+                  ) {
+                    let input2 = {
+                      id: values.settlementId,
+                      isPaid: true,
+                    };
+                    mutateSettlement(input2);
+                  }
 
-                  <div className="w-7/12 mx-auto">
-                    <div className="flex justify-between items-center mb-4">
-                      <label
-                        className="text-gray-900 w-1/4 md:w-1/2"
-                        htmlFor="tFileNumber"
-                      >
-                        Ticket File Number
-                      </label>
-                      <Field
-                        className="form-input w-full"
-                        name="tFileNumber"
-                        placeholder="Ticket File Number"
-                      />
-                    </div>
-                    <div className="flex justify-between items-center mb-4">
-                      <label
-                        className="text-gray-900 w-1/4 md:w-1/2"
-                        htmlFor="checkNumber"
-                      >
-                        Check Number
-                      </label>
-                      <Field
-                        className="form-input w-full"
-                        name="checkNumber"
-                        placeholder="Check Number"
-                      />
-                    </div>
-                    <div className="flex justify-between items-center mb-4 ">
-                      <label
-                        className="text-gray-900 w-1/4 md:w-1/2"
-                        htmlFor="date"
-                      >
-                        Date
-                      </label>
-                      <DatePicker
-                        className="w-full"
-                        selected={dateEntered}
-                        onChange={(date) => setDateEntered(date)}
-                        className="form-input w-full"
-                      />
-                    </div>
-                    <div className="flex justify-between items-center mb-4 w-full">
-                      <label
-                        className="text-gray-900 w-1/4 md:w-1/2 pr-4"
-                        htmlFor="contractId"
-                      >
-                        Contract
-                      </label>
-                      <Field
-                        name="contractId"
-                        className="w-1/2"
-                        component={FormikSelect}
-                        options={contracts}
-                      ></Field>
-                    </div>
-                    <div className="flex justify-between items-center mb-4 w-full">
-                      <label
-                        className="text-gray-900 w-1/4 md:w-1/2 pr-4"
-                        htmlFor="tickets"
-                      >
-                        Tickets
-                      </label>
-                      <Field
-                        name="tickets"
-                        className="w-1/2"
-                        component={FormikMultiSelect}
-                        componentName="tickets"
-                        value={values.tickets}
-                        onChange={setFieldValue}
-                        onBlur={setFieldTouched}
-                        isClearable={true}
-                        options={ticketOptions}
-                      ></Field>
-                    </div>
-                    {/* <div className="flex justify-between items-center mb-4 w-full">
+                  if (
+                    values.invoiceId !== payment.invoiceId &&
+                    values.invoiceId
+                  ) {
+                    let input3 = {
+                      id: values.invoiceId,
+                      isPaid: true,
+                    };
+                    mutateInvoice(input3);
+                  }
+                  router.back();
+                }}
+              >
+                {({ isSubmitting, values, setFieldValue, setFieldTouched }) => (
+                  <Form>
+                    {values.contractId
+                      ? setContractId(values.contractId)
+                      : null}
+                    {values.tickets && values.tickets.length
+                      ? (computeTotalPounds(values.tickets),
+                        computeTotalTons(values.tickets))
+                      : (setTotalPounds(0), setTotalTons(0))}
+
+                    <div className="w-7/12 mx-auto">
+                      <div className="flex justify-between items-center mb-4">
+                        <label
+                          className="text-gray-900 w-1/4 md:w-1/2"
+                          htmlFor="tFileNumber"
+                        >
+                          Ticket File Number
+                        </label>
+                        <Field
+                          className="form-input w-full"
+                          name="tFileNumber"
+                          placeholder="Ticket File Number"
+                        />
+                      </div>
+                      <div className="flex justify-between items-center mb-4">
+                        <label
+                          className="text-gray-900 w-1/4 md:w-1/2"
+                          htmlFor="checkNumber"
+                        >
+                          Check Number
+                        </label>
+                        <Field
+                          className="form-input w-full"
+                          name="checkNumber"
+                          placeholder="Check Number"
+                        />
+                      </div>
+                      <div className="flex justify-between items-center mb-4 ">
+                        <label
+                          className="text-gray-900 w-1/4 md:w-1/2"
+                          htmlFor="date"
+                        >
+                          Date
+                        </label>
+                        <DatePicker
+                          className="w-full"
+                          selected={dateEntered}
+                          onChange={(date) => setDateEntered(date)}
+                          className="form-input w-full"
+                        />
+                      </div>
+                      <div className="flex justify-between items-center mb-4 w-full">
+                        <label
+                          className="text-gray-900 w-1/4 md:w-1/2 pr-4"
+                          htmlFor="contractId"
+                        >
+                          Contract
+                        </label>
+                        <Field
+                          name="contractId"
+                          className="w-1/2"
+                          component={FormikSelect}
+                          options={contracts}
+                        ></Field>
+                      </div>
+                      <div className="flex justify-between items-center mb-4 w-full">
+                        <label
+                          className="text-gray-900 w-1/4 md:w-1/2 pr-4"
+                          htmlFor="tickets"
+                        >
+                          Tickets
+                        </label>
+                        <Field
+                          name="tickets"
+                          className="w-1/2"
+                          component={FormikMultiSelect}
+                          componentName="tickets"
+                          value={values.tickets}
+                          onChange={setFieldValue}
+                          onBlur={setFieldTouched}
+                          isClearable={true}
+                          options={ticketOptions}
+                        ></Field>
+                      </div>
+                      {/* <div className="flex justify-between items-center mb-4 w-full">
                       <label
                         className="text-gray-900 w-1/4 md:w-1/2 pr-4"
                         htmlFor="invoiceId"
@@ -539,95 +621,133 @@ const UpdatePayment = () => {
                         options={invoices}
                       ></Field>
                     </div> */}
-                    <div className="flex justify-between items-center mb-4 w-full">
-                      <label
-                        className="text-gray-900 w-1/4 md:w-1/2 pr-4"
-                        htmlFor="settlementId"
-                      >
-                        Settlement
-                      </label>
-                      <Field
-                        name="settlementId"
-                        className="w-1/2"
-                        component={FormikSelect}
-                        options={settlements}
-                      ></Field>
-                    </div>
-                    <div className="flex justify-between items-center mb-4">
-                      <label
-                        className="w-1/4 text-gray-900 md:w-1/2"
-                        htmlFor="amount"
-                      >
-                        Amount
-                      </label>
-                      <Field
-                        className="form-input w-full"
-                        name="amount"
-                        type="number"
-                      />
-                    </div>
-                    <div className="flex justify-between items-center mb-4">
-                      <label
-                        className="w-1/4 text-gray-900 md:w-1/2"
-                        htmlFor="totalPounds"
-                      >
-                        {`Total Pounds - ${totalPounds}`}
-                      </label>
+                      <div className="flex justify-between items-center mb-4 w-full">
+                        <label
+                          className="text-gray-900 w-1/4 md:w-1/2 pr-4"
+                          htmlFor="settlementId"
+                        >
+                          Settlement
+                        </label>
+                        <Field
+                          name="settlementId"
+                          className="w-1/2"
+                          component={FormikSelect}
+                          options={settlements}
+                        ></Field>
+                      </div>
+                      <div className="flex justify-between items-center mb-4">
+                        <label
+                          className="w-1/4 text-gray-900 md:w-1/2"
+                          htmlFor="amount"
+                        >
+                          Amount
+                        </label>
+                        <Field
+                          className="form-input w-full"
+                          name="amount"
+                          type="number"
+                        />
+                      </div>
+                      <div className="flex justify-between items-center mb-4">
+                        <label
+                          className="w-1/4 text-gray-900 md:w-1/2"
+                          htmlFor="totalPounds"
+                        >
+                          {`Total Pounds - ${totalPounds}`}
+                        </label>
 
-                      <Field
-                        className="form-input w-full"
-                        name="totalPounds"
-                        type="number"
-                      />
+                        <Field
+                          className="form-input w-full"
+                          name="totalPounds"
+                          type="number"
+                        />
+                      </div>
+                      <div className="flex justify-between items-center mb-4">
+                        <label
+                          className="w-1/4 text-gray-900 md:w-1/2"
+                          htmlFor="tonsCredit"
+                        >
+                          {`Tons Credit - ${totalTons}`}
+                        </label>
+                        <Field
+                          className="form-input w-full"
+                          name="tonsCredit"
+                          type="number"
+                        />
+                      </div>
+                      <div className="flex justify-between items-center mb-4 w-full">
+                        <label
+                          className="text-gray-900 w-1/4 md:w-1/2 pr-4"
+                          htmlFor="paymentType"
+                        >
+                          Payment Type
+                        </label>
+                        <Field
+                          name="paymentType"
+                          className="w-full"
+                          component={FormikSelect}
+                          options={paymentTypes}
+                        />
+                      </div>
+                      <div className="flex justify-center mt-12">
+                        <button
+                          className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+                          onClick={() => router.back()}
+                          type="button"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
+                          type="submit"
+                          disabled={isSubmitting}
+                        >
+                          Submit
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center mb-4">
-                      <label
-                        className="w-1/4 text-gray-900 md:w-1/2"
-                        htmlFor="tonsCredit"
-                      >
-                        {`Tons Credit - ${totalTons}`}
-                      </label>
-                      <Field
-                        className="form-input w-full"
-                        name="tonsCredit"
-                        type="number"
-                      />
-                    </div>
-                    <div className="flex justify-between items-center mb-4 w-full">
-                      <label
-                        className="text-gray-900 w-1/4 md:w-1/2 pr-4"
-                        htmlFor="paymentType"
-                      >
-                        Payment Type
-                      </label>
-                      <Field
-                        name="paymentType"
-                        className="w-full"
-                        component={FormikSelect}
-                        options={paymentTypes}
-                      />
-                    </div>
-                    <div className="flex justify-center mt-12">
-                      <button
-                        className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
-                        onClick={() => router.back()}
-                        type="button"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
-                        type="submit"
-                        disabled={isSubmitting}
-                      >
-                        Submit
-                      </button>
-                    </div>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          )}
+                  </Form>
+                )}
+              </Formik>
+            )}
+          </div>
+          <div className="mt-24">
+            <button
+              className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+              type="button"
+              onClick={() => openModal()}
+            >
+              Delete Payment
+            </button>
+          </div>
+          <div>
+            <Modal
+              isOpen={modalIsOpen}
+              onRequestClose={() => closeModal}
+              style={customStyles}
+              contentLabel="Delete ticket"
+            >
+              <div>
+                <p>Are you sure you want to delete this payment?</p>
+                <div>
+                  <button
+                    className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+                    type="button"
+                    onClick={() => handleDeletePayment()}
+                  >
+                    Delete Payment
+                  </button>
+                  <button
+                    className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
+                    type="button"
+                    onClick={() => closeModal()}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </Modal>
+          </div>
         </div>
       </div>
     </Layout>
