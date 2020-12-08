@@ -1,9 +1,9 @@
 import Layout from "../../../components/layout";
 import { useRouter } from "next/router";
-import { Formik, Form, Field, FieldArray } from "formik";
+import { Formik, Form, Field } from "formik";
 import { FormikSelect } from "../../../components/formikSelect";
 import { FormikMultiSelect } from "../../../components/formikMultiSelect";
-import { API, label, withSSRContext } from "aws-amplify";
+import { API, withSSRContext } from "aws-amplify";
 import Modal from "react-modal";
 import {
   updatePayment,
@@ -17,7 +17,6 @@ import {
   invoicesSorted,
   settlementsSorted,
   ticketsByContract,
-  ticketsByDate,
 } from "../../../src/graphql/customQueries";
 import { formatMoney } from "../../../utils";
 import moment from "moment";
@@ -25,7 +24,6 @@ import { useQuery, useMutation } from "react-query";
 import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import { useQueryCache } from "react-query";
-import { isFunctionLike } from "typescript";
 
 const customStyles = {
   content: {
