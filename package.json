@@ -15,7 +15,7 @@
     "aws-amplify": "^3.3.7",
     "formik": "^2.1.7",
     "moment": "^2.29.1",
-    "next": "9.5.3",
+    "next": "^10.0.3",
     "postcss-preset-env": "^6.7.0",
     "react": "16.13.1",
     "react-datepicker": "^3.2.2",

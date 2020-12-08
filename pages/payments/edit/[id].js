@@ -432,7 +432,7 @@ const UpdatePayment = () => {
           <h3>Update Payment</h3>
         </div>
         <div className="flex">
-          <div className="w-11/12">
+          <div className="w-full">
             {payment && (
               <Formik
                 initialValues={{
@@ -531,7 +531,7 @@ const UpdatePayment = () => {
                         computeTotalTons(values.tickets))
                       : (setTotalPounds(0), setTotalTons(0))}
 
-                    <div className="w-7/12 mx-auto">
+                    <div className="w-8/12 mx-auto">
                       <div className="flex justify-between items-center mb-4">
                         <label
                           className="text-gray-900 w-1/4 md:w-1/2"
@@ -581,7 +581,7 @@ const UpdatePayment = () => {
                         </label>
                         <Field
                           name="contractId"
-                          className="w-1/2"
+                          className="w-3/4"
                           component={FormikSelect}
                           options={contracts}
                         ></Field>
@@ -709,7 +709,7 @@ const UpdatePayment = () => {
               </Formik>
             )}
           </div>
-          <div className="mt-24">
+          <div className="w-72">
             <button
               className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
               type="button"

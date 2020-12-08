@@ -21,7 +21,7 @@ export function FormikMultiSelect({
   return (
     <Select
       instanceId={1}
-      className=" w-full"
+      className=" w-full -ml-2"
       isMulti={true}
       onBlur={() => handleBlur()}
       onChange={(value, name) => handleChange(value)}

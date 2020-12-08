@@ -5,7 +5,7 @@ export function FormikSelect({ options, field, form, handleChange }) {
     <Select
       instanceId={1}
       id={field.name}
-      className=" w-full"
+      className=" w-full -mx-2"
       autoComplete="on"
       name={field.name}
       onBlur={field.onBlur}
