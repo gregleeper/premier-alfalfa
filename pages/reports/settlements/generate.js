@@ -93,7 +93,6 @@ const GenerateSettlements = () => {
     });
     setContractsWithTickets(array);
   };
-  console.log(contractsWithTickets);
 
   const createSettlements = async () => {
     contractsWithTickets.map(async (contract, index) => {

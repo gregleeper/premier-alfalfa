@@ -79,7 +79,10 @@ const GenerateInvoices = () => {
   const compileData = () => {
     let array = [];
     activeSaleContracts.map((contract) => {
-      if (contract.tickets.items.length > 0 && contract.salePrice > 0) {
+      if (
+        (contract.tickets.items.length > 0 || contract.payments.items.length) &&
+        contract.salePrice > 0
+      ) {
         array.push(contract);
       }
     });
