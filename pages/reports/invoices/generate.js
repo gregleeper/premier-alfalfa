@@ -91,7 +91,7 @@ const GenerateInvoices = () => {
 
   const createInvoices = async () => {
     contractsWithTickets.map(async (contract, index) => {
-      if (!contract.tickets.items[0].invoiceId) {
+      if (!contract.tickets?.items[0]?.invoiceId) {
         let sumNetTons = 0;
         let total = 0;
 
@@ -135,7 +135,7 @@ const GenerateInvoices = () => {
         });
         setNumberInvoicesCreated(numberInvoicesCreated + 1);
       }
-      if (contract.tickets.items[0].invoiceId) {
+      if (contract.tickets?.items[0]?.invoiceId) {
         console.log("no invoice generated");
       }
     });
