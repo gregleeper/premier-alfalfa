@@ -209,6 +209,7 @@ const AccountsReceivable = () => {
       (acc, cv) => acc + cv.netTons,
       0
     );
+
     return ticketTotalTons + myObj.underages - myObj.overages;
   }
 

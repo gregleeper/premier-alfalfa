@@ -388,7 +388,7 @@ const UpdatePayment = () => {
       setOverage(diff);
     }
     if (diff < 0) {
-      setUnderage(diff);
+      setUnderage(Math.abs(diff));
     }
   }, [calculatedTonsCredit]);
 
