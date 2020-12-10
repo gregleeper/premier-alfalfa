@@ -116,7 +116,6 @@ const UpdatePayment = () => {
       enabled: false,
     }
   );
-  console.log(ticketsData);
 
   const [
     mutateSettlement,
