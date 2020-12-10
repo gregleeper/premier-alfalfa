@@ -42,7 +42,7 @@ const TotalTons = () => {
             },
           },
           ticketFilter: {
-            ticketDate: { le: endDate },
+            ticketDate: { le: moment(endDate).endOf("day") },
           },
           limit: 3000,
         },
