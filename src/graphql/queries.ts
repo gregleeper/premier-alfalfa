@@ -598,6 +598,8 @@ export const getContract = /* GraphQL */ `
           invoiceId
           settlementId
           tonsCredit
+          overage
+          underage
           paymentType
           createdAt
           updatedAt
@@ -780,6 +782,8 @@ export const getPayment = /* GraphQL */ `
       invoiceId
       settlementId
       tonsCredit
+      overage
+      underage
       paymentType
       createdAt
       updatedAt
@@ -830,6 +834,8 @@ export const listPayments = /* GraphQL */ `
         invoiceId
         settlementId
         tonsCredit
+        overage
+        underage
         paymentType
         createdAt
         updatedAt
@@ -1871,6 +1877,8 @@ export const paymentsByContract = /* GraphQL */ `
         invoiceId
         settlementId
         tonsCredit
+        overage
+        underage
         paymentType
         createdAt
         updatedAt
@@ -1933,6 +1941,8 @@ export const paymentsSorted = /* GraphQL */ `
         invoiceId
         settlementId
         tonsCredit
+        overage
+        underage
         paymentType
         createdAt
         updatedAt

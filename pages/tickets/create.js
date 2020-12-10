@@ -276,10 +276,6 @@ const CreateTicket = () => {
             >
               {({ isSubmitting, errors, touched, values }) => (
                 <Form>
-                  {/* {values.contractId ? setContractId(values.contractId) : null}
-                  {values.correspondingContractId
-                    ? setCorrespondingContractId(values.correspondingContractId)
-                    : null} */}
                   <div className="w-full mx-auto">
                     <div className="flex justify-between items-center mb-4">
                       <label

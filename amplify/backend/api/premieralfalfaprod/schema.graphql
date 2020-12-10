@@ -148,6 +148,7 @@ type Contract
   purchasedFrom: String
   tickets: [Ticket] @connection(keyName: "byContract", fields: ["id"])
   payments: [Payment] @connection(keyName: "byContract", fields: ["id"])
+
   soldTo: String
   commodity: Commodity! @connection(fields: ["commodityId"])
 }
@@ -179,6 +180,8 @@ type Payment
   invoiceId: ID
   settlementId: ID
   tonsCredit: Float
+  overage: Float
+  underage: Float
   paymentType: PaymentType
 }
 
@@ -324,4 +327,6 @@ input CreatePaymentInput {
   settlementId: ID
   invoiceId: ID
   paymentType: PaymentType
+  overage: Float
+  underage: Float
 }

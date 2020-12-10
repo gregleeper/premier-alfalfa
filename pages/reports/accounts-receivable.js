@@ -115,18 +115,34 @@ const AccountsReceivable = () => {
         (acc, cv) => acc + cv.tonsCredit,
         0
       );
-      contractTotals.totalBalanceDue = formatMoney.format(
-        (contractTotals.tonsHauled - contractTotals.tonsCredited) *
-          contractTotals.salePrice
+
+      contractTotals.totalOverages = myPayments.reduce(
+        (acc, cv) => acc + cv.overage,
+        0
       );
+      contractTotals.totalUnderages = myPayments.reduce(
+        (acc, cv) => acc + cv.underage,
+        0
+      );
+      contractTotals.totalBalanceDue =
+        (contractTotals.tonsHauled -
+          contractTotals.tonsCredited -
+          contractTotals.totalOverages +
+          contractTotals.totalUnderages) *
+        contractTotals.salePrice;
       contractTotals.tickets = myTickets;
+      contractTotals.payments = myPayments;
       array.push(contractTotals);
       setContractsTotals(array);
+      if (
+        contractTotals.totalOverages > 0 ||
+        contractTotals.totalOverages > 0
+      ) {
+        console.log(contractTotals);
+      }
     });
     computeTotalsFromTickets();
   };
-
-  console.log(contractsTotals);
 
   const handleFetchTickets = () => {
     setContractsTotals([]);
@@ -172,32 +188,90 @@ const AccountsReceivable = () => {
     setVendorTotals(array);
   };
 
-  const getZeroToSevenDaysOld = (tickets) => {
-    return tickets.filter(
+  const getZeroToSevenDaysOld = (tickets, payments) => {
+    let zeroToSeven = {};
+    const myTickets = tickets.filter(
       (ticket) => moment(endDate).diff(moment(ticket.ticketDate), "days") < 8
     );
+    const myPayments = payments.filter(
+      (payment) => moment(endDate).diff(moment(payment.date), "days") < 8
+    );
+    let overages = myPayments.reduce((acc, cv) => acc + cv.overage, 0);
+    let underages = myPayments.reduce((acc, cv) => acc + cv.underage, 0);
+    zeroToSeven.tickets = myTickets;
+    zeroToSeven.overages = overages;
+    zeroToSeven.underages = underages;
+    return calculateTonsBalance(zeroToSeven);
   };
 
-  const getEightToFourteenDaysOld = (tickets) => {
-    return tickets.filter(
+  function calculateTonsBalance(myObj) {
+    let ticketTotalTons = myObj.tickets.reduce(
+      (acc, cv) => acc + cv.netTons,
+      0
+    );
+    return ticketTotalTons + myObj.underages - myObj.overages;
+  }
+
+  const getEightToFourteenDaysOld = (tickets, payments) => {
+    let eightToFourteen = {};
+    const myTickets = tickets.filter(
       (ticket) =>
         moment(endDate).diff(moment(ticket.ticketDate), "days") >= 8 &&
         moment(endDate).diff(moment(ticket.ticketDate), "days") < 15
     );
+
+    const myPayments = payments.filter(
+      (payment) =>
+        moment(endDate).diff(moment(payment.date), "days") >= 8 &&
+        moment(endDate).diff(moment(payment.date), "days") < 15
+    );
+    let overages = myPayments.reduce((acc, cv) => acc + cv.overage, 0);
+    let underages = myPayments.reduce((acc, cv) => acc + cv.underage, 0);
+    eightToFourteen.tickets = myTickets;
+    eightToFourteen.overages = overages;
+    eightToFourteen.underages = underages;
+
+    return calculateTonsBalance(eightToFourteen);
   };
 
-  const getFifteenToTwentyOneDaysOld = (tickets) => {
-    return tickets.filter(
+  const getFifteenToTwentyOneDaysOld = (tickets, payments) => {
+    let fifteenToTwentyOne = {};
+    const myTickets = tickets.filter(
       (ticket) =>
         moment(endDate).diff(moment(ticket.ticketDate), "days") >= 15 &&
         moment(endDate).diff(moment(ticket.ticketDate), "days") < 22
     );
+
+    const myPayments = payments.filter(
+      (payment) =>
+        moment(endDate).diff(moment(payment.date), "days") >= 15 &&
+        moment(endDate).diff(moment(payment.date), "days") < 22
+    );
+    let overages = myPayments.reduce((acc, cv) => acc + cv.overage, 0);
+    let underages = myPayments.reduce((acc, cv) => acc + cv.underage, 0);
+    fifteenToTwentyOne.tickets = myTickets;
+    fifteenToTwentyOne.overages = overages;
+    fifteenToTwentyOne.underages = underages;
+
+    return calculateTonsBalance(fifteenToTwentyOne);
   };
 
-  const getTwentyTwoandOverDays = (tickets) => {
-    return tickets.filter(
+  const getTwentyTwoandOverDays = (tickets, payments) => {
+    let twentyTwoAndOver = {};
+    const myTickets = tickets.filter(
       (ticket) => moment(endDate).diff(moment(ticket.ticketDate), "days") >= 22
     );
+
+    const myPayments = payments.filter(
+      (payment) => moment(endDate).diff(moment(payment.date), "days") >= 22
+    );
+    let overages = myPayments.reduce((acc, cv) => acc + cv.overage, 0);
+    let underages = myPayments.reduce((acc, cv) => acc + cv.underage, 0);
+    twentyTwoAndOver.tickets = myTickets;
+    twentyTwoAndOver.overages = overages;
+    twentyTwoAndOver.underages = underages;
+
+    return calculateTonsBalance(twentyTwoAndOver);
   };
 
   return (
@@ -277,43 +351,56 @@ const AccountsReceivable = () => {
                             </td>
                             <td className="text-center">
                               {formatMoney.format(
-                                contract.tickets.reduce(
-                                  (acc, cv) => acc + cv.netTons,
-                                  0
-                                ) * contract.salePrice
+                                (getZeroToSevenDaysOld(
+                                  contract.tickets,
+                                  contract.payments
+                                ) +
+                                  getEightToFourteenDaysOld(
+                                    contract.tickets,
+                                    contract.payments
+                                  ) +
+                                  getFifteenToTwentyOneDaysOld(
+                                    contract.tickets,
+                                    contract.payments
+                                  ) +
+                                  getTwentyTwoandOverDays(
+                                    contract.tickets,
+                                    contract.payments
+                                  )) *
+                                  contract.salePrice
                               )}
                             </td>
                             <td className="text-center">
                               {formatMoney.format(
-                                getZeroToSevenDaysOld(contract.tickets).reduce(
-                                  (acc, cv) => acc + cv.netTons,
-                                  0
+                                getZeroToSevenDaysOld(
+                                  contract.tickets,
+                                  contract.payments
                                 ) * contract.salePrice
                               )}
                             </td>
                             <td className="text-center">
                               {formatMoney.format(
                                 getEightToFourteenDaysOld(
-                                  contract.tickets
-                                ).reduce((acc, cv) => acc + cv.netTons, 0) *
-                                  contract.salePrice
+                                  contract.tickets,
+                                  contract.payments
+                                ) * contract.salePrice
                               )}
                             </td>
                             <td className="text-center">
                               {formatMoney.format(
                                 getFifteenToTwentyOneDaysOld(
-                                  contract.tickets
-                                ).reduce((acc, cv) => acc + cv.netTons, 0) *
-                                  contract.salePrice
+                                  contract.tickets,
+                                  contract.payments
+                                ) * contract.salePrice
                               )}
                             </td>
 
                             <td className="text-center">
                               {formatMoney.format(
                                 getTwentyTwoandOverDays(
-                                  contract.tickets
-                                ).reduce((acc, cv) => acc + cv.netTons, 0) *
-                                  contract.salePrice
+                                  contract.tickets,
+                                  contract.payments
+                                ) * contract.salePrice
                               )}
                             </td>
                           </tr>
@@ -327,7 +414,15 @@ const AccountsReceivable = () => {
                             item.contracts.reduce(
                               (acc, cv) =>
                                 acc +
-                                cv.tickets.reduce((a, c) => a + c.netTons, 0) *
+                                (cv.tickets.reduce((a, c) => a + c.netTons, 0) +
+                                  cv.payments.reduce(
+                                    (a, c) => a + c.underage,
+                                    0
+                                  ) -
+                                  cv.payments.reduce(
+                                    (a, c) => a + c.overage,
+                                    0
+                                  )) *
                                   cv.salePrice,
                               0
                             )

@@ -2,6 +2,7 @@ import Layout from "../../../components/layout";
 import { useRouter } from "next/router";
 import { Formik, Form, Field } from "formik";
 import { FormikSelect } from "../../../components/formikSelect";
+import AmountInput from "../../../components/amountInput";
 import { FormikMultiSelect } from "../../../components/formikMultiSelect";
 import { API, withSSRContext } from "aws-amplify";
 import Modal from "react-modal";
@@ -16,7 +17,7 @@ import { listContracts, getPayment } from "../../../src/graphql/queries.ts";
 import {
   invoicesSorted,
   settlementsSorted,
-  ticketsByContract,
+  getContractAndTickets,
 } from "../../../src/graphql/customQueries";
 import { formatMoney } from "../../../utils";
 import moment from "moment";
@@ -44,14 +45,16 @@ const UpdatePayment = () => {
   const [tickets, setTickets] = useState([]);
   const [ticketOptions, setTicketOptions] = useState([]);
   const [contractId, setContractId] = useState(null);
-  const [invoices, setInvoices] = useState([]);
-  const [settlements, setSettlements] = useState([]);
+  const [calculatedTonsCredit, setCalculatedTonsCredit] = useState(0);
+  const [contract, setContract] = useState({});
   const [totalPounds, setTotalPounds] = useState(0);
   const [totalTons, setTotalTons] = useState(0);
   const [payment, setPayment] = useState();
   const [ticketsOnPayment, setTicketsOnPayment] = useState([]);
   const [dateEntered, setDateEntered] = useState(new Date());
   const [modalIsOpen, setIsOpen] = useState(false);
+  const [overage, setOverage] = useState(0);
+  const [underage, setUnderage] = useState(0);
   const [paymentTypes, setPaymentTypes] = useState([
     {
       value: "CHECKS",
@@ -100,21 +103,20 @@ const UpdatePayment = () => {
   const { data: ticketsData, refetch: fetchTickets } = useQuery(
     ["tickets", id],
     async () => {
-      const {
-        data: { ticketsByContract: myTickets },
-      } = await API.graphql({
-        query: ticketsByContract,
+      const { data: myContractAndTickets } = await API.graphql({
+        query: getContractAndTickets,
         variables: {
-          contractId,
+          id: contractId,
           limit: 3000,
         },
       });
-      return myTickets;
+      return myContractAndTickets;
     },
     {
       enabled: false,
     }
   );
+  console.log(ticketsData);
 
   const [
     mutateSettlement,
@@ -223,33 +225,33 @@ const UpdatePayment = () => {
     return myContracts;
   });
 
-  const { data: invoicesData } = useQuery("invoices", async () => {
-    const {
-      data: { invoicesSorted: myInvoices },
-    } = await API.graphql({
-      query: invoicesSorted,
-      variables: {
-        type: "Invoice",
-        sortDirection: "DESC",
-        limit: 3000,
-      },
-    });
-    return myInvoices;
-  });
+  // const { data: invoicesData } = useQuery("invoices", async () => {
+  //   const {
+  //     data: { invoicesSorted: myInvoices },
+  //   } = await API.graphql({
+  //     query: invoicesSorted,
+  //     variables: {
+  //       type: "Invoice",
+  //       sortDirection: "DESC",
+  //       limit: 3000,
+  //     },
+  //   });
+  //   return myInvoices;
+  // });
 
-  const { data: settlementsData } = useQuery("settlements", async () => {
-    const {
-      data: { settlementsSorted: mySettlements },
-    } = await API.graphql({
-      query: settlementsSorted,
-      variables: {
-        type: "Settlement",
-        sortDirection: "DESC",
-        limit: 3000,
-      },
-    });
-    return mySettlements;
-  });
+  // const { data: settlementsData } = useQuery("settlements", async () => {
+  //   const {
+  //     data: { settlementsSorted: mySettlements },
+  //   } = await API.graphql({
+  //     query: settlementsSorted,
+  //     variables: {
+  //       type: "Settlement",
+  //       sortDirection: "DESC",
+  //       limit: 3000,
+  //     },
+  //   });
+  //   return mySettlements;
+  // });
 
   const computeTotalPounds = (ids) => {
     let myTickets = [];
@@ -301,7 +303,9 @@ const UpdatePayment = () => {
 
   useEffect(() => {
     if (ticketsData) {
-      setTickets(ticketsData.items);
+      setTickets(ticketsData.ticketsByContract.items);
+
+      setContract(ticketsData.getContract);
     }
   }, [ticketsData]);
 
@@ -319,39 +323,45 @@ const UpdatePayment = () => {
   }, [tickets]);
 
   useEffect(() => {
-    if (invoicesData) {
-      let options = [];
-
-      invoicesData.items.map((invoice) => {
-        options.push({
-          value: invoice.id,
-          label: `${invoice.invoiceNumber} - ${
-            invoice.vendor.companyReportName
-          } - Due ${moment(invoice.dueDate).format("MM/DD/YY")} - ${
-            invoice.tickets.items[0].contract.contractNumber
-          } - ${formatMoney.format(invoice.amountOwed)}`,
-        });
-      });
-
-      setInvoices(options);
+    if (payment) {
+      setContractId(payment.contract.id);
     }
-  }, [invoicesData]);
+  }, [payment]);
 
-  useEffect(() => {
-    if (settlementsData) {
-      let options = [];
-      settlementsData.items.map((settlement) => {
-        options.push({
-          value: settlement.id,
-          label: `${settlement.settlementNumber} - ${
-            settlement.vendor.companyReportName
-          } - Due ${moment(settlement.dueDate).format("MM/DD/YY")}`,
-        });
-      });
+  // useEffect(() => {
+  //   if (invoicesData) {
+  //     let options = [];
 
-      setSettlements(options);
-    }
-  }, [settlementsData]);
+  //     invoicesData.items.map((invoice) => {
+  //       options.push({
+  //         value: invoice.id,
+  //         label: `${invoice.invoiceNumber} - ${
+  //           invoice.vendor.companyReportName
+  //         } - Due ${moment(invoice.dueDate).format("MM/DD/YY")} - ${
+  //           invoice.tickets.items[0].contract.contractNumber
+  //         } - ${formatMoney.format(invoice.amountOwed)}`,
+  //       });
+  //     });
+
+  //     setInvoices(options);
+  //   }
+  // }, [invoicesData]);
+
+  // useEffect(() => {
+  //   if (settlementsData) {
+  //     let options = [];
+  //     settlementsData.items.map((settlement) => {
+  //       options.push({
+  //         value: settlement.id,
+  //         label: `${settlement.settlementNumber} - ${
+  //           settlement.vendor.companyReportName
+  //         } - Due ${moment(settlement.dueDate).format("MM/DD/YY")}`,
+  //       });
+  //     });
+
+  //     setSettlements(options);
+  //   }
+  // }, [settlementsData]);
 
   useEffect(() => {
     if (contractId) {
@@ -371,6 +381,19 @@ const UpdatePayment = () => {
       refetch();
     }
   }, [id]);
+
+  useEffect(() => {
+    const diff = calculatedTonsCredit - totalTons;
+    if (diff > 0) {
+      setOverage(diff);
+    }
+    if (diff < 0) {
+      setUnderage(diff);
+    }
+  }, [calculatedTonsCredit]);
+
+  console.log("overage", overage);
+  console.log("underage", underage);
 
   let initialTickets = [];
   if (payment && payment.tickets.items.length) {
@@ -423,6 +446,12 @@ const UpdatePayment = () => {
   };
   const closeModal = () => {
     setIsOpen(false);
+  };
+
+  const handleAmountChange = (value) => {
+    contract.contractPrice
+      ? setCalculatedTonsCredit(value / contract.contractPrice)
+      : setCalculatedTonsCredit(value / contract.salePrice);
   };
 
   return (
@@ -491,6 +520,8 @@ const UpdatePayment = () => {
                     checkNumber: values.checkNumber,
                     date: dateEntered,
                     amount: values.amount,
+                    overage: overage,
+                    underage: underage,
                     totalPounds: values.totalPounds,
                     tonsCredit: values.tonsCredit,
                     paymentType: values.paymentType,
@@ -523,13 +554,12 @@ const UpdatePayment = () => {
               >
                 {({ isSubmitting, values, setFieldValue, setFieldTouched }) => (
                   <Form>
-                    {values.contractId
-                      ? setContractId(values.contractId)
-                      : null}
                     {values.tickets && values.tickets.length
                       ? (computeTotalPounds(values.tickets),
-                        computeTotalTons(values.tickets))
+                        computeTotalTons(values.tickets),
+                        handleAmountChange(values.amount))
                       : (setTotalPounds(0), setTotalTons(0))}
+                    {values.amount ? handleAmountChange(values.amount) : null}
 
                     <div className="w-8/12 mx-auto">
                       <div className="flex justify-between items-center mb-4">
@@ -583,6 +613,7 @@ const UpdatePayment = () => {
                           name="contractId"
                           className="w-3/4"
                           component={FormikSelect}
+                          handleChange={() => setContractId(value)}
                           options={contracts}
                         ></Field>
                       </div>
@@ -665,7 +696,7 @@ const UpdatePayment = () => {
                           className="w-1/4 text-gray-900 md:w-1/2"
                           htmlFor="tonsCredit"
                         >
-                          {`Tons Credit - ${totalTons}`}
+                          {`Tons Credit - (target: ${totalTons})`}
                         </label>
                         <Field
                           className="form-input w-full"
@@ -709,14 +740,59 @@ const UpdatePayment = () => {
               </Formik>
             )}
           </div>
-          <div className="w-72">
-            <button
-              className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
-              type="button"
-              onClick={() => openModal()}
-            >
-              Delete Payment
-            </button>
+          <div className="w-96">
+            <div className="w-48 float-right mb-24">
+              <button
+                className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
+                type="button"
+                onClick={() => openModal()}
+              >
+                Delete Payment
+              </button>
+            </div>
+            <div className="px-12">
+              <div className="border-b-2 border-gray-700">
+                <h6 className="text-gray-800 text-lg text-center ">
+                  Calculations:
+                </h6>
+              </div>
+              <div>
+                <span>
+                  Tons from tickets:{" "}
+                  {totalTons.toLocaleString(underage, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <div>
+                <span>
+                  Tons credit from payment:{" "}
+                  {calculatedTonsCredit.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <div>
+                <span>
+                  Overage:{" "}
+                  {overage.toLocaleString(underage, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <div>
+                <span>
+                  Underage:{" "}
+                  {underage.toLocaleString(underage, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+            </div>
           </div>
           <div>
             <Modal

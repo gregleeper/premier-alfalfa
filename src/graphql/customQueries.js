@@ -231,7 +231,55 @@ export const getInvoice = /* GraphQL */ `
       invoiceNumber
       contractId
       contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
         salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        tickets {
+          nextToken
+        }
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
       }
       endDate
       tickets {
@@ -912,6 +960,8 @@ export const getContractAndTickets = /* GraphQL */ `
         invoiceId
         ticketDate
         netTons
+        netWeight
+
         fieldNum
         fieldNum
         ticketNumber
@@ -1257,6 +1307,8 @@ export const paymentsByContract = /* GraphQL */ `
         type
         tFileNumber
         contractId
+        overage
+        underage
         contract {
           id
           contractNumber

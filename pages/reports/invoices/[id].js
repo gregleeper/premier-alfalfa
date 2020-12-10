@@ -31,7 +31,9 @@ const Invoice = () => {
   const queryCache = useQueryCache();
   const { id } = router.query;
   const [invoice, setInvoice] = useState(null);
+  const [contract, setContract] = useState(null);
   const [contractId, setContractId] = useState(null);
+  const [invoiceLoaded, setInoiceLoaded] = useState(false);
   const [tickets, setTickets] = useState([]);
   const [beginningBalance, setBeginningBalance] = useState({
     balanceDue: 0,
@@ -116,8 +118,8 @@ const Invoice = () => {
         contractId,
         date: {
           between: [
-            moment(invoice?.endDate).subtract(7, "days"),
-            invoice?.endDate,
+            moment(invoice?.endDate).subtract(7, "days").startOf("day"),
+            moment(invoice?.endDate).endOf("day"),
           ],
         },
       },
@@ -182,7 +184,9 @@ const Invoice = () => {
   useEffect(() => {
     if (invoice) {
       setTickets(invoice.tickets.items);
+      setContract(invoice.contract);
       getPaymentsOnContract();
+      setInoiceLoaded(true);
     }
   }, [invoice]);
 
@@ -315,7 +319,7 @@ const Invoice = () => {
           <p>Fax: 620-544-4510</p>
         </div>
 
-        {invoice && tickets.length > 0 ? (
+        {invoiceLoaded ? (
           <div>
             <div className="py-3 w-full mx-auto flex justify-start items-start">
               <div className="mr-4">
@@ -341,11 +345,8 @@ const Invoice = () => {
               </p>
               <p>
                 Contract:{" "}
-                <span className="font-semibold">
-                  {tickets[0].contract.contractNumber}
-                </span>{" "}
-                {tickets[0].contract.commodity.name} @ $
-                {tickets[0].contract.salePrice}/Ton
+                <span className="font-semibold">{contract.contractNumber}</span>{" "}
+                {contract.commodity.name} @ ${contract.salePrice}/Ton
               </p>
             </div>
 

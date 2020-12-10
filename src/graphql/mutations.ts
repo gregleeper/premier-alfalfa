@@ -98,6 +98,8 @@ export const batchAddContracts = /* GraphQL */ `
           invoiceId
           settlementId
           tonsCredit
+          overage
+          underage
           paymentType
           createdAt
           updatedAt
@@ -349,6 +351,8 @@ export const batchAddPayments = /* GraphQL */ `
       invoiceId
       settlementId
       tonsCredit
+      overage
+      underage
       paymentType
       createdAt
       updatedAt
@@ -1402,6 +1406,8 @@ export const createContract = /* GraphQL */ `
           invoiceId
           settlementId
           tonsCredit
+          overage
+          underage
           paymentType
           createdAt
           updatedAt
@@ -1504,6 +1510,8 @@ export const updateContract = /* GraphQL */ `
           invoiceId
           settlementId
           tonsCredit
+          overage
+          underage
           paymentType
           createdAt
           updatedAt
@@ -1606,6 +1614,8 @@ export const deleteContract = /* GraphQL */ `
           invoiceId
           settlementId
           tonsCredit
+          overage
+          underage
           paymentType
           createdAt
           updatedAt
@@ -1726,6 +1736,8 @@ export const createPayment = /* GraphQL */ `
       invoiceId
       settlementId
       tonsCredit
+      overage
+      underage
       paymentType
       createdAt
       updatedAt
@@ -1828,6 +1840,8 @@ export const updatePayment = /* GraphQL */ `
       invoiceId
       settlementId
       tonsCredit
+      overage
+      underage
       paymentType
       createdAt
       updatedAt
@@ -1930,6 +1944,8 @@ export const deletePayment = /* GraphQL */ `
       invoiceId
       settlementId
       tonsCredit
+      overage
+      underage
       paymentType
       createdAt
       updatedAt

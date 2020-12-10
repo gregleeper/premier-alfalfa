@@ -1001,6 +1001,8 @@ export const onCreateContract = /* GraphQL */ `
           invoiceId
           settlementId
           tonsCredit
+          overage
+          underage
           paymentType
           createdAt
           updatedAt
@@ -1100,6 +1102,8 @@ export const onUpdateContract = /* GraphQL */ `
           invoiceId
           settlementId
           tonsCredit
+          overage
+          underage
           paymentType
           createdAt
           updatedAt
@@ -1199,6 +1203,8 @@ export const onDeleteContract = /* GraphQL */ `
           invoiceId
           settlementId
           tonsCredit
+          overage
+          underage
           paymentType
           createdAt
           updatedAt
@@ -1316,6 +1322,8 @@ export const onCreatePayment = /* GraphQL */ `
       invoiceId
       settlementId
       tonsCredit
+      overage
+      underage
       paymentType
       createdAt
       updatedAt
@@ -1415,6 +1423,8 @@ export const onUpdatePayment = /* GraphQL */ `
       invoiceId
       settlementId
       tonsCredit
+      overage
+      underage
       paymentType
       createdAt
       updatedAt
@@ -1514,6 +1524,8 @@ export const onDeletePayment = /* GraphQL */ `
       invoiceId
       settlementId
       tonsCredit
+      overage
+      underage
       paymentType
       createdAt
       updatedAt

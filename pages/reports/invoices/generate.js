@@ -200,7 +200,7 @@ const GenerateInvoices = () => {
                   <ul className="mt-2" className="">
                     {contractsWithTickets.map((contract) => (
                       <li key={contract.id}>
-                        {contract.tickets.items[0].invoiceId ? (
+                        {contract.tickets?.items[0]?.invoiceId ? (
                           <span className="text-red-600 mr-2">
                             Invoice Already Created!
                           </span>
