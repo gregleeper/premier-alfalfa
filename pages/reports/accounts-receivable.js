@@ -128,6 +128,7 @@ const AccountsReceivable = () => {
         contractTotals.salePrice;
       contractTotals.tickets = myTickets;
       contractTotals.payments = myPayments;
+
       array.push(contractTotals);
       setContractsTotals(array);
     });
@@ -438,6 +439,43 @@ const AccountsReceivable = () => {
             ) : (
               <div>Loading</div>
             )}
+          </div>
+        </div>
+        <div>
+          <div>
+            {contractsTotals.length > 0 &&
+              contractsTotals.map((contract) => (
+                <div className="py-4">
+                  <p>{contract.contractNumber}</p>
+                  <ul>
+                    <li>{contract.company}</li>
+                    <li>
+                      Tickets:
+                      <ul>
+                        {contract.tickets.map((ticket) => (
+                          <li>
+                            <span>
+                              {ticket.ticketNumber} -{" "}
+                              {moment(ticket.ticketDate).format("MM/DD/YYYY")}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                    <li>Payments</li>
+                    <ul className="list-disc ml-8">
+                      {contract.payments.map((p) => (
+                        <li>
+                          <span>
+                            {p.checkNumber} -{" "}
+                            {moment(p.date).format("MM/DD/YYYY")}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </ul>
+                </div>
+              ))}
           </div>
         </div>
       </div>
