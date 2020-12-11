@@ -95,6 +95,7 @@ const UpdatePayment = () => {
         //   .items;
         let previousData = queryCache.getQueryData("payments");
         previousData[lengthOfGroups - 1].items.push(updatePayment);
+        queryCache.invalidateQueries(["payment", { id }]);
         return () => queryCache.setQueryData("payments", () => [previousData]);
       },
     }
