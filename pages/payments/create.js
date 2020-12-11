@@ -509,46 +509,47 @@ const CreatePayment = () => {
               )}
             </Formik>
           </div>
-          <div className="w-4/12 mr-24">
-            <div className="border-b border-gray-700">
-              <h6 className="text-center text-lg">Calculations:</h6>
+          <div className="px-12 border rounded-lg shadow-lg mr-24 pb-8 h-76">
+            <div className="border-b-2 border-gray-700 pt-8">
+              <h6 className="text-gray-800 text-lg font-light text-center ">
+                Calculations
+              </h6>
             </div>
-            <div>
-              <span>Tons From Tickets: </span>
-              <span>
-                {totalTons.toLocaleString(undefined, {
+            <div className="py-2">
+              <span className="font-semibold">
+                <span className=" text-gray-700 font-light">
+                  Tons from tickets:{" "}
+                </span>
+                {totalTons.toLocaleString(underage, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
               </span>
             </div>
-            <div>
-              <span>Total Lbs from Payment: </span>
-              {calculatedTonsCredit.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              }) * 2000}
-            </div>
-            <div>
-              <span>Tons Credit from Payment: </span>
-              {calculatedTonsCredit.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </div>
-            <div>
-              <span>
-                Overage:{" "}
-                {overage.toLocaleString(undefined, {
+            <div className="py-2">
+              <span className="font-semibold">
+                <span className=" text-gray-700 font-light">
+                  Tons credit from payment:{" "}
+                </span>
+                {calculatedTonsCredit.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
               </span>
             </div>
-            <div>
-              <span>
-                Underage:{" "}
-                {underage.toLocaleString(undefined, {
+            <div className="py-2">
+              <span className="font-semibold">
+                <span className=" text-gray-700 font-light"> Overage: </span>
+                {overage.toLocaleString(underage, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+            </div>
+            <div className="py-2">
+              <span className="font-semibold">
+                <span className=" text-gray-700 font-light">Underage: </span>
+                {underage.toLocaleString(underage, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}

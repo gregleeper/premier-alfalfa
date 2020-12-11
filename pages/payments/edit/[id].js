@@ -460,7 +460,7 @@ const UpdatePayment = () => {
           <h3>Update Payment</h3>
         </div>
         <div className="flex">
-          <div className="w-full">
+          <div className="w-8/12">
             {payment && (
               <Formik
                 initialValues={{
@@ -739,8 +739,8 @@ const UpdatePayment = () => {
               </Formik>
             )}
           </div>
-          <div className="w-96">
-            <div className="w-48 float-right mb-24">
+          <div className="w-4/12">
+            <div className="w-48 mb-24">
               <button
                 className="px-3 py-2 border border-red-500 shadow hover:bg-red-500 hover:text-white mr-12"
                 type="button"
@@ -749,42 +749,46 @@ const UpdatePayment = () => {
                 Delete Payment
               </button>
             </div>
-            <div className="px-12">
-              <div className="border-b-2 border-gray-700">
-                <h6 className="text-gray-800 text-lg text-center ">
-                  Calculations:
+            <div className="px-12 border rounded-lg shadow-lg mr-24 pb-8">
+              <div className="border-b-2 border-gray-700 pt-8">
+                <h6 className="text-gray-800 text-lg font-light text-center ">
+                  Calculations
                 </h6>
               </div>
-              <div>
-                <span>
-                  Tons from tickets:{" "}
+              <div className="py-2">
+                <span className="font-semibold">
+                  <span className=" text-gray-700 font-light">
+                    Tons from tickets:{" "}
+                  </span>
                   {totalTons.toLocaleString(underage, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
                 </span>
               </div>
-              <div>
-                <span>
-                  Tons credit from payment:{" "}
+              <div className="py-2">
+                <span className="font-semibold">
+                  <span className=" text-gray-700 font-light">
+                    Tons credit from payment:{" "}
+                  </span>
                   {calculatedTonsCredit.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
                 </span>
               </div>
-              <div>
-                <span>
-                  Overage:{" "}
+              <div className="py-2">
+                <span className="font-semibold">
+                  <span className=" text-gray-700 font-light"> Overage: </span>
                   {overage.toLocaleString(underage, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
                 </span>
               </div>
-              <div>
-                <span>
-                  Underage:{" "}
+              <div className="py-2">
+                <span className="font-semibold">
+                  <span className=" text-gray-700 font-light">Underage: </span>
                   {underage.toLocaleString(underage, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
