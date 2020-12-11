@@ -404,20 +404,7 @@ const AccountsPayable = () => {
                         <td className="text-center py-2 font-semibold">
                           {formatMoney.format(
                             item.contracts.reduce(
-                              (acc, cv) =>
-                                acc +
-                                (
-                                  cv.tickets.reduce(
-                                    (a, c) => a + c.netTons,
-                                    0
-                                  ) +
-                                  cv.payments.reduce(
-                                    (a, c) => a + c.underage,
-                                    0
-                                  ) -
-                                  cv.payments.reduce((a, c) => a + c.overage, 0)
-                                ).toFixed(8) *
-                                  cv.contractPrice,
+                              (acc, cv) => acc + cv.totalBalanceDue,
                               0
                             )
                           )}
