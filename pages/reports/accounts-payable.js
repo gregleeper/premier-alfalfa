@@ -355,24 +355,11 @@ const AccountsPayable = () => {
                             </td>
                             <td className="text-center">
                               {formatMoney.format(
-                                (
-                                  getZeroToSevenDaysOld(
-                                    contract.tickets,
-                                    contract.payments
-                                  ) +
-                                  getEightToFourteenDaysOld(
-                                    contract.tickets,
-                                    contract.payments
-                                  ) +
-                                  getFifteenToTwentyOneDaysOld(
-                                    contract.tickets,
-                                    contract.payments
-                                  ) +
-                                  getTwentyTwoandOverDays(
-                                    contract.tickets,
-                                    contract.payments
+                                contract.tonsHauled * contract.contractPrice -
+                                  contract.payments.reduce(
+                                    (acc, cv) => acc + cv.amount,
+                                    0
                                   )
-                                ).toFixed(4) * contract.contractPrice
                               )}
                             </td>
                             <td className="text-center">
