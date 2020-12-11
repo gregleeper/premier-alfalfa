@@ -351,24 +351,11 @@ const AccountsReceivable = () => {
                             </td>
                             <td className="text-center">
                               {formatMoney.format(
-                                (
-                                  getZeroToSevenDaysOld(
-                                    contract.tickets,
-                                    contract.payments
-                                  ) +
-                                  getEightToFourteenDaysOld(
-                                    contract.tickets,
-                                    contract.payments
-                                  ) +
-                                  getFifteenToTwentyOneDaysOld(
-                                    contract.tickets,
-                                    contract.payments
-                                  ) +
-                                  getTwentyTwoandOverDays(
-                                    contract.tickets,
-                                    contract.payments
+                                contract.tonsHauled * contract.salePrice -
+                                  contract.payments.reduce(
+                                    (acc, cv) => acc + cv.amount,
+                                    0
                                   )
-                                ).toFixed(4) * contract.salePrice
                               )}
                             </td>
                             <td className="text-center">
@@ -413,20 +400,7 @@ const AccountsReceivable = () => {
                         <td className="text-center py-2 font-semibold">
                           {formatMoney.format(
                             item.contracts.reduce(
-                              (acc, cv) =>
-                                acc +
-                                (
-                                  cv.tickets.reduce(
-                                    (a, c) => a + c.netTons,
-                                    0
-                                  ) +
-                                  cv.payments.reduce(
-                                    (a, c) => a + c.underage,
-                                    0
-                                  ) -
-                                  cv.payments.reduce((a, c) => a + c.overage, 0)
-                                ).toFixed(8) *
-                                  cv.salePrice,
+                              (acc, cv) => acc + cv.totalBalanceDue,
                               0
                             )
                           )}
