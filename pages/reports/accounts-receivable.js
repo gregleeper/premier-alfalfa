@@ -111,10 +111,8 @@ const AccountsReceivable = () => {
         (acc, cv) => acc + cv.netTons,
         0
       );
-      contractTotals.tonsCredited = myPayments.reduce(
-        (acc, cv) => acc + cv.tonsCredit,
-        0
-      );
+      contractTotals.tonsCredited =
+        myPayments.reduce((acc, cv) => acc + cv.amount, 0) / contract.salePrice;
 
       contractTotals.totalOverages = myPayments.reduce(
         (acc, cv) => acc + cv.overage,
@@ -124,22 +122,14 @@ const AccountsReceivable = () => {
         (acc, cv) => acc + cv.underage,
         0
       );
+
       contractTotals.totalBalanceDue =
-        (contractTotals.tonsHauled -
-          contractTotals.tonsCredited -
-          contractTotals.totalOverages +
-          contractTotals.totalUnderages) *
+        (contractTotals.tonsHauled - contractTotals.tonsCredited) *
         contractTotals.salePrice;
       contractTotals.tickets = myTickets;
       contractTotals.payments = myPayments;
       array.push(contractTotals);
       setContractsTotals(array);
-      if (
-        contractTotals.totalOverages > 0 ||
-        contractTotals.totalOverages > 0
-      ) {
-        console.log(contractTotals);
-      }
     });
     computeTotalsFromTickets();
   };
@@ -209,8 +199,15 @@ const AccountsReceivable = () => {
       (acc, cv) => acc + cv.netTons,
       0
     );
-
-    return ticketTotalTons + myObj.underages - myObj.overages;
+    let myUnderages = 0;
+    let myOverages = 0;
+    if (myObj.underages > 0) {
+      myUnderages = myObj.underages;
+    }
+    if (myObj.overages > 0) {
+      myOverages = myObj.overages;
+    }
+    return ticketTotalTons + myUnderages - myOverages;
   }
 
   const getEightToFourteenDaysOld = (tickets, payments) => {
@@ -268,6 +265,7 @@ const AccountsReceivable = () => {
     );
     let overages = myPayments.reduce((acc, cv) => acc + cv.overage, 0);
     let underages = myPayments.reduce((acc, cv) => acc + cv.underage, 0);
+
     twentyTwoAndOver.tickets = myTickets;
     twentyTwoAndOver.overages = overages;
     twentyTwoAndOver.underages = underages;
@@ -352,10 +350,11 @@ const AccountsReceivable = () => {
                             </td>
                             <td className="text-center">
                               {formatMoney.format(
-                                (getZeroToSevenDaysOld(
-                                  contract.tickets,
-                                  contract.payments
-                                ) +
+                                (
+                                  getZeroToSevenDaysOld(
+                                    contract.tickets,
+                                    contract.payments
+                                  ) +
                                   getEightToFourteenDaysOld(
                                     contract.tickets,
                                     contract.payments
@@ -367,8 +366,8 @@ const AccountsReceivable = () => {
                                   getTwentyTwoandOverDays(
                                     contract.tickets,
                                     contract.payments
-                                  )) *
-                                  contract.salePrice
+                                  )
+                                ).toFixed(4) * contract.salePrice
                               )}
                             </td>
                             <td className="text-center">
@@ -376,7 +375,7 @@ const AccountsReceivable = () => {
                                 getZeroToSevenDaysOld(
                                   contract.tickets,
                                   contract.payments
-                                ) * contract.salePrice
+                                ).toFixed(4) * contract.salePrice
                               )}
                             </td>
                             <td className="text-center">
@@ -384,7 +383,7 @@ const AccountsReceivable = () => {
                                 getEightToFourteenDaysOld(
                                   contract.tickets,
                                   contract.payments
-                                ) * contract.salePrice
+                                ).toFixed(4) * contract.salePrice
                               )}
                             </td>
                             <td className="text-center">
@@ -392,7 +391,7 @@ const AccountsReceivable = () => {
                                 getFifteenToTwentyOneDaysOld(
                                   contract.tickets,
                                   contract.payments
-                                ) * contract.salePrice
+                                ).toFixed(4) * contract.salePrice
                               )}
                             </td>
 
@@ -401,7 +400,7 @@ const AccountsReceivable = () => {
                                 getTwentyTwoandOverDays(
                                   contract.tickets,
                                   contract.payments
-                                ) * contract.salePrice
+                                ).toFixed(4) * contract.salePrice
                               )}
                             </td>
                           </tr>
@@ -415,15 +414,17 @@ const AccountsReceivable = () => {
                             item.contracts.reduce(
                               (acc, cv) =>
                                 acc +
-                                (cv.tickets.reduce((a, c) => a + c.netTons, 0) +
+                                (
+                                  cv.tickets.reduce(
+                                    (a, c) => a + c.netTons,
+                                    0
+                                  ) +
                                   cv.payments.reduce(
                                     (a, c) => a + c.underage,
                                     0
                                   ) -
-                                  cv.payments.reduce(
-                                    (a, c) => a + c.overage,
-                                    0
-                                  )) *
+                                  cv.payments.reduce((a, c) => a + c.overage, 0)
+                                ).toFixed(8) *
                                   cv.salePrice,
                               0
                             )
