@@ -23,6 +23,7 @@ const GenerateInvoices = () => {
   const [beginDate, setBeginDate] = useState(moment().startOf("isoWeek")._d);
   const [endDate, setEndDate] = useState(moment().endOf("isoWeek")._d);
   const [contractsWithTickets, setContractsWithTickets] = useState([]);
+
   const [numberInvoicesCreated, setNumberInvoicesCreated] = useState(0);
 
   const { data: saleContractsData, refetch } = useQuery(
@@ -40,8 +41,11 @@ const GenerateInvoices = () => {
           },
           ticketFilter: {
             ticketDate: {
-              between: [beginDate, endDate],
+              le: moment(endDate).endOf("date"),
             },
+          },
+          paymentDate: {
+            le: moment(endDate).endOf("date"),
           },
 
           limit: 3000,
@@ -70,11 +74,7 @@ const GenerateInvoices = () => {
     }
   }, [activeSaleContracts]);
 
-  // useEffect(() => {
-  //   if (contractsWithTickets.length > 0) {
-  //     createInvoices();
-  //   }
-  // }, [contractsWithTickets]);
+  console.log(activeSaleContracts);
 
   const compileData = () => {
     let array = [];
@@ -88,17 +88,38 @@ const GenerateInvoices = () => {
     });
     setContractsWithTickets(array);
   };
-  console.log(contractsWithTickets);
 
   const createInvoices = async () => {
     contractsWithTickets.map(async (contract, index) => {
-      let sumNetTons = 0;
-      let total = 0;
+      let begginingBalance = 0;
+      let previousTickets = contract.tickets.items.filter((t) =>
+        moment(t.ticketDate).isBefore(moment(beginDate).startOf("date"))
+      );
+      let previousPayments = contract.payments.items.filter((p) =>
+        moment(p.date).isBefore(moment(beginDate).startOf("date"))
+      );
+      beginningBalance =
+        previousTickets.reduce((acc, cv) => acc + cv.netTons, 0) *
+          contract.salePrice -
+        previousPayments.reduce((acc, cv) => acc + cv.amount, 0);
 
-      contract.tickets.items.map((ticket) => {
-        sumNetTons = sumNetTons + ticket.netTons;
-      });
-      total = sumNetTons * contract.salePrice;
+      let invoiceTickets = contract.tickets.items.filter((t) =>
+        moment(t.ticketDate).isBetween(
+          moment(beginDate).startOf("date"),
+          moment(endDate).endOf("date")
+        )
+      );
+      let invoicePayments = contract.payments.items.filter((p) =>
+        moment(p.date).isBetween(
+          moment(beginDate).startOf("date"),
+          moment(endDate).endOf("date")
+        )
+      );
+      let invoiceTotal =
+        invoiceTickets.reduce((acc, cv) => acc + cv.netTons, 0) *
+          contract.salePrice -
+        invoicePayments.reduce((acc, cv) => acc + cv.amount, 0);
+      invoiceTotal = beginningBalance + invoiceTotal;
 
       const {
         data: { createInvoice: invoice },
@@ -111,7 +132,7 @@ const GenerateInvoices = () => {
               "i" +
               moment(endDate).add(1, "week").add(1, "day").format("MMDDYY") +
               index,
-            amountOwed: total,
+            amountOwed: invoiceTotal,
             dueDate: moment(endDate).add(1, "week").add(1, "day"),
             isPaid: false,
             contractId: contract.id,
@@ -122,7 +143,7 @@ const GenerateInvoices = () => {
         },
       });
 
-      contract.tickets.items.map(async (ticket) => {
+      invoiceTickets.map(async (ticket) => {
         await API.graphql({
           query: updateTicket,
           variables: {
@@ -206,7 +227,15 @@ const GenerateInvoices = () => {
                           {contract.contractTo.companyReportName}
                         </span>
                         <span className="float-right">
-                          Tickets: {contract.tickets.items.length}
+                          Tickets:{" "}
+                          {
+                            contract.tickets.items.filter((t) =>
+                              moment(t.ticketDate).isBetween(
+                                moment(beginDate).startOf("date"),
+                                moment(endDate).endOf("date")
+                              )
+                            ).length
+                          }
                         </span>
                       </li>
                     ))}

@@ -36,6 +36,7 @@ const Settlement = () => {
   const [contractId, setContractId] = useState(null);
   const [contract, setContract] = useState(null);
   const [tickets, setTickets] = useState([]);
+  const [settlementPayments, setSettlementPayments] = useState([]);
   const [settlementLoaded, setSettlementLoaded] = useState(false);
   const [beginningBalance, setBeginningBalance] = useState({
     balanceDue: 0,
@@ -89,11 +90,12 @@ const Settlement = () => {
   );
 
   const [updateTicketMutation, { data, error, isSuccess }] = useMutation(
-    async (input) => {
+    async (ticketId) => {
       const { data: ticketData } = await API.graphql({
         query: updateTicket,
         variables: {
-          input,
+          id: ticketId,
+          settlementId: null,
         },
       });
       return ticketData;
@@ -118,14 +120,19 @@ const Settlement = () => {
       variables: {
         contractId: contractId,
         date: {
-          between: [
-            moment(settlement?.endDate).subtract(7, "days"),
-            settlement?.endDate,
-          ],
+          le: moment(settlement?.endDate).endOf("date"),
         },
       },
     });
     setPayments(myPayments.items);
+    setSettlementPayments(
+      myPayments.items.filter((p) =>
+        moment(p.date).isBetween(
+          moment(settlement.beginDate).startOf("date"),
+          moment(settlement.endDate).endOf("date")
+        )
+      )
+    );
   };
 
   const getUnpaidBalanceForContract = async (contractId) => {
@@ -137,16 +144,18 @@ const Settlement = () => {
       query: ticketsByContract,
       variables: {
         contractId,
-        filter: {
-          paymentId: {
-            attributeExists: false,
-          },
+        ticketDate: { le: moment(settlement.beginDate).startOf("date") },
 
+        filter: {
           settlementId: { ne: id },
         },
         limit: 5000,
       },
     });
+
+    let previousPayments = payments.filter((p) =>
+      moment(p.date).isBefore(moment(settlement.beginDate).startOf("date"))
+    );
 
     if (unpaidTickets.length > 0 || payments.length > 0) {
       let array = [];
@@ -154,27 +163,24 @@ const Settlement = () => {
       unpaidTickets.map((ticket) => {
         if (
           moment(ticket.ticketDate).isBefore(
-            moment(settlement.dueDate).subtract(7, "days")
+            moment(settlement.beginDate).startOf("date")
           )
         ) {
           array.push(ticket);
         }
       });
-      let paymentTickets = [];
-      payments.map((p) => paymentTickets.push(p.tickets.items));
-      let paymentTicketsFlattened = paymentTickets.flat();
-      console.log(paymentTicketsFlattened);
+
       setBeginningBalance({
         balanceDue:
-          array.reduce((acc, cv) => acc + cv.netTons, 0) +
-          paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netTons, 0) *
-            settlement.contract.contractPrice,
+          array.reduce((acc, cv) => acc + cv.netTons, 0) *
+            settlement.contract.contractPrice -
+          previousPayments.reduce((acc, cv) => acc + cv.amount, 0),
         totalPounds:
-          array.reduce((acc, cv) => acc + cv.netWeight, 0) +
-          paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netWeight, 0),
+          array.reduce((acc, cv) => acc + cv.netWeight, 0) -
+          previousPayments.reduce((acc, cv) => acc + cv.totalPounds, 0),
         totalTons:
-          array.reduce((acc, cv) => acc + cv.netTons, 0) +
-          paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netTons, 0),
+          array.reduce((acc, cv) => acc + cv.netTons, 0) -
+          previousPayments.reduce((acc, cv) => acc + cv.tonsCredit, 0),
       });
     }
   };
@@ -190,15 +196,19 @@ const Settlement = () => {
       setTickets(settlement.tickets.items);
       setContractId(settlement.contractId);
       setContract(settlement.contract);
-
       setSettlementLoaded(true);
     }
   }, [settlement]);
 
   useEffect(() => {
+    if (contractId) {
+      getPaymentsOnContract();
+    }
+  }, [contractId]);
+
+  useEffect(() => {
     if (settlementLoaded && contractId && tickets.length) {
       getUnpaidBalanceForContract(contractId);
-      getPaymentsOnContract();
     }
   }, [settlementLoaded]);
 
@@ -208,21 +218,8 @@ const Settlement = () => {
     }
   }, [payments]);
 
-  const computeTotalPounds = () => {
-    let total = 0;
-    tickets.map((ticket) => {
-      total = ticket.netWeight + total;
-    });
-    return total;
-  };
+  console.log(settlement);
 
-  const computeTotalTons = () => {
-    let total = 0;
-    tickets.map((ticket) => {
-      total = ticket.netTons + total;
-    });
-    return total.toFixed(2);
-  };
   let runningLbs = beginningBalance.totalPounds;
   let runningTons = beginningBalance.totalTons;
   let runningBalance = beginningBalance.balanceDue;
@@ -246,12 +243,7 @@ const Settlement = () => {
   const handleDeleteSettlement = () => {
     tickets.map((ticket) => {
       try {
-        updateTicketMutation({
-          input: {
-            id: ticket.id,
-            settlementId: null,
-          },
-        });
+        updateTicketMutation(ticket.id);
       } catch (err) {
         console.log(err);
       }
@@ -420,32 +412,31 @@ const Settlement = () => {
                         {formatMoney.format(beginningBalance.balanceDue)}
                       </td>
                     </tr>
-                    {tickets.map((ticket) => {
-                      return (
-                        <tr key={ticket.id} className="text-center">
-                          <td className="px-2">
-                            {moment(ticket.ticketDate).format("MM/DD/YY")}
-                          </td>
-                          <td className="px-4">{ticket.ticketNumber}</td>
-                          <td className="px-4"> {ticket.baleCount}</td>
-                          <td className="px-4">{ticket.grossWeight}</td>
-                          <td className="px-4">{ticket.tareWeight}</td>
-                          <td className="px-4">{ticket.netWeight}</td>
-                          <td className="px-4">{ticket.netTons}</td>
-                          <td>{addToTotalPounds(ticket.netWeight)}</td>
-                          <td>{addToTotalTons(ticket.netTons)}</td>
-                          <td></td>
-                          <td></td>
-                          <td className="px-4">
-                            {addToBalanceDue(
-                              ticket.netTons * ticket.contract.contractPrice
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                    {payments
-                      ? payments.map((payment) => (
+                    {tickets.map((ticket) => (
+                      <tr key={ticket.id} className="text-center">
+                        <td className="px-2">
+                          {moment(ticket.ticketDate).format("MM/DD/YY")}
+                        </td>
+
+                        <td className="px-4">{ticket.ticketNumber}</td>
+                        <td className="px-4"> {ticket.baleCount}</td>
+                        <td className="px-4">{ticket.grossWeight}</td>
+                        <td className="px-4">{ticket.tareWeight}</td>
+                        <td className="px-4">{ticket.netWeight}</td>
+                        <td className="px-4">{ticket.netTons}</td>
+                        <td>{addToTotalPounds(ticket.netWeight)}</td>
+                        <td>{addToTotalTons(ticket.netTons)}</td>
+                        <td></td>
+                        <td></td>
+                        <td className="px-4">
+                          {addToBalanceDue(
+                            ticket.netTons * ticket.contract.contractPrice
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    {settlementPayments
+                      ? settlementPayments.map((payment) => (
                           <tr key={payment.id} className="text-center">
                             <td className="px-2">
                               {moment(payment.date).format("MM/DD/YY")}

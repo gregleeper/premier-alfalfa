@@ -89,11 +89,14 @@ const Invoice = () => {
   );
 
   const [updateTicketMutation, { data, error, isSuccess }] = useMutation(
-    async (input) => {
+    async (ticketId) => {
       const { data: ticketData } = await API.graphql({
         query: updateTicket,
         variables: {
-          input,
+          input: {
+            id: ticketId,
+            invoiceId: null,
+          },
         },
       });
       return ticketData;
@@ -142,7 +145,7 @@ const Invoice = () => {
       query: ticketsByContract,
       variables: {
         contractId,
-        ticketDate: { le: moment(invoice.beginDate) },
+        ticketDate: { le: moment(invoice.beginDate).startOf("date") },
         filter: {
           invoiceId: { ne: id },
         },
@@ -229,12 +232,7 @@ const Invoice = () => {
   const handleDeleteInvoice = () => {
     tickets.map((ticket) => {
       try {
-        updateTicketMutation({
-          input: {
-            id: ticket.id,
-            invoiceId: null,
-          },
-        });
+        updateTicketMutation(ticket.id);
       } catch (err) {
         console.log(err);
       }

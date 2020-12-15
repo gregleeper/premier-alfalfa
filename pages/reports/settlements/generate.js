@@ -40,12 +40,12 @@ const GenerateSettlements = () => {
           },
           ticketFilter: {
             ticketDate: {
-              between: [beginDate, endDate],
+              le: moment(endDate).endOf("date"),
             },
           },
 
           paymentDate: {
-            between: [beginDate, endDate],
+            le: moment(endDate).endOf("date"),
           },
 
           limit: 3000,
@@ -74,12 +74,6 @@ const GenerateSettlements = () => {
     }
   }, [activePurchaseContracts]);
 
-  // useEffect(() => {
-  //   if (contractsWithTickets.length > 0) {
-  //     createInvoices();
-  //   }
-  // }, [contractsWithTickets]);
-
   const compileData = () => {
     let array = [];
     activePurchaseContracts.map((contract) => {
@@ -96,55 +90,73 @@ const GenerateSettlements = () => {
 
   const createSettlements = async () => {
     contractsWithTickets.map(async (contract, index) => {
-      if (!contract.tickets?.items[0]?.settlementId) {
-        let sumNetTons = 0;
-        let total = 0;
+      let beginningBalance = 0;
+      let previousTickets = contract.tickets.items.filter((t) =>
+        moment(t.ticketDate).isBefore(moment(beginDate).startOf("date"))
+      );
+      let previousPayments = contract.payments.items.filter((p) =>
+        moment(p.date).isBefore(moment(beginDate).startOf("date"))
+      );
+      beginningBalance =
+        previousTickets.reduce((acc, cv) => acc + cv.netTons, 0) *
+          contract.contractPrice -
+        previousPayments.reduce((acc, cv) => acc + cv.amount, 0);
 
-        contract.tickets.items.map((ticket) => {
-          sumNetTons = sumNetTons + ticket.netTons;
-        });
-        total = sumNetTons * contract.contractPrice;
+      let settlementTickets = contract.tickets.items.filter((t) =>
+        moment(t.ticketDate).isBetween(
+          moment(beginDate).startOf("date"),
+          moment(endDate).endOf("date")
+        )
+      );
 
-        const {
-          data: { createSettlement: settlement },
-        } = await API.graphql({
-          query: createSettlement,
+      let settlementPayments = contract.payments.items.filter((p) =>
+        moment(p.date).isBetween(
+          moment(beginDate).startOf("date"),
+          moment(endDate).endOf("date")
+        )
+      );
+      let settlementTotal =
+        settlementTickets.reduce((acc, cv) => acc + cv.netTons, 0) *
+          contract.contractPrice -
+        settlementPayments.reduce((acc, cv) => acc + cv.amount, 0);
+      settlementTotal = beginningBalance + settlementTotal;
+
+      const {
+        data: { createSettlement: mySettlement },
+      } = await API.graphql({
+        query: createSettlement,
+        variables: {
+          input: {
+            vendorId: contract.vendorId,
+            settlementNumber:
+              "i" +
+              moment(endDate).add(1, "week").add(1, "day").format("MMDDYY") +
+              index,
+            amountOwed: settlementTotal,
+            dueDate: moment(endDate).add(1, "week").add(1, "day"),
+            isPaid: false,
+            contractId: contract.id,
+            type: "Settlement",
+            beginDate,
+            endDate,
+          },
+        },
+      });
+
+      settlementTickets.map(async (ticket) => {
+        await API.graphql({
+          query: updateTicket,
           variables: {
             input: {
-              vendorId: contract.vendorId,
-              settlementNumber:
-                "s" +
-                moment(endDate).add(1, "week").add(1, "day").format("MMDDYY") +
-                index,
-              amountOwed: total,
-              dueDate: moment(endDate).add(1, "week").add(1, "day"),
-              isPaid: false,
-              contractId: contract.id,
-              type: "Settlement",
-              beginDate,
-              endDate,
+              id: ticket.id,
+              settlementId: mySettlement.id,
             },
           },
         });
-
-        contract.tickets.items.map(async (ticket) => {
-          await API.graphql({
-            query: updateTicket,
-            variables: {
-              input: {
-                id: ticket.id,
-                settlementId: settlement.id,
-              },
-            },
-          });
-        });
-        setNumberOfSettlementsCreated(numberOfSettlementsCreated + 1);
-      }
-      if (contract.tickets?.items[0]?.settlementId) {
-        console.log("no settlement created");
-      }
-    });
-    router.push("/reports/settlements");
+      });
+      setNumberOfSettlementsCreated(numberOfSettlementsCreated + 1);
+    }),
+      router.back();
   };
 
   const handleFetchQueries = () => {
@@ -214,7 +226,15 @@ const GenerateSettlements = () => {
                           {contract.contractTo.companyReportName}
                         </span>
                         <span className="float-right">
-                          Tickets: {contract.tickets.items.length}
+                          Tickets:{" "}
+                          {
+                            contract.tickets.items.filter((t) =>
+                              moment(t.ticketDate).isBetween(
+                                moment(beginDate).startOf("date"),
+                                moment(endDate).endOf("date")
+                              )
+                            ).length
+                          }
                         </span>
                       </li>
                     ))}
