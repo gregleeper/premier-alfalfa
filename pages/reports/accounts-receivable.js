@@ -6,11 +6,7 @@ import ReactToPrint from "react-to-print";
 import Layout from "../../components/layout";
 import { formatMoney, groupBy } from "../../utils";
 import { contractsByType } from "../../src/graphql/customQueries";
-import {
-  invoicesSorted,
-  paymentsByContract,
-  ticketsByContract,
-} from "../../src/graphql/customQueries";
+
 import DatePicker from "react-datepicker";
 
 const AccountsReceivable = () => {
@@ -48,99 +44,6 @@ const AccountsReceivable = () => {
     });
     return myContracts;
   });
-
-  const getPaymentsByContract = async (contractId) => {
-    const {
-      data: {
-        paymentsByContract: { items: myPayments },
-      },
-    } = await API.graphql({
-      query: paymentsByContract,
-      variables: {
-        contractId,
-        sortDirection: "DESC",
-        limit: 2000,
-        date: { le: moment(endDate).endOf("date") },
-      },
-    });
-    return myPayments;
-  };
-
-  const getAllTicketsByContract = async (contractId) => {
-    const {
-      data: {
-        ticketsByContract: { items: myTickets },
-      },
-    } = await API.graphql({
-      query: ticketsByContract,
-      variables: {
-        contractId,
-        ticketDate: { le: moment(endDate).endOf("date") },
-        limit: 2000,
-      },
-    });
-
-    return myTickets;
-  };
-
-  // const getTicketsByContract = async () => {
-  //   let array = [...contractsTotals];
-  //   activeSaleContracts.map(async (contract) => {
-  //     const {
-  //       data: {
-  //         ticketsByContract: { items: myTickets },
-  //       },
-  //     } = await API.graphql({
-  //       query: ticketsByContract,
-  //       variables: {
-  //         contractId: contract.id,
-  //         type: "Ticket",
-  //         sortDirection: "DESC",
-  //         ticketDate: { le: moment(endDate).endOf("date") },
-  //         limit: 2000,
-  //         filter: {
-  //           paymentId: { attributeExists: false },
-  //         },
-  //       },
-  //     });
-  //     const allTickets = await getAllTicketsByContract(contract.id);
-  //     const myPayments = await getPaymentsByContract(contract.id);
-
-  //     let contractTotals = {};
-
-  //     contractTotals.contractNumber = contract.contractNumber;
-  //     contractTotals.contractId = contract.id;
-  //     contractTotals.company = contract.contractTo.companyReportName;
-  //     contractTotals.quantity = contract.quantity;
-  //     contractTotals.salePrice = contract.salePrice;
-  //     contractTotals.tonsHauled = allTickets.reduce(
-  //       (acc, cv) => acc + cv.netTons,
-  //       0
-  //     );
-  //     contractTotals.tonsCredited =
-  //       myPayments.reduce((acc, cv) => acc + cv.amount, 0) / contract.salePrice;
-
-  //     contractTotals.totalOverages = myPayments.reduce(
-  //       (acc, cv) => acc + cv.overage,
-  //       0
-  //     );
-  //     contractTotals.totalUnderages = myPayments.reduce(
-  //       (acc, cv) => acc + cv.underage,
-  //       0
-  //     );
-
-  //     contractTotals.totalBalanceDue =
-  //       (contractTotals.tonsHauled - contractTotals.tonsCredited) *
-  //       contractTotals.salePrice;
-  //     contractTotals.tickets = myTickets;
-  //     contractTotals.payments = myPayments;
-
-  //     array.push(contractTotals);
-  //     setContractsTotals(array);
-  //   });
-
-  //   computeTotalsFromTickets();
-  // };
 
   const computeContractTotals = () => {
     let array = [...contractsTotals];
@@ -180,7 +83,6 @@ const AccountsReceivable = () => {
 
     computeTotalsFromTickets();
   };
-  console.log(contractsTotals);
 
   const handleFetchTickets = () => {
     setContractsTotals([]);
@@ -196,7 +98,6 @@ const AccountsReceivable = () => {
   useEffect(() => {
     if (contractData) {
       setActiveSaleContracts(contractData.items);
-      console.log(contractData);
     }
   }, [contractData]);
 

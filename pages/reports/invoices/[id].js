@@ -41,6 +41,7 @@ const Invoice = () => {
     totalTons: 0,
   });
   const [payments, setPayments] = useState([]);
+  const [invoicePayments, setInvoicePayments] = useState([]);
   const [previousUnpaidInvoices, setPreviousUnpaidInvoices] = useState([]);
 
   const [modalIsOpen, setIsOpen] = React.useState(false);
@@ -117,14 +118,19 @@ const Invoice = () => {
       variables: {
         contractId,
         date: {
-          between: [
-            moment(invoice?.endDate).subtract(7, "days").startOf("day"),
-            moment(invoice?.endDate).endOf("day"),
-          ],
+          le: moment(invoice?.endDate).endOf("date"),
         },
       },
     });
     setPayments(myPayments.items);
+    setInvoicePayments(
+      myPayments.items.filter((p) =>
+        moment(p.date).isBetween(
+          moment(invoice.beginDate).startOf("date"),
+          moment(invoice.endDate).endOf("date")
+        )
+      )
+    );
   };
 
   const getUnpaidBalanceForContract = async (contractId) => {
@@ -136,17 +142,18 @@ const Invoice = () => {
       query: ticketsByContract,
       variables: {
         contractId,
+        ticketDate: { le: moment(invoice.beginDate) },
         filter: {
-          paymentId: { attributeExists: false },
           invoiceId: { ne: id },
         },
         limit: 5000,
       },
     });
-
+    let previousPayments = payments.filter((p) =>
+      moment(p.date).isBefore(moment(invoice.beginDate).startOf("date"))
+    );
     if (unpaidTickets.length || payments.length) {
       let array = [];
-
       unpaidTickets.map((ticket) => {
         if (
           moment(ticket.ticketDate).isBefore(
@@ -156,21 +163,18 @@ const Invoice = () => {
           array.push(ticket);
         }
       });
-      let paymentTickets = [];
-      payments.map((p) => paymentTickets.push(p.tickets.items));
-      let paymentTicketsFlattened = paymentTickets.flat();
 
       setBeginningBalance({
         balanceDue:
-          (array.reduce((acc, cv) => acc + cv.netTons, 0) +
-            paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netTons, 0)) *
-          invoice.contract.salePrice,
+          array.reduce((acc, cv) => acc + cv.netTons, 0) *
+            invoice.contract.salePrice -
+          previousPayments.reduce((acc, cv) => acc + cv.amount, 0),
         totalPounds:
-          array.reduce((acc, cv) => acc + cv.netWeight, 0) +
-          paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netWeight, 0),
+          array.reduce((acc, cv) => acc + cv.netWeight, 0) -
+          previousPayments.reduce((acc, cv) => acc + cv.totalPounds, 0),
         totalTons:
-          array.reduce((acc, cv) => acc + cv.netTons, 0) +
-          paymentTicketsFlattened.reduce((acc, cv) => acc + cv.netTons, 0),
+          array.reduce((acc, cv) => acc + cv.netTons, 0) -
+          previousPayments.reduce((acc, cv) => acc + cv.tonsCredit, 0),
       });
     }
   };
@@ -421,8 +425,8 @@ const Invoice = () => {
                         </tr>
                       );
                     })}
-                    {payments
-                      ? payments.map((payment) => (
+                    {invoicePayments
+                      ? invoicePayments.map((payment) => (
                           <tr key={payment.id} className="text-center">
                             <td className="px-2">
                               {moment(payment.date).format("MM/DD/YY")}
