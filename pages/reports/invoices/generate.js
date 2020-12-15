@@ -88,56 +88,52 @@ const GenerateInvoices = () => {
     });
     setContractsWithTickets(array);
   };
+  console.log(contractsWithTickets);
 
   const createInvoices = async () => {
     contractsWithTickets.map(async (contract, index) => {
-      if (!contract.tickets?.items[0]?.invoiceId) {
-        let sumNetTons = 0;
-        let total = 0;
+      let sumNetTons = 0;
+      let total = 0;
 
-        contract.tickets.items.map((ticket) => {
-          sumNetTons = sumNetTons + ticket.netTons;
-        });
-        total = sumNetTons * contract.salePrice;
+      contract.tickets.items.map((ticket) => {
+        sumNetTons = sumNetTons + ticket.netTons;
+      });
+      total = sumNetTons * contract.salePrice;
 
-        const {
-          data: { createInvoice: invoice },
-        } = await API.graphql({
-          query: createInvoice,
+      const {
+        data: { createInvoice: invoice },
+      } = await API.graphql({
+        query: createInvoice,
+        variables: {
+          input: {
+            vendorId: contract.vendorId,
+            invoiceNumber:
+              "i" +
+              moment(endDate).add(1, "week").add(1, "day").format("MMDDYY") +
+              index,
+            amountOwed: total,
+            dueDate: moment(endDate).add(1, "week").add(1, "day"),
+            isPaid: false,
+            contractId: contract.id,
+            type: "Invoice",
+            beginDate,
+            endDate,
+          },
+        },
+      });
+
+      contract.tickets.items.map(async (ticket) => {
+        await API.graphql({
+          query: updateTicket,
           variables: {
             input: {
-              vendorId: contract.vendorId,
-              invoiceNumber:
-                "i" +
-                moment(endDate).add(1, "week").add(1, "day").format("MMDDYY") +
-                index,
-              amountOwed: total,
-              dueDate: moment(endDate).add(1, "week").add(1, "day"),
-              isPaid: false,
-              contractId: contract.id,
-              type: "Invoice",
-              beginDate,
-              endDate,
+              id: ticket.id,
+              invoiceId: invoice.id,
             },
           },
         });
-
-        contract.tickets.items.map(async (ticket) => {
-          await API.graphql({
-            query: updateTicket,
-            variables: {
-              input: {
-                id: ticket.id,
-                invoiceId: invoice.id,
-              },
-            },
-          });
-        });
-        setNumberInvoicesCreated(numberInvoicesCreated + 1);
-      }
-      if (contract.tickets?.items[0]?.invoiceId) {
-        console.log("no invoice generated");
-      }
+      });
+      setNumberInvoicesCreated(numberInvoicesCreated + 1);
     });
 
     router.back();

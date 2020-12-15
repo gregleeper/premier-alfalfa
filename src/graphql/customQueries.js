@@ -655,6 +655,8 @@ export const contractsByType = /* GraphQL */ `
             invoiceId
             settlementId
             tonsCredit
+            overage
+            underage
             paymentType
             createdAt
             updatedAt
@@ -669,6 +671,7 @@ export const contractsByType = /* GraphQL */ `
             netTons
             netWeight
             tareWeight
+            paymentId
             ticketNumber
             updatedAt
             invoiceId

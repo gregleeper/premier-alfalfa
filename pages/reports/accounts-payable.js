@@ -5,7 +5,7 @@ import { API, withSSRContext } from "aws-amplify";
 import ReactToPrint from "react-to-print";
 import Layout from "../../components/layout";
 import { formatMoney, groupBy } from "../../utils";
-import { contractsByType } from "../../src/graphql/queries.ts";
+import { contractsByType } from "../../src/graphql/customQueries";
 import {
   invoicesSorted,
   ticketsByContract,
@@ -18,9 +18,16 @@ const AccountsPayable = () => {
   const [contractsTotals, setContractsTotals] = useState([]);
   const [isFetchingTickets, setIsFetchingTickets] = useState(false);
   const [endDate, setEndDate] = useState(new Date());
+
   const [totals, setTotals] = useState([]);
   const [vendorTotals, setVendorTotals] = useState([]);
   let toPrint = useRef(null);
+
+  let total1 = 0;
+  let total2 = 0;
+  let total3 = 0;
+  let total4 = 0;
+  let grandTotal = 0;
 
   const { data: contractData } = useQuery(
     "activePurchaseContracts",
@@ -30,6 +37,14 @@ const AccountsPayable = () => {
       } = await API.graphql({
         query: contractsByType,
         variables: {
+          paymentDate: {
+            le: moment(endDate).endOf("date"),
+          },
+          ticketFilter: {
+            ticketDate: {
+              le: moment(endDate).endOf("date"),
+            },
+          },
           contractType: "PURCHASE",
           filter: {
             contractState: {
@@ -46,103 +61,49 @@ const AccountsPayable = () => {
     }
   );
 
-  const getPaymentsByContract = async (contractId) => {
-    const {
-      data: {
-        paymentsByContract: { items: myPayments },
-      },
-    } = await API.graphql({
-      query: paymentsByContract,
-      variables: {
-        contractId,
-        sortDirection: "DESC",
-        limit: 2000,
-        date: { le: moment(endDate).endOf("date") },
-      },
-    });
-    return myPayments;
-  };
-
-  const getAllTicketsByContract = async (contractId) => {
-    const {
-      data: {
-        ticketsByContract: { items: myTickets },
-      },
-    } = await API.graphql({
-      query: ticketsByContract,
-      variables: {
-        contractId,
-        limit: 2000,
-      },
-    });
-
-    return myTickets;
-  };
-
-  const getTicketsByContract = async () => {
+  const computeContractTotals = () => {
     let array = [...contractsTotals];
-
-    activePurchaseContracts.map(async (contract) => {
-      const {
-        data: {
-          ticketsByContract: { items: myTickets },
-        },
-      } = await API.graphql({
-        query: ticketsByContract,
-        variables: {
-          contractId: contract.id,
-          type: "Ticket",
-          sortDirection: "DESC",
-          limit: 2000,
-          ticketDate: { le: moment(endDate).endOf("date") },
-          filter: {
-            paymentId: { attributeExists: false },
-          },
-        },
-      });
-
-      const allTickets = await getAllTicketsByContract(contract.id);
-      const myPayments = await getPaymentsByContract(contract.id);
-
+    activePurchaseContracts.map((contract) => {
       let contractTotals = {};
 
       contractTotals.contractNumber = contract.contractNumber;
       contractTotals.contractId = contract.id;
       contractTotals.company = contract.contractTo.companyReportName;
+      contractTotals.quantity = contract.quantity;
       contractTotals.contractPrice = contract.contractPrice;
-      contractTotals.tonsHauled = allTickets.reduce(
+      contractTotals.tonsHauled = contract.tickets.items.reduce(
         (acc, cv) => acc + cv.netTons,
         0
       );
       contractTotals.tonsCredited =
-        myPayments.reduce((acc, cv) => acc + cv.amount, 0) /
+        contract.payments.items.reduce((acc, cv) => acc + cv.amount, 0) /
         contract.contractPrice;
 
-      contractTotals.totalOverages = myPayments.reduce(
+      contractTotals.totalOverages = contract.payments.items.reduce(
         (acc, cv) => acc + cv.overage,
         0
       );
-      contractTotals.totalUnderages = myPayments.reduce(
+      contractTotals.totalUnderages = contract.payments.items.reduce(
         (acc, cv) => acc + cv.underage,
         0
       );
+
       contractTotals.totalBalanceDue =
         (contractTotals.tonsHauled - contractTotals.tonsCredited) *
         contractTotals.contractPrice;
-      contractTotals.tickets = myTickets;
-      contractTotals.payments = myPayments;
+      contractTotals.tickets = contract.tickets.items;
+      contractTotals.payments = contract.payments.items;
       array.push(contractTotals);
       setContractsTotals(array);
     });
+
     computeTotalsFromTickets();
   };
 
   const handleFetchTickets = () => {
-    setIsFetchingTickets(true);
     setContractsTotals([]);
     setVendorTotals([]);
-    getTicketsByContract();
-    setIsFetchingTickets(false);
+    computeContractTotals();
   };
 
   const clearReport = () => {
@@ -155,6 +116,12 @@ const AccountsPayable = () => {
       setActivePurchaseContracts(contractData.items);
     }
   }, [contractData]);
+
+  useEffect(() => {
+    if (activePurchaseContracts.length) {
+      computeContractTotals();
+    }
+  }, [activePurchaseContracts]);
 
   const computeTotalsFromTickets = () => {
     const byVendor = groupBy(contractsTotals, (contract) => contract.company);
@@ -183,7 +150,7 @@ const AccountsPayable = () => {
     setVendorTotals(array);
   };
 
-  const getZeroToSevenDaysOld = (tickets, payments) => {
+  const getZeroToSevenDaysOld = (tickets, payments, price) => {
     let zeroToSeven = {};
     const myTickets = tickets.filter(
       (ticket) => moment(endDate).diff(moment(ticket.ticketDate), "days") < 8
@@ -196,6 +163,9 @@ const AccountsPayable = () => {
     zeroToSeven.tickets = myTickets;
     zeroToSeven.overages = overages;
     zeroToSeven.underages = underages;
+    zeroToSeven.payments = myPayments;
+    zeroToSeven.price = price;
+
     return calculateTonsBalance(zeroToSeven);
   };
 
@@ -204,18 +174,13 @@ const AccountsPayable = () => {
       (acc, cv) => acc + cv.netTons,
       0
     );
-    let myUnderages = 0;
-    let myOverages = 0;
-    if (myObj.underages > 0) {
-      myUnderages = myObj.underages;
-    }
-    if (myObj.overages > 0) {
-      myOverages = myObj.overages;
-    }
-    return ticketTotalTons + myUnderages - myOverages;
+    let totalPaid = myObj.payments.reduce((acc, cv) => acc + cv.amount, 0);
+    let creditFromPayments = totalPaid / myObj.price;
+
+    return ticketTotalTons - creditFromPayments;
   }
 
-  const getEightToFourteenDaysOld = (tickets, payments) => {
+  const getEightToFourteenDaysOld = (tickets, payments, price) => {
     let eightToFourteen = {};
     const myTickets = tickets.filter(
       (ticket) =>
@@ -233,11 +198,13 @@ const AccountsPayable = () => {
     eightToFourteen.tickets = myTickets;
     eightToFourteen.overages = overages;
     eightToFourteen.underages = underages;
+    eightToFourteen.payments = myPayments;
+    eightToFourteen.price = price;
 
     return calculateTonsBalance(eightToFourteen);
   };
 
-  const getFifteenToTwentyOneDaysOld = (tickets, payments) => {
+  const getFifteenToTwentyOneDaysOld = (tickets, payments, price) => {
     let fifteenToTwentyOne = {};
     const myTickets = tickets.filter(
       (ticket) =>
@@ -255,11 +222,12 @@ const AccountsPayable = () => {
     fifteenToTwentyOne.tickets = myTickets;
     fifteenToTwentyOne.overages = overages;
     fifteenToTwentyOne.underages = underages;
-
+    fifteenToTwentyOne.price = price;
+    fifteenToTwentyOne.payments = myPayments;
     return calculateTonsBalance(fifteenToTwentyOne);
   };
 
-  const getTwentyTwoandOverDays = (tickets, payments) => {
+  const getTwentyTwoandOverDays = (tickets, payments, price) => {
     let twentyTwoAndOver = {};
     const myTickets = tickets.filter(
       (ticket) => moment(endDate).diff(moment(ticket.ticketDate), "days") >= 22
@@ -274,7 +242,8 @@ const AccountsPayable = () => {
     twentyTwoAndOver.tickets = myTickets;
     twentyTwoAndOver.overages = overages;
     twentyTwoAndOver.underages = underages;
-
+    twentyTwoAndOver.price = price;
+    twentyTwoAndOver.payments = myPayments;
     return calculateTonsBalance(twentyTwoAndOver);
   };
 
@@ -319,17 +288,18 @@ const AccountsPayable = () => {
           </div>
         </div>
         <div ref={(el) => (toPrint = el)}>
-          <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold">
+          <div className="text-center w-1/2 mx-auto py-6 text-2xl font-bold mt-6">
             <h3>Accounts Payable Report</h3>
             <span className="text-gray-900 font-light">
               Ending: {moment(endDate).format("MM/DD/YY")}
             </span>
           </div>
 
-          <div className="mx-12 mb-12">
+          <div className="mx-12 ">
             {vendorTotals.length > 0 ? (
               vendorTotals.map((item, index) => (
                 <div className="mr-4" key={index}>
+                  {console.log(item.contracts)}
                   <table className="mb-6">
                     <thead>
                       <tr className="">
@@ -366,7 +336,8 @@ const AccountsPayable = () => {
                               {formatMoney.format(
                                 getZeroToSevenDaysOld(
                                   contract.tickets,
-                                  contract.payments
+                                  contract.payments,
+                                  contract.contractPrice
                                 ).toFixed(4) * contract.contractPrice
                               )}
                             </td>
@@ -374,7 +345,8 @@ const AccountsPayable = () => {
                               {formatMoney.format(
                                 getEightToFourteenDaysOld(
                                   contract.tickets,
-                                  contract.payments
+                                  contract.payments,
+                                  contract.contractPrice
                                 ).toFixed(4) * contract.contractPrice
                               )}
                             </td>
@@ -382,7 +354,8 @@ const AccountsPayable = () => {
                               {formatMoney.format(
                                 getFifteenToTwentyOneDaysOld(
                                   contract.tickets,
-                                  contract.payments
+                                  contract.payments,
+                                  contract.contractPrice
                                 ).toFixed(4) * contract.contractPrice
                               )}
                             </td>
@@ -391,7 +364,8 @@ const AccountsPayable = () => {
                               {formatMoney.format(
                                 getTwentyTwoandOverDays(
                                   contract.tickets,
-                                  contract.payments
+                                  contract.payments,
+                                  contract.contractPrice
                                 ).toFixed(4) * contract.contractPrice
                               )}
                             </td>
@@ -417,6 +391,42 @@ const AccountsPayable = () => {
             ) : (
               <div>Loading</div>
             )}
+          </div>
+          <div className="pb-24 border-t-2 border-gray-900 ">
+            <table className="mx-24">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th></th>
+                  <th>Total</th>
+                  <th>0-7</th>
+                  <th>8-14</th>
+                  <th>15-21</th>
+                  <th>22-Over</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="w-48">
+                  <td className=" w-32 px-10"></td>
+                  <td className="px-6">Grand Totals:</td>
+                  <td className="px-6 text-center">
+                    {formatMoney.format(total4 + total3 + total2 + total1)}
+                  </td>
+                  <td className="px-5 text-center">
+                    {formatMoney.format(total1)}
+                  </td>
+                  <td className="px-5 text-center">
+                    {formatMoney.format(total2)}
+                  </td>
+                  <td className="px-5 text-center">
+                    {formatMoney.format(total3)}
+                  </td>
+                  <td className="px-5 text-center">
+                    {formatMoney.format(total4)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
