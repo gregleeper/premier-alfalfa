@@ -16,6 +16,11 @@ const AccountsReceivable = () => {
   const [vendorTotals, setVendorTotals] = useState([]);
   let toPrint = useRef(null);
 
+  let total1 = 0;
+  let total2 = 0;
+  let total3 = 0;
+  let total4 = 0;
+
   const { data: contractData } = useQuery("activeSaleContracts", async () => {
     const {
       data: { contractsByType: myContracts },
@@ -150,7 +155,9 @@ const AccountsReceivable = () => {
     zeroToSeven.underages = underages;
     zeroToSeven.payments = myPayments;
     zeroToSeven.salePrice = salePrice;
-    return calculateTonsBalance(zeroToSeven);
+    let tonsBalance = calculateTonsBalance(zeroToSeven);
+    total1 = total1 + tonsBalance * zeroToSeven.salePrice;
+    return tonsBalance;
   };
 
   function calculateTonsBalance(myObj) {
@@ -185,7 +192,9 @@ const AccountsReceivable = () => {
     eightToFourteen.underages = underages;
     eightToFourteen.payments = myPayments;
     eightToFourteen.salePrice = salePrice;
-    return calculateTonsBalance(eightToFourteen);
+    let tonsBalance = calculateTonsBalance(eightToFourteen);
+    total2 = total2 + tonsBalance * eightToFourteen.salePrice;
+    return tonsBalance;
   };
 
   const getFifteenToTwentyOneDaysOld = (tickets, payments, salePrice) => {
@@ -208,7 +217,9 @@ const AccountsReceivable = () => {
     fifteenToTwentyOne.underages = underages;
     fifteenToTwentyOne.payments = myPayments;
     fifteenToTwentyOne.salePrice = salePrice;
-    return calculateTonsBalance(fifteenToTwentyOne);
+    let tonsBalance = calculateTonsBalance(fifteenToTwentyOne);
+    total3 = total3 + tonsBalance * fifteenToTwentyOne.salePrice;
+    return tonsBalance;
   };
 
   const getTwentyTwoandOverDays = (tickets, payments, salePrice) => {
@@ -228,7 +239,9 @@ const AccountsReceivable = () => {
     twentyTwoAndOver.underages = underages;
     twentyTwoAndOver.payments = myPayments;
     twentyTwoAndOver.salePrice = salePrice;
-    return calculateTonsBalance(twentyTwoAndOver);
+    let tonsBalance = calculateTonsBalance(twentyTwoAndOver);
+    total4 = total4 + tonsBalance * twentyTwoAndOver.salePrice;
+    return tonsBalance;
   };
 
   return (
@@ -374,6 +387,42 @@ const AccountsReceivable = () => {
             ) : (
               <div>Loading</div>
             )}
+          </div>
+          <div className="pb-24 border-t-2 border-gray-900 ">
+            <table className="mx-24">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th></th>
+                  <th>Total</th>
+                  <th>0-7</th>
+                  <th>8-14</th>
+                  <th>15-21</th>
+                  <th>22-Over</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="w-56">
+                  <td className=" w-32 px-10"></td>
+                  <td className="px-10 text-sm">Grand Totals:</td>
+                  <td className="px-6 text-center">
+                    {formatMoney.format(total4 + total3 + total2 + total1)}
+                  </td>
+                  <td className="px-5 text-center">
+                    {formatMoney.format(total1)}
+                  </td>
+                  <td className="px-5 text-center">
+                    {formatMoney.format(total2)}
+                  </td>
+                  <td className="px-5 text-center">
+                    {formatMoney.format(total3)}
+                  </td>
+                  <td className="px-5 text-center">
+                    {formatMoney.format(total4)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

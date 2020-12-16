@@ -32,6 +32,7 @@ const Settlements = () => {
       cacheTime: 1000 * 60 * 30,
     }
   );
+  console.log(settlements);
 
   useEffect(() => {
     if (settlementsData) {
@@ -63,6 +64,10 @@ const Settlements = () => {
       disableFilters: true,
     },
     {
+      Header: "Contract Number",
+      accessor: "contract.contractNumber",
+    },
+    {
       Header: "Settlement Number",
       accessor: "settlementNumber",
     },
@@ -71,16 +76,6 @@ const Settlements = () => {
       accessor: "amountOwed",
       Cell: ({ value }) => <span>{formatMoney.format(value)}</span>,
       disableFilters: true,
-    },
-    {
-      Header: "Is Paid",
-      accessor: "isPaid",
-      Cell: ({ value }) => <span>{value ? "Yes" : "No"}</span>,
-    },
-    {
-      Header: "Due Date",
-      accessor: "dueDate",
-      Cell: ({ value }) => <span>{moment(value).format("MM/DD/YY")}</span>,
     },
   ]);
 

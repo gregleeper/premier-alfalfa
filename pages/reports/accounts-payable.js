@@ -165,8 +165,9 @@ const AccountsPayable = () => {
     zeroToSeven.underages = underages;
     zeroToSeven.payments = myPayments;
     zeroToSeven.price = price;
-
-    return calculateTonsBalance(zeroToSeven);
+    let tonsBalance = calculateTonsBalance(zeroToSeven);
+    total1 = total1 + tonsBalance * zeroToSeven.price;
+    return tonsBalance;
   };
 
   function calculateTonsBalance(myObj) {
@@ -200,8 +201,9 @@ const AccountsPayable = () => {
     eightToFourteen.underages = underages;
     eightToFourteen.payments = myPayments;
     eightToFourteen.price = price;
-
-    return calculateTonsBalance(eightToFourteen);
+    let tonsBalance = calculateTonsBalance(eightToFourteen);
+    total2 = total2 + tonsBalance * eightToFourteen.price;
+    return tonsBalance;
   };
 
   const getFifteenToTwentyOneDaysOld = (tickets, payments, price) => {
@@ -224,7 +226,10 @@ const AccountsPayable = () => {
     fifteenToTwentyOne.underages = underages;
     fifteenToTwentyOne.price = price;
     fifteenToTwentyOne.payments = myPayments;
-    return calculateTonsBalance(fifteenToTwentyOne);
+
+    let tonsBalance = calculateTonsBalance(fifteenToTwentyOne);
+    total3 = total3 + tonsBalance * fifteenToTwentyOne.price;
+    return tonsBalance;
   };
 
   const getTwentyTwoandOverDays = (tickets, payments, price) => {
@@ -244,7 +249,9 @@ const AccountsPayable = () => {
     twentyTwoAndOver.underages = underages;
     twentyTwoAndOver.price = price;
     twentyTwoAndOver.payments = myPayments;
-    return calculateTonsBalance(twentyTwoAndOver);
+    let tonsBalance = calculateTonsBalance(twentyTwoAndOver);
+    total4 = total4 + tonsBalance * twentyTwoAndOver.price;
+    return tonsBalance;
   };
 
   return (
