@@ -329,7 +329,7 @@ const CreateContract = () => {
                         className="w-1/4 text-gray-900 md:w-1/2"
                         htmlFor="contractPrice"
                       >
-                        Contract Price
+                        Contract Purchase Price
                       </label>
                       <Field
                         className="form-input w-full"
