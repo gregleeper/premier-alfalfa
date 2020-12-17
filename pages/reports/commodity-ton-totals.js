@@ -209,7 +209,7 @@ const CommodityTotals = () => {
         moment(ticket.ticketDate).isSameOrAfter(startBeginDate) &&
         moment(ticket.ticketDate).isSameOrBefore(endOfEndDate)
     );
-    console.log("week: ", filteredByWeek);
+
     const groupedYTD = groupBy(
       ticketsYTD,
       (ticket) => ticket.contract.commodity.name
@@ -230,14 +230,10 @@ const CommodityTotals = () => {
       commodityTotal.yearNumLoads = ytdGroup ? ytdGroup.length : 0;
 
       commodityTotal.weekAvgTons = group
-        ? (
-            group.reduce((acc, cv) => acc + cv.netTons, 0) / group.length
-          ).toFixed(2)
+        ? group.reduce((acc, cv) => acc + cv.netTons, 0) / group.length
         : 0;
       commodityTotal.yearAvgTons = ytdGroup
-        ? (
-            ytdGroup.reduce((acc, cv) => acc + cv.netTons, 0) / ytdGroup.length
-          ).toFixed(2)
+        ? ytdGroup.reduce((acc, cv) => acc + cv.netTons, 0) / ytdGroup.length
         : 0;
 
       array.push(commodityTotal);
@@ -247,13 +243,13 @@ const CommodityTotals = () => {
   };
 
   const computeWeekTotalAvg = () => {
-    console.log(totals);
     let count = 0;
     totals.map((t) => {
       if (t.weekAvgTons) {
         count++;
       }
     });
+    console.log(totals.reduce((a, cv) => a + cv.weekAvgTons, 0));
     return totals.reduce((a, cv) => a + cv.weekAvgTons, 0) / count;
   };
 
@@ -477,7 +473,7 @@ const CommodityTotals = () => {
                 </span>
               </div>
             </div>
-            <div className="">
+            <div className="pb-24 pt-6">
               {!isFetched ? (
                 <p>Choose dates to generate report.</p>
               ) : isSuccess && !canFetchMore ? (
@@ -497,13 +493,19 @@ const CommodityTotals = () => {
                         <td className="px-2 py-1">{total.commodity}</td>
                         <td className="px-2 py-1"> {total.weekNumLoads}</td>
                         <td className="px-2 py-1">{total.yearNumLoads}</td>
-                        <td className="px-2 py-1">{total.weekAvgTons}</td>
-                        <td className="px-2 py-1">{total.yearAvgTons}</td>
+                        <td className="px-2 py-1">
+                          {total.weekAvgTons.toFixed(2)}
+                        </td>
+                        <td className="px-2 py-1">
+                          {total.yearAvgTons.toFixed(2)}
+                        </td>
                       </tr>
                     ))}
                     <tr>
                       <td className="border-t-4 border-gray-600">Totals:</td>
                       <td className="border-t-4 border-gray-600">
+                        {console.log(totals)}
+
                         {totals.reduce(
                           (accumulator, cv) => accumulator + cv.weekNumLoads,
                           0
