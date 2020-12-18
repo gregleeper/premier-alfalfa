@@ -1,3 +1,207 @@
+export const getContract = /* GraphQL */ `
+  query GetContract($id: ID!, $ticketFilter: ModelTicketFilterInput) {
+    getContract(id: $id) {
+      id
+      contractNumber
+      contractType
+      contractState
+      vendorId
+      commodityId
+      contractTo {
+        id
+        vendorNumber
+        companyReportName
+        companyListingName
+        address1
+        address2
+        city
+        state
+        zipCode
+        telephoneNum
+        attention
+        prepayment
+        prepaymentAmt
+        createdAt
+        updatedAt
+      }
+      quantity
+      contractPrice
+      salePrice
+      terms
+      weights
+      basis
+      remarks
+      beginDate
+      endDate
+      dateSigned
+      purchasedFrom
+      tickets(filter: $ticketFilter, limit: 2499) {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          paymentId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      payments {
+        items {
+          id
+          type
+          tFileNumber
+          contractId
+          checkNumber
+          date
+          amount
+          totalPounds
+          invoiceId
+          settlementId
+          tonsCredit
+          overage
+          underage
+          paymentType
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      soldTo
+      commodity {
+        id
+        name
+        calculateCode
+        billingCode
+        poundsPerBushel
+        contracts {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const getPayment = /* GraphQL */ `
+  query GetPayment($id: ID!, $ticketFilter: ModelTicketFilterInput) {
+    getPayment(id: $id) {
+      id
+      type
+      tFileNumber
+      contractId
+      contract {
+        id
+        contractNumber
+        contractType
+        contractState
+        vendorId
+        commodityId
+        contractTo {
+          id
+          vendorNumber
+          companyReportName
+          companyListingName
+          address1
+          address2
+          city
+          state
+          zipCode
+          telephoneNum
+          attention
+          prepayment
+          prepaymentAmt
+          createdAt
+          updatedAt
+        }
+        quantity
+        contractPrice
+        salePrice
+        terms
+        weights
+        basis
+        remarks
+        beginDate
+        endDate
+        dateSigned
+        purchasedFrom
+        tickets {
+          nextToken
+        }
+        payments {
+          nextToken
+        }
+        soldTo
+        commodity {
+          id
+          name
+          calculateCode
+          billingCode
+          poundsPerBushel
+          createdAt
+          updatedAt
+        }
+        createdAt
+        updatedAt
+      }
+      tickets(filter: $ticketFilter, limit: 2499) {
+        items {
+          id
+          contractId
+          invoiceId
+          settlementId
+          paymentId
+          correspondingContractId
+          type
+          ticketDate
+          fieldNum
+          baleCount
+          ticketNumber
+          ladingNumber
+          driver
+          truckNumber
+          grossWeight
+          tareWeight
+          netWeight
+          netTons
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      checkNumber
+      date
+      amount
+      totalPounds
+      invoiceId
+      settlementId
+      tonsCredit
+      overage
+      underage
+      paymentType
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 export const listReportTickets = /* GraphQL */ `
   query ListTickets(
     $filter: ModelTicketFilterInput

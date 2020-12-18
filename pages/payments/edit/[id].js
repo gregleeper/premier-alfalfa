@@ -13,11 +13,12 @@ import {
   updateInvoice,
   deletePayment,
 } from "../../../src/graphql/mutations.ts";
-import { listContracts, getPayment } from "../../../src/graphql/queries.ts";
+import { listContracts } from "../../../src/graphql/queries.ts";
 import {
   invoicesSorted,
   settlementsSorted,
   getContractAndTickets,
+  getPayment,
 } from "../../../src/graphql/customQueries";
 import { formatMoney } from "../../../utils";
 import moment from "moment";
