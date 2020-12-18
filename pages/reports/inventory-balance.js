@@ -26,6 +26,7 @@ const TotalTons = () => {
   const [totals, setTotals] = useState([]);
   const [commodities, setCommodities] = useState([]);
   const [reportedCommodities, setReportedCommodities] = useState([]);
+  const [grandTotal, setGrandTotal] = useState(0);
 
   const { data: contractsDataYTD, refetch: refetchYTD } = useQuery(
     "invYTD",
@@ -93,6 +94,7 @@ const TotalTons = () => {
   useEffect(() => {
     if (totals.length) {
       getIncludedCommodities();
+      calculateGrandTotal();
     }
   }, [totals]);
 
@@ -140,6 +142,10 @@ const TotalTons = () => {
       }
     });
     setReportedCommodities(array);
+  };
+
+  const calculateGrandTotal = () => {
+    setGrandTotal(totals.reduce((acc, cv) => acc + cv.balanceDue, 0));
   };
 
   const handleFetchQueries = () => {
@@ -208,57 +214,75 @@ const TotalTons = () => {
               <p>Choose dates for report</p>
             )}
           </div>
-          <div>
-            {reportedCommodities.length &&
-              reportedCommodities.map((c, index) => (
-                <div className="px-12" key={index}>
-                  <h3 className="text-base font-light pt-1 pb-1">
-                    {c[0].commodity}
-                  </h3>
-                  <div className="pl-12">
-                    <table>
-                      <thead>
-                        <tr className="text-sm">
-                          <th className="px-2">Contract Number</th>
-                          <th className="px-2">Company Report Name</th>
-                          <th className="px-2">Inventory Balance</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {c.map((element) => (
+          <div className="">
+            <div className="w-10/12">
+              {reportedCommodities.length &&
+                reportedCommodities.map((c, index) => (
+                  <div className="px-12" key={index}>
+                    <h3 className="text-base font-light pt-1 pb-1">
+                      {c[0].commodity}
+                    </h3>
+                    <div className="pl-12">
+                      <table className="w-full">
+                        <thead>
                           <tr className="text-sm">
-                            <td className="px-2">{element.contractNumber}</td>
-                            <td className="px-2">{element.company}</td>
-                            <td className="px-2">
-                              {element.balanceDue.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
+                            <th className="px-2">Contract Number</th>
+                            <th className="px-2">Company Report Name</th>
+                            <th className="px-2">Inventory Balance</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {c.map((element) => (
+                            <tr className="text-sm">
+                              <td className="px-2">{element.contractNumber}</td>
+                              <td className="px-2">{element.company}</td>
+                              <td className="px-2 text-right">
+                                {element.balanceDue.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
+                            </tr>
+                          ))}
+                          <tr className="font-semibold text-lg border-t-4 border-gray-800">
+                            <td className="pb-4">Totals:</td>
+                            <td className="pb-4"></td>
+
+                            <td className="text-right">
+                              {c
+                                .reduce(
+                                  (accumulator, currentValue) =>
+                                    accumulator + currentValue.balanceDue,
+                                  0
+                                )
+                                .toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
                             </td>
                           </tr>
-                        ))}
-                        <tr className="font-semibold text-lg border-t-4 border-gray-800">
-                          <td>Totals:</td>
-                          <td></td>
-
-                          <td>
-                            {c
-                              .reduce(
-                                (accumulator, currentValue) =>
-                                  accumulator + currentValue.balanceDue,
-                                0
-                              )
-                              .toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+            </div>
+            <div className="pl-24">
+              <table className="w-10/12">
+                <tbody>
+                  <tr className="border-t-4 border-gray-900">
+                    <td className="pr-12 font-semibold">Grand Total:</td>
+                    <td className="px-12"></td>
+                    <td className="px-14 text-right font-semibold text-lg">
+                      {grandTotal.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
