@@ -88,11 +88,16 @@ const AccountsPayable = () => {
         0
       );
 
-      contractTotals.totalBalanceDue =
-        (contractTotals.tonsHauled - contractTotals.tonsCredited) *
-        contractTotals.contractPrice;
       contractTotals.tickets = contract.tickets.items;
       contractTotals.payments = contract.payments.items;
+      contractTotals.totalBalanceDue =
+        getBalanceDueForContract(
+          contractTotals.tickets,
+          contractTotals.payments,
+          contractTotals.contractPrice,
+          contractTotals.contractNumber
+        ) * contract.contractPrice;
+
       array.push(contractTotals);
       setContractsTotals(array);
     });
@@ -150,23 +155,79 @@ const AccountsPayable = () => {
     setVendorTotals(array);
   };
 
-  const getZeroToSevenDaysOld = (tickets, payments, price) => {
+  const getZeroToSevenDaysOld = (
+    tickets,
+    payments,
+    contractPrice,
+    contractNumber
+  ) => {
     let zeroToSeven = {};
+
+    let overages = 0;
+    let underages = 0;
+
+    payments.map((p) => {
+      if (p.tickets.items.length) {
+        if (
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >
+            -1 &&
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") <=
+            7 &&
+          moment(p.date).isBefore(moment(endDate).endOf("date")) &&
+          (p.underage > 0.01 || p.overage > 0.01)
+        ) {
+          overages = p.overage;
+          underages = p.underage;
+        }
+      }
+    });
+
     const myTickets = tickets.filter(
-      (ticket) => moment(endDate).diff(moment(ticket.ticketDate), "days") < 8
+      (ticket) =>
+        moment(endDate).diff(moment(ticket.ticketDate), "days") < 7 &&
+        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 0 &&
+        !ticket.paymentId
     );
-    const myPayments = payments.filter(
-      (payment) => moment(endDate).diff(moment(payment.date), "days") < 8
+
+    const paymentsBeforeEndDate = payments.filter((p) =>
+      moment(p.date).isBefore(moment(endDate).endOf("date"))
     );
-    let overages = myPayments.reduce((acc, cv) => acc + cv.overage, 0);
-    let underages = myPayments.reduce((acc, cv) => acc + cv.underage, 0);
-    zeroToSeven.tickets = myTickets;
+
+    const ticketsOnPaymentsBeforeEndDate = [];
+    paymentsBeforeEndDate.map((p) =>
+      p.tickets.items.map((t) => ticketsOnPaymentsBeforeEndDate.push(t))
+    );
+
+    const paidTicketsWithinRange = payments.map((p) =>
+      tickets.filter(
+        (t) =>
+          t.paymentId === p.id &&
+          moment(endDate).diff(moment(t.ticketDate), "days") < 8 &&
+          moment(endDate).diff(moment(t.ticketDate), "days") >= 0
+      )
+    );
+    let paidTicketsWithinRangeFlattened = paidTicketsWithinRange.flat();
+
+    ticketsOnPaymentsBeforeEndDate.map((ticket) =>
+      paidTicketsWithinRangeFlattened.map((t, index) => {
+        if (t.id === ticket.id) {
+          paidTicketsWithinRangeFlattened.splice(index, 1);
+        }
+      })
+    );
+
+    const allTicketsWithInRange = myTickets.concat(
+      paidTicketsWithinRangeFlattened
+    );
+
+    zeroToSeven.tickets = allTicketsWithInRange;
     zeroToSeven.overages = overages;
     zeroToSeven.underages = underages;
-    zeroToSeven.payments = myPayments;
-    zeroToSeven.price = price;
+    zeroToSeven.contractPrice = contractPrice;
+    zeroToSeven.contractNumber = contractNumber;
+
     let tonsBalance = calculateTonsBalance(zeroToSeven);
-    total1 = total1 + tonsBalance * zeroToSeven.price;
+    total1 = total1 + tonsBalance * zeroToSeven.contractPrice;
     return tonsBalance;
   };
 
@@ -175,83 +236,249 @@ const AccountsPayable = () => {
       (acc, cv) => acc + cv.netTons,
       0
     );
-    let totalPaid = myObj.payments.reduce((acc, cv) => acc + cv.amount, 0);
-    let creditFromPayments = totalPaid / myObj.price;
 
-    return ticketTotalTons - creditFromPayments;
+    return ticketTotalTons + myObj.underages - myObj.overages;
   }
 
-  const getEightToFourteenDaysOld = (tickets, payments, price) => {
+  const getEightToFourteenDaysOld = (
+    tickets,
+    payments,
+    contractPrice,
+    contractNumber
+  ) => {
     let eightToFourteen = {};
     const myTickets = tickets.filter(
       (ticket) =>
-        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 8 &&
-        moment(endDate).diff(moment(ticket.ticketDate), "days") < 15
+        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 7 &&
+        moment(endDate).diff(moment(ticket.ticketDate), "days") < 14 &&
+        !ticket.paymentId
     );
 
-    const myPayments = payments.filter(
-      (payment) =>
-        moment(endDate).diff(moment(payment.date), "days") >= 8 &&
-        moment(endDate).diff(moment(payment.date), "days") < 15
+    const paymentsBeforeEndDate = payments.filter((p) =>
+      moment(p.date).isBefore(moment(endDate).endOf("date"))
     );
-    let overages = myPayments.reduce((acc, cv) => acc + cv.overage, 0);
-    let underages = myPayments.reduce((acc, cv) => acc + cv.underage, 0);
-    eightToFourteen.tickets = myTickets;
+
+    const ticketsOnPaymentsBeforeEndDate = [];
+    paymentsBeforeEndDate.map((p) =>
+      p.tickets.items.map((t) => ticketsOnPaymentsBeforeEndDate.push(t))
+    );
+
+    const paidTicketsWithinRange = payments.map((p) =>
+      tickets.filter(
+        (t) =>
+          t.paymentId === p.id &&
+          moment(endDate).diff(moment(t.ticketDate), "days") >= 7 &&
+          moment(endDate).diff(moment(t.ticketDate), "days") < 14
+      )
+    );
+    let paidTicketsWithinRangeFlattened = paidTicketsWithinRange.flat();
+
+    ticketsOnPaymentsBeforeEndDate.map((ticket) =>
+      paidTicketsWithinRangeFlattened.map((t, index) => {
+        if (t.id === ticket.id) {
+          paidTicketsWithinRangeFlattened.splice(index, 1);
+        }
+      })
+    );
+
+    const allTicketsWithInRange = myTickets.concat(
+      paidTicketsWithinRangeFlattened
+    );
+
+    let overages = 0;
+    let underages = 0;
+
+    payments.map((p) => {
+      if (p.tickets.items.length) {
+        if (
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >=
+            7 &&
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") <
+            14 &&
+          moment(p.date).isBefore(moment(endDate).endOf("date")) &&
+          (p.underage > 0.01 || p.overage > 0.01)
+        ) {
+          overages = p.overage;
+          underages = p.underage;
+        }
+      }
+    });
+
+    eightToFourteen.tickets = allTicketsWithInRange;
     eightToFourteen.overages = overages;
     eightToFourteen.underages = underages;
-    eightToFourteen.payments = myPayments;
-    eightToFourteen.price = price;
+
+    eightToFourteen.contractPrice = contractPrice;
+    eightToFourteen.contractNumber = contractNumber;
+
     let tonsBalance = calculateTonsBalance(eightToFourteen);
-    total2 = total2 + tonsBalance * eightToFourteen.price;
+    total2 = total2 + tonsBalance * eightToFourteen.contractPrice;
     return tonsBalance;
   };
 
-  const getFifteenToTwentyOneDaysOld = (tickets, payments, price) => {
+  const getFifteenToTwentyOneDaysOld = (
+    tickets,
+    payments,
+    contractPrice,
+    contractNumber
+  ) => {
     let fifteenToTwentyOne = {};
     const myTickets = tickets.filter(
       (ticket) =>
-        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 15 &&
-        moment(endDate).diff(moment(ticket.ticketDate), "days") < 22
+        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 14 &&
+        moment(endDate).diff(moment(ticket.ticketDate), "days") < 21 &&
+        !ticket.paymentId
     );
 
-    const myPayments = payments.filter(
-      (payment) =>
-        moment(endDate).diff(moment(payment.date), "days") >= 15 &&
-        moment(endDate).diff(moment(payment.date), "days") < 22
+    const paymentsBeforeEndDate = payments.filter((p) =>
+      moment(p.date).isBefore(moment(endDate).endOf("date"))
     );
-    let overages = myPayments.reduce((acc, cv) => acc + cv.overage, 0);
-    let underages = myPayments.reduce((acc, cv) => acc + cv.underage, 0);
-    fifteenToTwentyOne.tickets = myTickets;
+
+    const ticketsOnPaymentsBeforeEndDate = [];
+    paymentsBeforeEndDate.map((p) =>
+      p.tickets.items.map((t) => ticketsOnPaymentsBeforeEndDate.push(t))
+    );
+    const paidTicketsWithinRange = payments.map((p) =>
+      tickets.filter(
+        (t) =>
+          t.paymentId === p.id &&
+          moment(endDate).diff(moment(t.ticketDate), "days") >= 14 &&
+          moment(endDate).diff(moment(t.ticketDate), "days") < 21
+      )
+    );
+    let paidTicketsWithinRangeFlattened = paidTicketsWithinRange.flat();
+
+    ticketsOnPaymentsBeforeEndDate.map((ticket) =>
+      paidTicketsWithinRangeFlattened.map((t, index) => {
+        if (t.id === ticket.id) {
+          paidTicketsWithinRangeFlattened.splice(index, 1);
+        }
+      })
+    );
+
+    const allTicketsWithInRange = myTickets.concat(
+      paidTicketsWithinRangeFlattened
+    );
+
+    let overages = 0;
+    let underages = 0;
+
+    payments.map((p) => {
+      if (p.tickets.items.length) {
+        if (
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >=
+            14 &&
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") <
+            21 &&
+          moment(p.date).isBefore(moment(endDate).endOf("date")) &&
+          (p.underage > 0.01 || p.overage > 0.01)
+        ) {
+          overages = p.overage;
+          underages = p.underage;
+        }
+      }
+    });
+    fifteenToTwentyOne.tickets = allTicketsWithInRange;
     fifteenToTwentyOne.overages = overages;
     fifteenToTwentyOne.underages = underages;
-    fifteenToTwentyOne.price = price;
-    fifteenToTwentyOne.payments = myPayments;
+    fifteenToTwentyOne.contractPrice = contractPrice;
+    fifteenToTwentyOne.contractNumber = contractNumber;
 
     let tonsBalance = calculateTonsBalance(fifteenToTwentyOne);
-    total3 = total3 + tonsBalance * fifteenToTwentyOne.price;
+    total3 = total3 + tonsBalance * fifteenToTwentyOne.contractPrice;
     return tonsBalance;
   };
 
-  const getTwentyTwoandOverDays = (tickets, payments, price) => {
+  const getTwentyTwoandOverDays = (
+    tickets,
+    payments,
+    contractPrice,
+    contractNumber
+  ) => {
     let twentyTwoAndOver = {};
     const myTickets = tickets.filter(
-      (ticket) => moment(endDate).diff(moment(ticket.ticketDate), "days") >= 22
+      (ticket) =>
+        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 21 &&
+        !ticket.paymentId
     );
 
-    const myPayments = payments.filter(
-      (payment) => moment(endDate).diff(moment(payment.date), "days") >= 22
+    const paymentsBeforeEndDate = payments.filter((p) =>
+      moment(p.date).isBefore(moment(endDate).endOf("date"))
     );
-    let overages = myPayments.reduce((acc, cv) => acc + cv.overage, 0);
-    let underages = myPayments.reduce((acc, cv) => acc + cv.underage, 0);
 
-    twentyTwoAndOver.tickets = myTickets;
+    const ticketsOnPaymentsBeforeEndDate = [];
+    paymentsBeforeEndDate.map((p) =>
+      p.tickets.items.map((t) => ticketsOnPaymentsBeforeEndDate.push(t))
+    );
+    const paidTicketsWithinRange = payments.map((p) =>
+      tickets.filter(
+        (t) =>
+          t.paymentId === p.id &&
+          moment(endDate).diff(moment(t.ticketDate), "days") >= 21 &&
+          moment(endDate).isBefore(moment(endDate).endOf("day"))
+      )
+    );
+    let paidTicketsWithinRangeFlattened = paidTicketsWithinRange.flat();
+
+    ticketsOnPaymentsBeforeEndDate.map((ticket) =>
+      paidTicketsWithinRangeFlattened.map((t, index) => {
+        if (t.id === ticket.id) {
+          paidTicketsWithinRangeFlattened.splice(index, 1);
+        }
+      })
+    );
+    myTickets.map((t) => paidTicketsWithinRangeFlattened.push(t));
+
+    let overages = 0;
+    let underages = 0;
+
+    payments.map((p) => {
+      if (p.tickets.items.length) {
+        if (
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >=
+            21 &&
+          moment(p.date).isBefore(moment(endDate).endOf("date")) &&
+          (p.underage > 0.01 || p.overage > 0.01)
+        ) {
+          overages = overages + p.overage;
+          underages = underages + p.underage;
+        }
+      } else {
+        overages = overages + p.overage;
+      }
+    });
+    twentyTwoAndOver.tickets = paidTicketsWithinRangeFlattened;
     twentyTwoAndOver.overages = overages;
     twentyTwoAndOver.underages = underages;
-    twentyTwoAndOver.price = price;
-    twentyTwoAndOver.payments = myPayments;
+    twentyTwoAndOver.contractPrice = contractPrice;
+    twentyTwoAndOver.contractNumber = contractNumber;
     let tonsBalance = calculateTonsBalance(twentyTwoAndOver);
-    total4 = total4 + tonsBalance * twentyTwoAndOver.price;
+    total4 = total4 + tonsBalance * twentyTwoAndOver.contractPrice;
     return tonsBalance;
+  };
+
+  const getBalanceDueForContract = (
+    tickets,
+    payments,
+    contractPrice,
+    contractNumber
+  ) => {
+    return (
+      getZeroToSevenDaysOld(tickets, payments, contractPrice, contractNumber) +
+      getEightToFourteenDaysOld(
+        tickets,
+        payments,
+        contractPrice,
+        contractNumber
+      ) +
+      getFifteenToTwentyOneDaysOld(
+        tickets,
+        payments,
+        contractPrice,
+        contractNumber
+      ) +
+      getTwentyTwoandOverDays(tickets, payments, contractPrice, contractNumber)
+    );
   };
 
   return (
@@ -332,11 +559,12 @@ const AccountsPayable = () => {
                             </td>
                             <td className="text-center">
                               {formatMoney.format(
-                                contract.tonsHauled * contract.contractPrice -
-                                  contract.payments.reduce(
-                                    (acc, cv) => acc + cv.amount,
-                                    0
-                                  )
+                                getBalanceDueForContract(
+                                  contract.tickets,
+                                  contract.payments,
+                                  contract.contractPrice,
+                                  contract.contractNumber
+                                ) * contract.contractPrice
                               )}
                             </td>
                             <td className="text-center">

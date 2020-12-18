@@ -75,11 +75,15 @@ const AccountsReceivable = () => {
         0
       );
 
-      contractTotals.totalBalanceDue =
-        (contractTotals.tonsHauled - contractTotals.tonsCredited) *
-        contractTotals.salePrice;
       contractTotals.tickets = contract.tickets.items;
       contractTotals.payments = contract.payments.items;
+      contractTotals.totalBalanceDue =
+        getBalanceDueForContract(
+          contractTotals.tickets,
+          contractTotals.payments,
+          contractTotals.salePrice,
+          contractTotals.contractNumber
+        ) * contract.salePrice;
       array.push(contractTotals);
       setContractsTotals(array);
     });
@@ -151,10 +155,10 @@ const AccountsReceivable = () => {
     payments.map((p) => {
       if (p.tickets.items.length) {
         if (
-          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >=
-            0 &&
-          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") <
-            8 &&
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >
+            -1 &&
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") <=
+            7 &&
           moment(p.date).isBefore(moment(endDate).endOf("date")) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
@@ -207,7 +211,7 @@ const AccountsReceivable = () => {
     zeroToSeven.underages = underages;
     zeroToSeven.salePrice = salePrice;
     zeroToSeven.contractNumber = contractNumber;
-    console.log(zeroToSeven, contractNumber, "seven");
+
     let tonsBalance = calculateTonsBalance(zeroToSeven);
     total1 = total1 + tonsBalance * zeroToSeven.salePrice;
     return tonsBalance;
@@ -254,7 +258,7 @@ const AccountsReceivable = () => {
       )
     );
     let paidTicketsWithinRangeFlattened = paidTicketsWithinRange.flat();
-    console.log(paidTicketsWithinRangeFlattened, contractNumber);
+
     ticketsOnPaymentsBeforeEndDate.map((ticket) =>
       paidTicketsWithinRangeFlattened.map((t, index) => {
         if (t.id === ticket.id) {
@@ -292,7 +296,7 @@ const AccountsReceivable = () => {
 
     eightToFourteen.salePrice = salePrice;
     eightToFourteen.contractNumber = contractNumber;
-    console.log(eightToFourteen, contractNumber, "eight");
+
     let tonsBalance = calculateTonsBalance(eightToFourteen);
     total2 = total2 + tonsBalance * eightToFourteen.salePrice;
     return tonsBalance;
@@ -365,7 +369,7 @@ const AccountsReceivable = () => {
     fifteenToTwentyOne.underages = underages;
     fifteenToTwentyOne.salePrice = salePrice;
     fifteenToTwentyOne.contractNumber = contractNumber;
-    console.log(fifteenToTwentyOne, contractNumber);
+
     let tonsBalance = calculateTonsBalance(fifteenToTwentyOne);
     total3 = total3 + tonsBalance * fifteenToTwentyOne.salePrice;
     return tonsBalance;
