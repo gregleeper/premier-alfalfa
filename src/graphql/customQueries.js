@@ -654,6 +654,19 @@ export const contractsByType = /* GraphQL */ `
             totalPounds
             invoiceId
             settlementId
+            tickets {
+              items {
+                id
+                ticketDate
+                netTons
+                netWeight
+                tareWeight
+                paymentId
+                ticketNumber
+                updatedAt
+                invoiceId
+              }
+            }
             tonsCredit
             overage
             underage
