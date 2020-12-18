@@ -24,6 +24,10 @@ const TotalTons = () => {
   const [totals, setTotals] = useState([]);
   const [commodities, setCommodities] = useState([]);
   const [reportedCommodities, setReportedCommodities] = useState([]);
+  const [weeklyNetTonsGrand, setWeeklyNetTonsGrand] = useState(0);
+  const [ytdNetTonsGrand, setYtdNetTonsGrand] = useState(0);
+  const [balanceDueGrand, setBalanceDueGrand] = useState(0);
+  const [contractedQtyGrand, setContractedQtyGrand] = useState(0);
 
   const { data: contractsDataYTD, refetch: refetchYTD } = useQuery(
     "tthYTD",
@@ -91,6 +95,7 @@ const TotalTons = () => {
   useEffect(() => {
     if (totals.length) {
       getIncludedCommodities();
+      calculateGrandTotals();
     }
   }, [totals]);
 
@@ -113,6 +118,7 @@ const TotalTons = () => {
         return accumulator + currentValue.netTons;
       },
       0);
+
       contractTotals.ytdNetTons = contract.tickets.items.reduce(function (
         accumulator,
         currentValue
@@ -127,6 +133,17 @@ const TotalTons = () => {
     });
 
     setTotals(array);
+  };
+
+  const calculateGrandTotals = () => {
+    setWeeklyNetTonsGrand(
+      totals.reduce((acc, cv) => acc + cv.weeklyNetTons, 0)
+    );
+    setYtdNetTonsGrand(totals.reduce((acc, cv) => acc + cv.ytdNetTons, 0));
+    setBalanceDueGrand(totals.reduce((acc, cv) => acc + cv.balanceDue, 0));
+    setContractedQtyGrand(
+      totals.reduce((acc, cv) => acc + cv.contractTotal, 0)
+    );
   };
 
   const getIncludedCommodities = () => {
@@ -144,6 +161,8 @@ const TotalTons = () => {
     refetchYTD();
     computeTotals();
   };
+
+  console.log(weeklyNetTonsGrand);
   return (
     <Layout>
       <div>
@@ -284,14 +303,80 @@ const TotalTons = () => {
                                 maximumFractionDigits: 2,
                               })}
                           </td>
-                          <td></td>
-                          <td></td>
+                          <td>
+                            {c
+                              .reduce(
+                                (accumulator, currentValue) =>
+                                  accumulator + currentValue.balanceDue,
+                                0
+                              )
+                              .toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                          </td>
+                          <td>
+                            {c
+                              .reduce(
+                                (accumulator, currentValue) =>
+                                  accumulator + currentValue.contractTotal,
+                                0
+                              )
+                              .toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                          </td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
               ))}
+          </div>
+          <div className="px-24 py-4">
+            <table className="w-full">
+              <thead>
+                <tr className="text-sm">
+                  <th className="px-2"></th>
+                  <th className="px-2"></th>
+                  <th className="px-2">Weekly Net Tons</th>
+                  <th className="px-2">Year To Date Net Tons</th>
+                  <th className="px-2">Balance Due</th>
+                  <th className="px-2">Contracted Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="text-base font-semibold border-t-4 border-gray-900">
+                  <td className="font-semibold">GrandTotals:</td>
+                  <td className="px-16 "></td>
+                  <td className="px-4 ">
+                    {weeklyNetTonsGrand.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </td>
+                  <td className="px-4 text-center">
+                    {ytdNetTonsGrand.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </td>
+                  <td className="px-4 text-center">
+                    {balanceDueGrand.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </td>
+                  <td className="px-4 text-center">
+                    {contractedQtyGrand.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
