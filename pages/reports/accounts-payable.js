@@ -452,6 +452,7 @@ const AccountsPayable = () => {
     twentyTwoAndOver.underages = underages;
     twentyTwoAndOver.contractPrice = contractPrice;
     twentyTwoAndOver.contractNumber = contractNumber;
+    console.log(twentyTwoAndOver, contractNumber);
     let tonsBalance = calculateTonsBalance(twentyTwoAndOver);
     total4 = total4 + tonsBalance * twentyTwoAndOver.contractPrice;
     return tonsBalance;

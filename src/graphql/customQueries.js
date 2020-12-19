@@ -858,7 +858,7 @@ export const contractsByType = /* GraphQL */ `
             totalPounds
             invoiceId
             settlementId
-            tickets {
+            tickets(limit: 2000) {
               items {
                 id
                 ticketDate
