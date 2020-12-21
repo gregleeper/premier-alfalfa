@@ -449,17 +449,68 @@ const AccountsReceivable = () => {
     salePrice,
     contractNumber
   ) => {
-    return (
-      getZeroToSevenDaysOld(tickets, payments, salePrice, contractNumber) +
-      getEightToFourteenDaysOld(tickets, payments, salePrice, contractNumber) +
-      getFifteenToTwentyOneDaysOld(
-        tickets,
-        payments,
-        salePrice,
-        contractNumber
-      ) +
-      getTwentyTwoandOverDays(tickets, payments, salePrice, contractNumber)
+    let contractTotal = {};
+
+    let overages = 0;
+    let underages = 0;
+
+    payments.map((p) => {
+      if (p.tickets.items.length) {
+        if (
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >
+            -1 &&
+          moment(p.date).isBefore(moment(endDate).endOf("date")) &&
+          (p.underage > 0.01 || p.overage > 0.01)
+        ) {
+          overages = p.overage;
+          underages = p.underage;
+        }
+      }
+    });
+
+    const myTickets = tickets.filter(
+      (ticket) =>
+        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 0 &&
+        !ticket.paymentId
     );
+
+    const paymentsBeforeEndDate = payments.filter((p) =>
+      moment(p.date).isBefore(moment(endDate).endOf("date"))
+    );
+
+    const ticketsOnPaymentsBeforeEndDate = [];
+    paymentsBeforeEndDate.map((p) =>
+      p.tickets.items.map((t) => ticketsOnPaymentsBeforeEndDate.push(t))
+    );
+
+    const paidTicketsWithinRange = payments.map((p) =>
+      tickets.filter(
+        (t) =>
+          t.paymentId === p.id &&
+          moment(endDate).diff(moment(t.ticketDate), "days") >= 0
+      )
+    );
+    let paidTicketsWithinRangeFlattened = paidTicketsWithinRange.flat();
+
+    ticketsOnPaymentsBeforeEndDate.map((ticket) =>
+      paidTicketsWithinRangeFlattened.map((t, index) => {
+        if (t.id === ticket.id) {
+          paidTicketsWithinRangeFlattened.splice(index, 1);
+        }
+      })
+    );
+
+    const allTicketsWithInRange = myTickets.concat(
+      paidTicketsWithinRangeFlattened
+    );
+
+    contractTotal.tickets = allTicketsWithInRange;
+    contractTotal.overages = overages;
+    contractTotal.underages = underages;
+    contractTotal.salePrice = salePrice;
+    contractTotal.contractNumber = contractNumber;
+
+    return calculateTonsBalance(contractTotal);
   };
 
   return (
