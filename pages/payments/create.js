@@ -180,9 +180,11 @@ const CreatePayment = () => {
     const diff = calculatedTonsCredit - totalTons;
     if (diff > 0) {
       setOverage(diff);
+      setUnderage(0);
     }
     if (diff < 0) {
       setUnderage(Math.abs(diff));
+      setOverage(0);
     }
   }, [calculatedTonsCredit]);
 
