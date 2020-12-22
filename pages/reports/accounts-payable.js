@@ -169,11 +169,17 @@ const AccountsPayable = () => {
     payments.map((p) => {
       if (p.tickets.items.length) {
         if (
-          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >
-            -1 &&
-          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") <=
-            7 &&
-          moment(p.date).isBefore(moment(endDate).endOf("date")) &&
+          moment(moment(endDate).endOf("day")).diff(
+            moment(p.tickets.items[0].ticketDate).endOf("day"),
+            "days"
+          ) >= 0 &&
+          moment(moment(endDate).endOf("day")).diff(
+            moment(p.tickets.items[0].ticketDate).endOf("day"),
+            "days"
+          ) <= 7 &&
+          moment(moment(p.date).endOf("day")).isBefore(
+            moment(endDate).endOf("day")
+          ) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
           overages = p.overage;
@@ -184,11 +190,16 @@ const AccountsPayable = () => {
 
     const myTickets = tickets.filter(
       (ticket) =>
-        moment(endDate).diff(moment(ticket.ticketDate), "days") < 7 &&
-        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 0 &&
+        moment(moment(endDate).endOf("day")).diff(
+          moment(ticket.ticketDate).endOf("day"),
+          "days"
+        ) < 7 &&
+        moment(moment(endDate).endOf("day")).diff(
+          moment(ticket.ticketDate).endOf("day"),
+          "days"
+        ) >= 0 &&
         !ticket.paymentId
     );
-
     const paymentsBeforeEndDate = payments.filter((p) =>
       moment(p.date).isBefore(moment(endDate).endOf("date"))
     );
@@ -219,7 +230,7 @@ const AccountsPayable = () => {
     const allTicketsWithInRange = myTickets.concat(
       paidTicketsWithinRangeFlattened
     );
-
+    console.log(allTicketsWithInRange, contractNumber);
     zeroToSeven.tickets = allTicketsWithInRange;
     zeroToSeven.overages = overages;
     zeroToSeven.underages = underages;
@@ -474,7 +485,7 @@ const AccountsPayable = () => {
         if (
           moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >
             -1 &&
-          moment(p.date).isBefore(moment(endDate).endOf("date")) &&
+          moment(p.date).isBefore(moment(endDate).endOf("day")) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
           overages = p.overage;
