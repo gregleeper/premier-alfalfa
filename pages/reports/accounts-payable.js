@@ -230,7 +230,7 @@ const AccountsPayable = () => {
     const allTicketsWithInRange = myTickets.concat(
       paidTicketsWithinRangeFlattened
     );
-    console.log(allTicketsWithInRange, contractNumber);
+
     zeroToSeven.tickets = allTicketsWithInRange;
     zeroToSeven.overages = overages;
     zeroToSeven.underages = underages;
@@ -463,7 +463,6 @@ const AccountsPayable = () => {
     twentyTwoAndOver.underages = underages;
     twentyTwoAndOver.contractPrice = contractPrice;
     twentyTwoAndOver.contractNumber = contractNumber;
-    console.log(twentyTwoAndOver, contractNumber);
     let tonsBalance = calculateTonsBalance(twentyTwoAndOver);
     total4 = total4 + tonsBalance * twentyTwoAndOver.contractPrice;
     return tonsBalance;
@@ -479,12 +478,12 @@ const AccountsPayable = () => {
 
     let overages = 0;
     let underages = 0;
-
+    console.log(contractNumber);
     payments.map((p) => {
       if (p.tickets.items.length) {
         if (
-          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >
-            -1 &&
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >=
+            0 &&
           moment(p.date).isBefore(moment(endDate).endOf("day")) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
@@ -492,12 +491,23 @@ const AccountsPayable = () => {
           underages = p.underage;
         }
       }
+      if (!p.tickets.items.length) {
+        if (
+          moment(p.date).isBefore(moment(endDate).endOf("date")) &&
+          (p.underage > 0.01 || p.overage > 0.01)
+        ) {
+          overages = overages + p.overage;
+          underages = underages + p.underage;
+        }
+      }
     });
 
     const myTickets = tickets.filter(
       (ticket) =>
-        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 0 &&
-        !ticket.paymentId
+        moment(moment(endDate).endOf("day")).diff(
+          moment(ticket.ticketDate).endOf("day"),
+          "days"
+        ) >= 0 && !ticket.paymentId
     );
 
     const paymentsBeforeEndDate = payments.filter((p) =>
@@ -535,7 +545,12 @@ const AccountsPayable = () => {
     contractTotal.underages = underages;
     contractTotal.contractPrice = contractPrice;
     contractTotal.contractNumber = contractNumber;
-
+    console.log(
+      "total",
+      contractTotal,
+      contractNumber,
+      calculateTonsBalance(contractTotal)
+    );
     return calculateTonsBalance(contractTotal);
   };
 
@@ -631,7 +646,8 @@ const AccountsPayable = () => {
                                 getZeroToSevenDaysOld(
                                   contract.tickets,
                                   contract.payments,
-                                  contract.contractPrice
+                                  contract.contractPrice,
+                                  contract.contractNumber
                                 ).toFixed(4) * contract.contractPrice
                               )}
                             </td>
@@ -640,7 +656,8 @@ const AccountsPayable = () => {
                                 getEightToFourteenDaysOld(
                                   contract.tickets,
                                   contract.payments,
-                                  contract.contractPrice
+                                  contract.contractPrice,
+                                  contract.contractNumber
                                 ).toFixed(4) * contract.contractPrice
                               )}
                             </td>
@@ -649,7 +666,8 @@ const AccountsPayable = () => {
                                 getFifteenToTwentyOneDaysOld(
                                   contract.tickets,
                                   contract.payments,
-                                  contract.contractPrice
+                                  contract.contractPrice,
+                                  contract.contractNumber
                                 ).toFixed(4) * contract.contractPrice
                               )}
                             </td>
@@ -659,7 +677,8 @@ const AccountsPayable = () => {
                                 getTwentyTwoandOverDays(
                                   contract.tickets,
                                   contract.payments,
-                                  contract.contractPrice
+                                  contract.contractPrice,
+                                  contract.contractNumber
                                 ).toFixed(4) * contract.contractPrice
                               )}
                             </td>

@@ -417,7 +417,7 @@ const AccountsReceivable = () => {
 
     let overages = 0;
     let underages = 0;
-
+    console.log(payments, contractNumber);
     payments.map((p) => {
       if (p.tickets.items.length) {
         if (
@@ -457,17 +457,26 @@ const AccountsReceivable = () => {
     payments.map((p) => {
       if (p.tickets.items.length) {
         if (
-          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >
-            -1 &&
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >=
+            0 &&
           moment(p.date).isBefore(moment(endDate).endOf("date")) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
-          overages = p.overage;
-          underages = p.underage;
+          overages = overages + p.overage;
+          underages = underages + p.underage;
+        }
+      }
+      if (!p.tickets.items.length) {
+        if (
+          moment(p.date).isBefore(moment(endDate).endOf("date")) &&
+          (p.underage > 0.01 || p.overage > 0.01)
+        ) {
+          overages = overages + p.overage;
+          underages = underages + p.underage;
         }
       }
     });
-
+    console.log(overages, underages, contractNumber);
     const myTickets = tickets.filter(
       (ticket) =>
         moment(endDate).diff(moment(ticket.ticketDate), "days") >= 0 &&
@@ -509,7 +518,7 @@ const AccountsReceivable = () => {
     contractTotal.underages = underages;
     contractTotal.salePrice = salePrice;
     contractTotal.contractNumber = contractNumber;
-
+    console.log(contractTotal, contractNumber);
     return calculateTonsBalance(contractTotal);
   };
 
