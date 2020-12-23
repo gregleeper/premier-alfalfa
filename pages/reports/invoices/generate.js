@@ -91,7 +91,7 @@ const GenerateInvoices = () => {
 
   const createInvoices = async () => {
     contractsWithTickets.map(async (contract, index) => {
-      let begginingBalance = 0;
+      let beginningBalance = 0;
       let previousTickets = contract.tickets.items.filter((t) =>
         moment(t.ticketDate).isBefore(moment(beginDate).startOf("date"))
       );
