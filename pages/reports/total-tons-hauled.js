@@ -25,7 +25,9 @@ const TotalTons = () => {
   const [commodities, setCommodities] = useState([]);
   const [reportedCommodities, setReportedCommodities] = useState([]);
   const [weeklyNetTonsGrand, setWeeklyNetTonsGrand] = useState(0);
+
   const [ytdNetTonsGrand, setYtdNetTonsGrand] = useState(0);
+  const [totalHauledGrand, setTotalHauledGrand] = useState(0);
   const [balanceDueGrand, setBalanceDueGrand] = useState(0);
   const [contractedQtyGrand, setContractedQtyGrand] = useState(0);
 
@@ -43,9 +45,7 @@ const TotalTons = () => {
               eq: "ACTIVE",
             },
           },
-          ticketFilter: {
-            ticketDate: { between: [moment().startOf("year"), endDate] },
-          },
+
           limit: 3000,
         },
       });
@@ -118,16 +118,25 @@ const TotalTons = () => {
         return accumulator + currentValue.netTons;
       },
       0);
-
-      contractTotals.ytdNetTons = contract.tickets.items.reduce(function (
+      let ytdTickets = contract.tickets.items.filter((ticket) =>
+        moment(ticket.ticketDate).isAfter(moment().startOf("year"))
+      );
+      contractTotals.ytdNetTons = ytdTickets.reduce(function (
         accumulator,
         currentValue
       ) {
         return accumulator + currentValue.netTons;
       },
       0);
-      contractTotals.balanceDue = contract.quantity - contractTotals.ytdNetTons;
+
+      contractTotals.totalHauled = contract.tickets.items.reduce(
+        (acc, cv) => acc + cv.netTons,
+        0
+      );
+      contractTotals.balanceDue =
+        contract.quantity - contractTotals.totalHauled;
       contractTotals.contractTotal = contract.quantity;
+
       array.sort((a, b) => b.weeklyNetTons - a.weeklyNetTons);
       array.push(contractTotals);
     });
@@ -140,6 +149,7 @@ const TotalTons = () => {
       totals.reduce((acc, cv) => acc + cv.weeklyNetTons, 0)
     );
     setYtdNetTonsGrand(totals.reduce((acc, cv) => acc + cv.ytdNetTons, 0));
+    setTotalHauledGrand(totals.reduce((acc, cv) => acc + cv.totalHauled, 0));
     setBalanceDueGrand(totals.reduce((acc, cv) => acc + cv.balanceDue, 0));
     setContractedQtyGrand(
       totals.reduce((acc, cv) => acc + cv.contractTotal, 0)
@@ -240,6 +250,7 @@ const TotalTons = () => {
                           <th className="px-2">Company Report Name</th>
                           <th className="px-2">Weekly Net Tons</th>
                           <th className="px-2">Year To Date Net Tons</th>
+                          <th className="px-2">Total Hauled</th>
                           <th className="px-2">Balance Due</th>
                           <th className="px-2">Contracted Quantity</th>
                         </tr>
@@ -257,6 +268,12 @@ const TotalTons = () => {
                             </td>
                             <td className="px-2">
                               {element.ytdNetTons.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </td>
+                            <td className="px-2">
+                              {element.totalHauled.toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
                               })}
@@ -307,6 +324,18 @@ const TotalTons = () => {
                             {c
                               .reduce(
                                 (accumulator, currentValue) =>
+                                  accumulator + currentValue.totalHauled,
+                                0
+                              )
+                              .toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                          </td>
+                          <td>
+                            {c
+                              .reduce(
+                                (accumulator, currentValue) =>
                                   accumulator + currentValue.balanceDue,
                                 0
                               )
@@ -342,6 +371,7 @@ const TotalTons = () => {
                   <th className="px-2"></th>
                   <th className="px-2">Weekly Net Tons</th>
                   <th className="px-2">Year To Date Net Tons</th>
+                  <th className="px-2">Total Hauled</th>
                   <th className="px-2">Balance Due</th>
                   <th className="px-2">Contracted Quantity</th>
                 </tr>
@@ -358,6 +388,12 @@ const TotalTons = () => {
                   </td>
                   <td className="px-4 text-center">
                     {ytdNetTonsGrand.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </td>
+                  <td className="px-4 text-center">
+                    {totalHauledGrand.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
