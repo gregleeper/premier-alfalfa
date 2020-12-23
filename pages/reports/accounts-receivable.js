@@ -15,12 +15,12 @@ const AccountsReceivable = () => {
   const [contractsTotals, setContractsTotals] = useState([]);
   const [endDate, setEndDate] = useState(new Date());
   const [vendorTotals, setVendorTotals] = useState([]);
+  const [total1, setTotal1] = useState(0);
+  const [total2, setTotal2] = useState(0);
+  const [total3, setTotal3] = useState(0);
+  const [total4, setTotal4] = useState(0);
+  const [grandTotal, setGrandTotal] = useState(0);
   let toPrint = useRef(null);
-
-  let total1 = 0;
-  let total2 = 0;
-  let total3 = 0;
-  let total4 = 0;
 
   const { data: contractData } = useQuery("activeSaleContracts", async () => {
     const {
@@ -146,6 +146,17 @@ const AccountsReceivable = () => {
   const computeTotalsFromTickets = () => {
     const byVendor = groupBy(contractsTotals, (contract) => contract.company);
     let vendors = [];
+    setTotal1(contractsTotals.reduce((acc, cv) => acc + cv.zeroToSeven, 0));
+    setTotal2(contractsTotals.reduce((acc, cv) => acc + cv.eightToFourteen, 0));
+    setTotal3(
+      contractsTotals.reduce((acc, cv) => acc + cv.fifteenToTwentyOne, 0)
+    );
+    setTotal4(
+      contractsTotals.reduce((acc, cv) => acc + cv.twentyTwoAndOver, 0)
+    );
+    setGrandTotal(
+      contractsTotals.reduce((acc, cv) => acc + cv.totalBalanceDue, 0)
+    );
     contractsTotals.map((contract) => vendors.push(contract.company));
     let uniqureVendors = [...new Set(vendors)];
     let array = [];
@@ -156,6 +167,7 @@ const AccountsReceivable = () => {
       obj.contracts = myContracts;
       array.push(obj);
     });
+
     array.sort((a, b) => {
       let nameA = a.company;
       let nameB = b.company;
@@ -242,7 +254,6 @@ const AccountsReceivable = () => {
     zeroToSeven.contractNumber = contractNumber;
 
     let tonsBalance = calculateTonsBalance(zeroToSeven);
-    total1 = total1 + tonsBalance * zeroToSeven.salePrice;
     return tonsBalance;
   };
 
@@ -327,7 +338,6 @@ const AccountsReceivable = () => {
     eightToFourteen.contractNumber = contractNumber;
 
     let tonsBalance = calculateTonsBalance(eightToFourteen);
-    total2 = total2 + tonsBalance * eightToFourteen.salePrice;
     return tonsBalance;
   };
 
@@ -400,7 +410,6 @@ const AccountsReceivable = () => {
     fifteenToTwentyOne.contractNumber = contractNumber;
 
     let tonsBalance = calculateTonsBalance(fifteenToTwentyOne);
-    total3 = total3 + tonsBalance * fifteenToTwentyOne.salePrice;
     return tonsBalance;
   };
 
@@ -446,7 +455,7 @@ const AccountsReceivable = () => {
 
     let overages = 0;
     let underages = 0;
-    console.log(payments, contractNumber);
+
     payments.map((p) => {
       if (p.tickets.items.length) {
         if (
@@ -468,7 +477,7 @@ const AccountsReceivable = () => {
     twentyTwoAndOver.salePrice = salePrice;
     twentyTwoAndOver.contractNumber = contractNumber;
     let tonsBalance = calculateTonsBalance(twentyTwoAndOver);
-    total4 = total4 + tonsBalance * twentyTwoAndOver.salePrice;
+
     return tonsBalance;
   };
 
@@ -505,7 +514,6 @@ const AccountsReceivable = () => {
         }
       }
     });
-    console.log(overages, underages, contractNumber);
     const myTickets = tickets.filter(
       (ticket) =>
         moment(endDate).diff(moment(ticket.ticketDate), "days") >= 0 &&
@@ -547,8 +555,13 @@ const AccountsReceivable = () => {
     contractTotal.underages = underages;
     contractTotal.salePrice = salePrice;
     contractTotal.contractNumber = contractNumber;
-    console.log(contractTotal, contractNumber);
+
     return calculateTonsBalance(contractTotal);
+  };
+
+  const handleEndDateChange = (date) => {
+    setEndDate(date);
+    clearReport();
   };
 
   return (
@@ -558,7 +571,7 @@ const AccountsReceivable = () => {
           <span>End Date</span>
           <DatePicker
             selected={endDate}
-            onChange={(date) => setEndDate(date)}
+            onChange={(date) => handleEndDateChange(date)}
             className="form-input w-full"
           />
         </div>
@@ -715,7 +728,7 @@ const AccountsReceivable = () => {
                   <td className=" w-32 px-10"></td>
                   <td className="px-10 text-sm">Grand Totals:</td>
                   <td className="px-6 text-center">
-                    {formatMoney.format(total4 + total3 + total2 + total1)}
+                    {formatMoney.format(grandTotal)}
                   </td>
                   <td className="px-5 text-center">
                     {formatMoney.format(total1)}

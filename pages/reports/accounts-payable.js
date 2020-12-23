@@ -18,16 +18,13 @@ const AccountsPayable = () => {
   const [contractsTotals, setContractsTotals] = useState([]);
   const [isFetchingTickets, setIsFetchingTickets] = useState(false);
   const [endDate, setEndDate] = useState(new Date());
-
-  const [totals, setTotals] = useState([]);
+  const [total1, setTotal1] = useState(0);
+  const [total2, setTotal2] = useState(0);
+  const [total3, setTotal3] = useState(0);
+  const [total4, setTotal4] = useState(0);
+  const [grandTotal, setGrandTotal] = useState(0);
   const [vendorTotals, setVendorTotals] = useState([]);
   let toPrint = useRef(null);
-
-  let total1 = 0;
-  let total2 = 0;
-  let total3 = 0;
-  let total4 = 0;
-  let grandTotal = 0;
 
   const { data: contractData } = useQuery(
     "activePurchaseContracts",
@@ -159,6 +156,17 @@ const AccountsPayable = () => {
   const computeTotalsFromTickets = () => {
     const byVendor = groupBy(contractsTotals, (contract) => contract.company);
     let vendors = [];
+    setTotal1(contractsTotals.reduce((acc, cv) => acc + cv.zeroToSeven, 0));
+    setTotal2(contractsTotals.reduce((acc, cv) => acc + cv.eightToFourteen, 0));
+    setTotal3(
+      contractsTotals.reduce((acc, cv) => acc + cv.fifteenToTwentyOne, 0)
+    );
+    setTotal4(
+      contractsTotals.reduce((acc, cv) => acc + cv.twentyTwoAndOver, 0)
+    );
+    setGrandTotal(
+      contractsTotals.reduce((acc, cv) => acc + cv.totalBalanceDue, 0)
+    );
     contractsTotals.map((contract) => vendors.push(contract.company));
     let uniqureVendors = [...new Set(vendors)];
     let array = [];
@@ -266,7 +274,6 @@ const AccountsPayable = () => {
     zeroToSeven.contractNumber = contractNumber;
 
     let tonsBalance = calculateTonsBalance(zeroToSeven);
-    total1 = total1 + tonsBalance * zeroToSeven.contractPrice;
     return tonsBalance;
   };
 
@@ -351,7 +358,6 @@ const AccountsPayable = () => {
     eightToFourteen.contractNumber = contractNumber;
 
     let tonsBalance = calculateTonsBalance(eightToFourteen);
-    total2 = total2 + tonsBalance * eightToFourteen.contractPrice;
     return tonsBalance;
   };
 
@@ -424,7 +430,6 @@ const AccountsPayable = () => {
     fifteenToTwentyOne.contractNumber = contractNumber;
 
     let tonsBalance = calculateTonsBalance(fifteenToTwentyOne);
-    total3 = total3 + tonsBalance * fifteenToTwentyOne.contractPrice;
     return tonsBalance;
   };
 
@@ -492,7 +497,6 @@ const AccountsPayable = () => {
     twentyTwoAndOver.contractPrice = contractPrice;
     twentyTwoAndOver.contractNumber = contractNumber;
     let tonsBalance = calculateTonsBalance(twentyTwoAndOver);
-    total4 = total4 + tonsBalance * twentyTwoAndOver.contractPrice;
     return tonsBalance;
   };
 
@@ -749,7 +753,7 @@ const AccountsPayable = () => {
                   <td className=" w-32 px-10"></td>
                   <td className="px-6">Grand Totals:</td>
                   <td className="px-6 text-center">
-                    {formatMoney.format(total4 + total3 + total2 + total1)}
+                    {formatMoney.format(grandTotal)}
                   </td>
                   <td className="px-5 text-center">
                     {formatMoney.format(total1)}
