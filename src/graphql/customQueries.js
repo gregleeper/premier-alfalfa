@@ -782,6 +782,8 @@ export const paymentsSorted = /* GraphQL */ `
         invoiceId
         settlementId
         tonsCredit
+        overage
+        underage
         paymentType
         createdAt
         updatedAt

@@ -84,6 +84,35 @@ const AccountsReceivable = () => {
           contractTotals.salePrice,
           contractTotals.contractNumber
         ) * contract.salePrice;
+
+      contractTotals.zeroToSeven =
+        getZeroToSevenDaysOld(
+          contractTotals.tickets,
+          contractTotals.payments,
+          contractTotals.salePrice,
+          contractTotals.contractNumber
+        ) * contract.salePrice;
+      contractTotals.eightToFourteen =
+        getEightToFourteenDaysOld(
+          contractTotals.tickets,
+          contractTotals.payments,
+          contractTotals.salePrice,
+          contractTotals.contractNumber
+        ) * contract.salePrice;
+      contractTotals.fifteenToTwentyOne =
+        getFifteenToTwentyOneDaysOld(
+          contractTotals.tickets,
+          contractTotals.payments,
+          contractTotals.salePrice,
+          contractTotals.contractNumber
+        ) * contract.salePrice;
+      contractTotals.twentyTwoAndOver =
+        getTwentyTwoandOverDays(
+          contractTotals.tickets,
+          contractTotals.payments,
+          contractTotals.salePrice,
+          contractTotals.contractNumber
+        ) * contract.salePrice;
       array.push(contractTotals);
       setContractsTotals(array);
     });
@@ -598,55 +627,20 @@ const AccountsReceivable = () => {
                               {contract.contractNumber}
                             </td>
                             <td className="text-center">
-                              {formatMoney.format(
-                                getBalanceDueForContract(
-                                  contract.tickets,
-                                  contract.payments,
-                                  contract.salePrice,
-                                  contract.contractNumber
-                                ) * contract.salePrice
-                              )}
+                              {formatMoney.format(contract.totalBalanceDue)}
                             </td>
                             <td className="text-center">
-                              {formatMoney.format(
-                                getZeroToSevenDaysOld(
-                                  contract.tickets,
-                                  contract.payments,
-                                  contract.salePrice,
-                                  contract.contractNumber
-                                ) * contract.salePrice
-                              )}
+                              {formatMoney.format(contract.zeroToSeven)}
                             </td>
                             <td className="text-center">
-                              {formatMoney.format(
-                                getEightToFourteenDaysOld(
-                                  contract.tickets,
-                                  contract.payments,
-                                  contract.salePrice,
-                                  contract.contractNumber
-                                ) * contract.salePrice
-                              )}
+                              {formatMoney.format(contract.eightToFourteen)}
                             </td>
                             <td className="text-center">
-                              {formatMoney.format(
-                                getFifteenToTwentyOneDaysOld(
-                                  contract.tickets,
-                                  contract.payments,
-                                  contract.salePrice,
-                                  contract.contractNumber
-                                ) * contract.salePrice
-                              )}
+                              {formatMoney.format(contract.fifteenToTwentyOne)}
                             </td>
 
                             <td className="text-center">
-                              {formatMoney.format(
-                                getTwentyTwoandOverDays(
-                                  contract.tickets,
-                                  contract.payments,
-                                  contract.salePrice,
-                                  contract.contractNumber
-                                ) * contract.salePrice
-                              )}
+                              {formatMoney.format(contract.twentyTwoAndOver)}
                             </td>
                           </tr>
                         </>
@@ -658,6 +652,38 @@ const AccountsReceivable = () => {
                           {formatMoney.format(
                             item.contracts.reduce(
                               (acc, cv) => acc + cv.totalBalanceDue,
+                              0
+                            )
+                          )}
+                        </td>
+                        <td className="text-center py-2 font-semibold">
+                          {formatMoney.format(
+                            item.contracts.reduce(
+                              (acc, cv) => acc + cv.zeroToSeven,
+                              0
+                            )
+                          )}
+                        </td>
+                        <td className="text-center py-2 font-semibold">
+                          {formatMoney.format(
+                            item.contracts.reduce(
+                              (acc, cv) => acc + cv.eightToFourteen,
+                              0
+                            )
+                          )}
+                        </td>
+                        <td className="text-center py-2 font-semibold">
+                          {formatMoney.format(
+                            item.contracts.reduce(
+                              (acc, cv) => acc + cv.fifteenToTwentyOne,
+                              0
+                            )
+                          )}
+                        </td>
+                        <td className="text-center py-2 font-semibold">
+                          {formatMoney.format(
+                            item.contracts.reduce(
+                              (acc, cv) => acc + cv.twentyTwoAndOver,
                               0
                             )
                           )}

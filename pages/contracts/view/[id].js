@@ -392,11 +392,12 @@ const ContractInfo = () => {
                           ).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                           })
-                        : (
-                            totalPaid / contractInfo.salePrice
-                          ).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                          })}
+                        : (totalPaid / contractInfo.salePrice).toLocaleString(
+                            undefined,
+                            {
+                              minimumFractionDigits: 2,
+                            }
+                          )}
                     </span>
                   </div>
                 </div>

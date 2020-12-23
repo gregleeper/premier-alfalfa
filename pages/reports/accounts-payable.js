@@ -97,6 +97,34 @@ const AccountsPayable = () => {
           contractTotals.contractPrice,
           contractTotals.contractNumber
         ) * contract.contractPrice;
+      contractTotals.zeroToSeven =
+        getZeroToSevenDaysOld(
+          contractTotals.tickets,
+          contractTotals.payments,
+          contractTotals.contractPrice,
+          contractTotals.contractNumber
+        ) * contract.contractPrice;
+      contractTotals.eightToFourteen =
+        getEightToFourteenDaysOld(
+          contractTotals.tickets,
+          contractTotals.payments,
+          contractTotals.contractPrice,
+          contractTotals.contractNumber
+        ) * contract.contractPrice;
+      contractTotals.fifteenToTwentyOne =
+        getFifteenToTwentyOneDaysOld(
+          contractTotals.tickets,
+          contractTotals.payments,
+          contractTotals.contractPrice,
+          contractTotals.contractNumber
+        ) * contract.contractPrice;
+      contractTotals.twentyTwoAndOver =
+        getTwentyTwoandOverDays(
+          contractTotals.tickets,
+          contractTotals.payments,
+          contractTotals.contractPrice,
+          contractTotals.contractNumber
+        ) * contract.contractPrice;
 
       array.push(contractTotals);
       setContractsTotals(array);
@@ -632,55 +660,20 @@ const AccountsPayable = () => {
                             </td>
                             <td className="text-center">
                               {/* TODO - Need new function here */}
-                              {formatMoney.format(
-                                getBalanceDueForContract(
-                                  contract.tickets,
-                                  contract.payments,
-                                  contract.contractPrice,
-                                  contract.contractNumber
-                                ) * contract.contractPrice
-                              )}
+                              {formatMoney.format(contract.totalBalanceDue)}
                             </td>
                             <td className="text-center">
-                              {formatMoney.format(
-                                getZeroToSevenDaysOld(
-                                  contract.tickets,
-                                  contract.payments,
-                                  contract.contractPrice,
-                                  contract.contractNumber
-                                ).toFixed(4) * contract.contractPrice
-                              )}
+                              {formatMoney.format(contract.zeroToSeven)}
                             </td>
                             <td className="text-center">
-                              {formatMoney.format(
-                                getEightToFourteenDaysOld(
-                                  contract.tickets,
-                                  contract.payments,
-                                  contract.contractPrice,
-                                  contract.contractNumber
-                                ).toFixed(4) * contract.contractPrice
-                              )}
+                              {formatMoney.format(contract.eightToFourteen)}
                             </td>
                             <td className="text-center">
-                              {formatMoney.format(
-                                getFifteenToTwentyOneDaysOld(
-                                  contract.tickets,
-                                  contract.payments,
-                                  contract.contractPrice,
-                                  contract.contractNumber
-                                ).toFixed(4) * contract.contractPrice
-                              )}
+                              {formatMoney.format(contract.fifteenToTwentyOne)}
                             </td>
 
                             <td className="text-center">
-                              {formatMoney.format(
-                                getTwentyTwoandOverDays(
-                                  contract.tickets,
-                                  contract.payments,
-                                  contract.contractPrice,
-                                  contract.contractNumber
-                                ).toFixed(4) * contract.contractPrice
-                              )}
+                              {formatMoney.format(contract.twentyTwoAndOver)}
                             </td>
                           </tr>
                         </>
@@ -692,6 +685,39 @@ const AccountsPayable = () => {
                           {formatMoney.format(
                             item.contracts.reduce(
                               (acc, cv) => acc + cv.totalBalanceDue,
+                              0
+                            )
+                          )}
+                        </td>
+
+                        <td className="text-center py-2 font-semibold">
+                          {formatMoney.format(
+                            item.contracts.reduce(
+                              (acc, cv) => acc + cv.zeroToSeven,
+                              0
+                            )
+                          )}
+                        </td>
+                        <td className="text-center py-2 font-semibold">
+                          {formatMoney.format(
+                            item.contracts.reduce(
+                              (acc, cv) => acc + cv.eightToFourteen,
+                              0
+                            )
+                          )}
+                        </td>
+                        <td className="text-center py-2 font-semibold">
+                          {formatMoney.format(
+                            item.contracts.reduce(
+                              (acc, cv) => acc + cv.fifteenToTwentyOne,
+                              0
+                            )
+                          )}
+                        </td>
+                        <td className="text-center py-2 font-semibold">
+                          {formatMoney.format(
+                            item.contracts.reduce(
+                              (acc, cv) => acc + cv.twentyTwoAndOver,
                               0
                             )
                           )}

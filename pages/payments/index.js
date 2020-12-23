@@ -15,7 +15,6 @@ import { ReactQueryDevtools } from "react-query-devtools";
 const Payments = () => {
   const cache = useQueryCache();
   const [payments, setPayments] = useState([]);
-  //const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const { data } = useQuery(
     "payments",
@@ -41,68 +40,12 @@ const Payments = () => {
     }
   );
 
-  // const { data, fetchMore, canFetchMore, isLoading } = useInfiniteQuery(
-  //   "payments",
-  //   async (key, nextToken = cache.getQueryData("payments").nextToken) => {
-  //     const {
-  //       data: { paymentsSorted: myPayments },
-  //     } = await API.graphql({
-  //       query: paymentsSorted,
-  //       variables: {
-  //         limit: 3000,
-  //         sortDirection: "ASC",
-  //         type: "Payment",
-  //         nextToken,
-  //       },
-  //     });
-  //     return myPayments;
-  //   },
-  //   {
-  //     enabled: false,
-  //     getFetchMore: (lastGroup, allGroups) => lastGroup.nextToken,
-  //     cacheTime: 1000 * 60 * 60,
-  //     refetchOnWindowFocus: false,
-  //   }
-  // );
-
   useEffect(() => {
     if (data) {
       setPayments(data.items);
     }
   }, [data]);
-
-  // useEffect(() => {
-  //   if (data && canFetchMore && !isLoading) {
-  //     fetchMore();
-  //   }
-  //   if (data && !data.length) {
-  //     setPayments(data.items);
-  //   }
-  //   if (data && data.length && !canFetchMore && !isLoading) {
-  //     compileData();
-  //   }
-  // }, [data]);
-
-  // const compileData = () => {
-  //   if (isInitialLoad) {
-  //     let array = [...payments];
-
-  //     data &&
-  //       data.map((group, i) => {
-  //         group.items.map((item) => array.push(item));
-  //       });
-  //     setPayments(array);
-  //     setIsInitialLoad(false);
-  //   } else {
-  //     let array = [];
-  //     data &&
-  //       data.map((group, i) => {
-  //         group.items.map((item) => array.push(item));
-  //       });
-  //     setPayments(array);
-  //   }
-  // };
-
+  console.log(payments);
   const columns = useMemo(() => [
     {
       Header: "Edit",
@@ -143,6 +86,44 @@ const Payments = () => {
       Header: "Tons Credit",
       accessor: "tonsCredit",
       disableFilters: true,
+    },
+    {
+      Header: "Overage",
+      accessor: "overage",
+      disableFilters: true,
+      Cell: ({ value }) => {
+        if (value) {
+          return (
+            <span>
+              {value.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
+          );
+        } else {
+          return <span>0.00</span>;
+        }
+      },
+    },
+    {
+      Header: "Underage",
+      accessor: "underage",
+      disableFilters: true,
+      Cell: ({ value }) => {
+        if (value) {
+          return (
+            <span>
+              {value.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
+          );
+        } else {
+          return <span>0.00</span>;
+        }
+      },
     },
     {
       Header: "Tickets Paid",

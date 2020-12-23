@@ -186,7 +186,11 @@ const CreatePayment = () => {
       setUnderage(Math.abs(diff));
       setOverage(0);
     }
-  }, [calculatedTonsCredit]);
+    if (diff == 0) {
+      setUnderage(0);
+      setOverage(0);
+    }
+  }, [calculatedTonsCredit, totalTons]);
 
   useEffect(() => {
     if (contractsData) {

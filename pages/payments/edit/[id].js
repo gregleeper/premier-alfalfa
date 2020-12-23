@@ -281,6 +281,7 @@ const UpdatePayment = () => {
         }
       }
     }
+
     let total = myTickets.reduce(
       (accumulator, currentValue) => accumulator + currentValue.netTons,
       0
@@ -393,10 +394,13 @@ const UpdatePayment = () => {
       setUnderage(Math.abs(diff));
       setOverage(0);
     }
-  }, [calculatedTonsCredit]);
+    if (diff == 0) {
+      setOverage(0);
+      setUnderage(0);
+    }
+  }, [calculatedTonsCredit, totalTons]);
 
-  console.log("overage", overage);
-  console.log("underage", underage);
+  console.log("o", overage, "u", underage);
 
   let initialTickets = [];
   if (payment && payment.tickets.items.length) {
@@ -562,6 +566,7 @@ const UpdatePayment = () => {
                         computeTotalTons(values.tickets),
                         handleAmountChange(values.amount))
                       : (setTotalPounds(0), setTotalTons(0))}
+
                     {values.amount ? handleAmountChange(values.amount) : null}
 
                     <div className="w-8/12 mx-auto">
