@@ -68,8 +68,9 @@ const Settlements = () => {
       accessor: "contract.contractNumber",
     },
     {
-      Header: "Settlement Number",
-      accessor: "settlementNumber",
+      Header: "Settlements To",
+      accessor: "endDate",
+      Cell: ({ value }) => <span>{moment(value).format("MM-DD-YYYY")}</span>,
     },
     {
       Header: "Amount Owed",
