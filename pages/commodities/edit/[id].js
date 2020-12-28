@@ -6,6 +6,7 @@ import { getCommodity } from "../../../src/graphql/queries.ts";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { CreateCommoditySchema } from "../../../components/validationSchema";
+import SubmitButton from "../../../components/submitButton";
 
 const CreateCommodity = () => {
   const router = useRouter();
@@ -129,13 +130,9 @@ const CreateCommodity = () => {
                       >
                         Cancel
                       </button>
-                      <button
-                        className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
-                        type="submit"
-                        disabled={isSubmitting}
-                      >
+                      <SubmitButton isSubmitting={isSubmitting}>
                         Submit
-                      </button>
+                      </SubmitButton>
                     </div>
                   </div>
                 </Form>

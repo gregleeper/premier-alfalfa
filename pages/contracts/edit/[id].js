@@ -18,6 +18,7 @@ import { useQuery, useMutation, useQueryCache } from "react-query";
 import { FormikSelect } from "../../../components/formikSelect";
 import Modal from "react-modal";
 import { paymentsByContract } from "../../../src/graphql/customQueries";
+import SubmitButton from "../../../components/submitButton";
 
 const customStyles = {
   content: {
@@ -450,13 +451,9 @@ const EditContract = () => {
                         >
                           Cancel
                         </button>
-                        <button
-                          className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
-                          type="submit"
-                          disabled={isSubmitting}
-                        >
+                        <SubmitButton isSubmitting={isSubmitting}>
                           Submit
-                        </button>
+                        </SubmitButton>
                       </div>
                     </div>
                   </Form>

@@ -3,6 +3,7 @@ import Layout from "../../components/layout";
 import { API, withSSRContext } from "aws-amplify";
 import { createCommodity } from "../../src/graphql/mutations.ts";
 import { CreateCommoditySchema } from "../../components/validationSchema";
+import SubmitButton from "../../components/submitButton";
 
 const CreateCommodity = () => {
   return (
@@ -105,13 +106,9 @@ const CreateCommodity = () => {
                     >
                       Cancel
                     </button>
-                    <button
-                      className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
-                      type="submit"
-                      disabled={isSubmitting}
-                    >
+                    <SubmitButton isSubmitting={isSubmitting}>
                       Submit
-                    </button>
+                    </SubmitButton>
                   </div>
                 </div>
               </Form>

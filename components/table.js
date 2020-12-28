@@ -157,30 +157,32 @@ function Table({ columns, data }) {
         className="bg-white text-gray-900 border shadow mt-8 w-full text-sm pb-16 prose-lg"
       >
         <thead className=" border-b-2 border-gray-400 ">
-          {headers.map((column) => (
-            <th
-              className=" py-2 px-1"
-              {...column.getHeaderProps(column.getSortByToggleProps())}
-            >
-              <div className="flex justify-center items-center text-sm">
-                {column.render("Header")}
-                <div>
-                  <span className="lg:text-xl text-base text-gray-700 ">
-                    {column.isSorted ? (
-                      column.isSortedDesc ? (
-                        <IoMdArrowDropdownCircle />
+          <tr>
+            {headers.map((column) => (
+              <th
+                className=" py-2 px-1"
+                {...column.getHeaderProps(column.getSortByToggleProps())}
+              >
+                <div className="flex justify-center items-center text-sm pl-2">
+                  {column.render("Header")}
+                  <div>
+                    <span className="lg:text-xl text-base text-gray-700 ">
+                      {column.isSorted ? (
+                        column.isSortedDesc ? (
+                          <IoMdArrowDropdownCircle />
+                        ) : (
+                          <IoMdArrowDropupCircle />
+                        )
                       ) : (
-                        <IoMdArrowDropupCircle />
-                      )
-                    ) : (
-                      ""
-                    )}
-                  </span>
+                        ""
+                      )}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div>{column.canFilter ? column.render("Filter") : null}</div>
-            </th>
-          ))}
+                <div>{column.canFilter ? column.render("Filter") : null}</div>
+              </th>
+            ))}
+          </tr>
         </thead>
         <tbody className="" {...getTableBodyProps()}>
           {page.map((row, i) => {
@@ -217,28 +219,28 @@ function Table({ columns, data }) {
       </table>
       <div className="py-6">
         <button
-          className="border-gray-500 border px-2 py-1 bg-gray-200 text-gray-800 disabled:opacity-50"
+          className="bg-gray-900 text-gray-300 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 hover:text-white disabled:opacity-50 "
           onClick={() => gotoPage(0)}
           disabled={!canPreviousPage}
         >
           {"<<"}
         </button>{" "}
         <button
-          className="border-gray-500 border px-2 py-1 bg-gray-200 text-gray-800 disabled:opacity-50"
+          className="bg-gray-900 text-gray-300 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 hover:text-white disabled:opacity-50 "
           onClick={() => previousPage()}
           disabled={!canPreviousPage}
         >
           {"<"}
         </button>{" "}
         <button
-          className="border-gray-500 border px-2 py-1 bg-gray-200 text-gray-800 disabled:opacity-50"
+          className="bg-gray-900 text-gray-300 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 hover:text-white disabled:opacity-50 "
           onClick={() => nextPage()}
           disabled={!canNextPage}
         >
           {">"}
         </button>{" "}
         <button
-          className="border-gray-500 border px-2 py-1 bg-gray-200 text-gray-800 disabled:opacity-50"
+          className="bg-gray-900 text-gray-300 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 hover:text-white disabled:opacity-50 "
           onClick={() => gotoPage(pageCount - 1)}
           disabled={!canNextPage}
         >
