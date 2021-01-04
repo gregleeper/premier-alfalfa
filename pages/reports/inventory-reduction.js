@@ -26,6 +26,7 @@ const InventoryReductionReport = () => {
   const [totals, setTotals] = useState([]);
   const [commodities, setCommodities] = useState([]);
   const [reportedCommodities, setReportedCommodities] = useState([]);
+  const [grandTotal, setGrandTotal] = useState(0);
 
   const { data: contractsData, refetch: refetch } = useQuery(
     "tth",
@@ -98,6 +99,7 @@ const InventoryReductionReport = () => {
   useEffect(() => {
     if (totals.length) {
       getIncludedCommodities();
+      getGrandTotal();
     }
   }, [totals]);
 
@@ -125,6 +127,10 @@ const InventoryReductionReport = () => {
     setTotals(array);
   };
 
+  const getGrandTotal = () => {
+    setGrandTotal(totals.reduce((acc, cv) => acc + cv.weeklyNetTons, 0));
+  };
+
   const getIncludedCommodities = () => {
     const group = groupBy(totals, (total) => total.commodity);
     let array = [];
@@ -140,6 +146,7 @@ const InventoryReductionReport = () => {
     refetch();
     computeTotals();
   };
+
   return (
     <Layout>
       <div>
@@ -205,12 +212,12 @@ const InventoryReductionReport = () => {
           <div>
             {reportedCommodities.length &&
               reportedCommodities.map((c, index) => (
-                <div className="px-12" key={index}>
+                <div className="w-8/12 mx-auto" key={index}>
                   <h3 className="text-base font-light pt-1 pb-1">
                     {c[0].commodity}
                   </h3>
                   <div className="pl-12">
-                    <table>
+                    <table className="w-7/12">
                       <thead>
                         <tr className="text-sm">
                           <th className="px-2">Contract Number</th>
@@ -253,6 +260,21 @@ const InventoryReductionReport = () => {
                   </div>
                 </div>
               ))}
+          </div>
+          <div className="w-8/12 mx-auto font-semibold pt-12">
+            <div className="w-7/12 flex justify-between">
+              <div>
+                <span className="pl-12">Grand Total: </span>
+              </div>
+              <div>
+                <span className="text-xl">
+                  {grandTotal.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
