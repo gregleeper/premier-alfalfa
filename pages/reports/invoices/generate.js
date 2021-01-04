@@ -25,7 +25,7 @@ const GenerateInvoices = () => {
   const [contractsWithTickets, setContractsWithTickets] = useState([]);
 
   const [numberInvoicesCreated, setNumberInvoicesCreated] = useState(0);
-
+  const [invoicesGenerated, setInvoicesGenerated] = useState([]);
   const { data: saleContractsData, refetch } = useQuery(
     "activeSaleContracts",
     async () => {
@@ -61,6 +61,7 @@ const GenerateInvoices = () => {
       refetchOnWindowFocus: false,
     }
   );
+  console.log(activeSaleContracts);
 
   useEffect(() => {
     if (saleContractsData) {
@@ -160,6 +161,78 @@ const GenerateInvoices = () => {
     router.back();
   };
 
+  const createOneInvoice = async (contract) => {
+    let beginningBalance = 0;
+    let previousTickets = contract.tickets.items.filter((t) =>
+      moment(t.ticketDate).isBefore(moment(beginDate).startOf("date"))
+    );
+    let previousPayments = contract.payments.items.filter((p) =>
+      moment(p.date).isBefore(moment(beginDate).startOf("date"))
+    );
+    beginningBalance =
+      previousTickets.reduce((acc, cv) => acc + cv.netTons, 0) *
+        contract.contractPrice -
+      previousPayments.reduce((acc, cv) => acc + cv.amount, 0);
+
+    let invoiceTickets = contract.tickets.items.filter((t) =>
+      moment(t.ticketDate).isBetween(
+        moment(beginDate).startOf("date"),
+        moment(endDate).endOf("date")
+      )
+    );
+
+    let invoicePayments = contract.payments.items.filter((p) =>
+      moment(p.date).isBetween(
+        moment(beginDate).startOf("date"),
+        moment(endDate).endOf("date")
+      )
+    );
+    let invoiceTotal =
+      invoiceTickets.reduce((acc, cv) => acc + cv.netTons, 0) *
+        contract.contractPrice -
+      invoicePayments.reduce((acc, cv) => acc + cv.amount, 0);
+    invoiceTotal = beginningBalance + invoiceTotal;
+
+    const {
+      data: { createInvoice: myInvoice },
+    } = await API.graphql({
+      query: createInvoice,
+      variables: {
+        input: {
+          vendorId: contract.vendorId,
+          invoiceNumber:
+            "i" + moment(endDate).add(1, "week").add(1, "day").format("MMDDYY"),
+
+          amountOwed: invoiceTotal,
+          dueDate: moment(endDate).add(1, "week").add(1, "day"),
+          isPaid: false,
+          contractId: contract.id,
+          type: "Invoice",
+          beginDate,
+          endDate,
+        },
+      },
+    });
+
+    invoiceTickets.map(async (ticket) => {
+      await API.graphql({
+        query: updateTicket,
+        variables: {
+          input: {
+            id: ticket.id,
+            invoiceId: myInvoice.id,
+          },
+        },
+      });
+    });
+    let array = [];
+    if (invoicesGenerated.length) {
+      invoicesGenerated.map((s) => array.push(s));
+    }
+    array.push({ contract, invoice: myInvoice });
+    setInvoicesGenerated(array);
+  };
+
   const handleFetchQueries = () => {
     refetch();
   };
@@ -171,7 +244,7 @@ const GenerateInvoices = () => {
           <h3>Generate Invoices</h3>
         </div>
         <div>
-          <div className="w-1/4 mx-auto">
+          <div className="w-7/12 mx-auto">
             <div className="flex justify-between items-end">
               <div>
                 <span>Begin Date</span>
@@ -214,32 +287,68 @@ const GenerateInvoices = () => {
                     Contracts with tickets and sale price:{" "}
                     {contractsWithTickets.length}
                   </p>
-                  <ul className="mt-2" className="">
-                    {contractsWithTickets.map((contract) => (
-                      <li key={contract.id}>
-                        {contract.tickets?.items[0]?.invoiceId ? (
-                          <span className="text-red-600 mr-2">
-                            Invoice Already Created!
-                          </span>
-                        ) : null}
-                        <span className="mr-2">{contract.contractNumber}</span>
-                        <span className="mr-2">
-                          {contract.contractTo.companyReportName}
-                        </span>
-                        <span className="float-right">
-                          Tickets:{" "}
-                          {
-                            contract.tickets.items.filter((t) =>
-                              moment(t.ticketDate).isBetween(
-                                moment(beginDate).startOf("date"),
-                                moment(endDate).endOf("date")
-                              )
-                            ).length
-                          }
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  <table className="mt-2">
+                    <thead>
+                      <tr>
+                        <th>Contract Number</th>
+                        <th>Vendor</th>
+                        <th>Tickets</th>
+                        <th>Payments</th>
+                        <th>Action</th>
+                        <th>Invoice Generated</th>
+                      </tr>
+                    </thead>
+                    <tbody className="w-1/2">
+                      {contractsWithTickets.map((contract) => (
+                        <tr key={contract.id} className="hover:bg-gray-100">
+                          <td className="py-2 px-2 rounded">
+                            {contract.contractNumber}
+                          </td>
+                          <td className="py-2 px-2 rounded ">
+                            {contract.contractTo.companyReportName}
+                          </td>
+                          <td className="py-2 px-2 rounded">
+                            {
+                              contract.tickets.items.filter((t) =>
+                                moment(t.ticketDate).isBetween(
+                                  moment(beginDate).startOf("date"),
+                                  moment(endDate).endOf("date")
+                                )
+                              ).length
+                            }
+                          </td>
+                          <td className="py-2 px-2 rounded">
+                            {
+                              contract.payments.items.filter((t) =>
+                                moment(t.date).isBetween(
+                                  moment(beginDate).startOf("date"),
+                                  moment(endDate).endOf("date")
+                                )
+                              ).length
+                            }
+                          </td>
+                          <td className="py-2 px-2 rounded">
+                            <button
+                              className="px-2  py-1 border border-gray-800 shadow hover:bg-gray-800 hover:text-white text-sm disabled:opacity-25"
+                              onClick={() => createOneInvoice(contract)}
+                              disabled={invoicesGenerated.some(
+                                (e) => e.contract.id === contract.id
+                              )}
+                            >
+                              Generate
+                            </button>
+                          </td>
+                          <td>
+                            {invoicesGenerated.some(
+                              (e) => e.contract.id === contract.id
+                            ) ? (
+                              <span>✅</span>
+                            ) : null}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               ) : (
                 <div>
@@ -247,13 +356,13 @@ const GenerateInvoices = () => {
                 </div>
               )}
             </div>
-            <div>
-              <span>Generate Invoices? </span>
+            <div className="pb-24">
+              <span className="text-lg pr-12">Generate all invoices? </span>
               <button
                 className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
                 onClick={() => createInvoices()}
               >
-                Generate
+                Generate All
               </button>
             </div>
           </div>
