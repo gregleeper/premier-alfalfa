@@ -196,22 +196,22 @@ const AccountsReceivable = () => {
     payments.map((p) => {
       if (p.tickets.items.length) {
         if (
-          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >
-            -1 &&
-          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") <=
-            7 &&
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >=
+            0 &&
+          moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") <
+            8 &&
           moment(p.date).isBefore(moment(endDate).endOf("date")) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
-          overages = p.overage;
-          underages = p.underage;
+          overages = overages + p.overage;
+          underages = underages + p.underage;
         }
       }
     });
 
     const myTickets = tickets.filter(
       (ticket) =>
-        moment(endDate).diff(moment(ticket.ticketDate), "days") < 7 &&
+        moment(endDate).diff(moment(ticket.ticketDate), "days") < 8 &&
         moment(endDate).diff(moment(ticket.ticketDate), "days") >= 0 &&
         !ticket.paymentId
     );
@@ -275,8 +275,8 @@ const AccountsReceivable = () => {
     let eightToFourteen = {};
     const myTickets = tickets.filter(
       (ticket) =>
-        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 7 &&
-        moment(endDate).diff(moment(ticket.ticketDate), "days") < 14 &&
+        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 8 &&
+        moment(endDate).diff(moment(ticket.ticketDate), "days") <= 14 &&
         !ticket.paymentId
     );
 
@@ -293,8 +293,8 @@ const AccountsReceivable = () => {
       tickets.filter(
         (t) =>
           t.paymentId === p.id &&
-          moment(endDate).diff(moment(t.ticketDate), "days") >= 7 &&
-          moment(endDate).diff(moment(t.ticketDate), "days") < 14
+          moment(endDate).diff(moment(t.ticketDate), "days") >= 8 &&
+          moment(endDate).diff(moment(t.ticketDate), "days") <= 14
       )
     );
     let paidTicketsWithinRangeFlattened = paidTicketsWithinRange.flat();
@@ -324,8 +324,8 @@ const AccountsReceivable = () => {
           moment(p.date).isBefore(moment(endDate).endOf("date")) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
-          overages = p.overage;
-          underages = p.underage;
+          overages = overages + p.overage;
+          underages = underages + p.underage;
         }
       }
     });
@@ -350,8 +350,8 @@ const AccountsReceivable = () => {
     let fifteenToTwentyOne = {};
     const myTickets = tickets.filter(
       (ticket) =>
-        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 14 &&
-        moment(endDate).diff(moment(ticket.ticketDate), "days") < 21 &&
+        moment(endDate).diff(moment(ticket.ticketDate), "days") >= 15 &&
+        moment(endDate).diff(moment(ticket.ticketDate), "days") <= 21 &&
         !ticket.paymentId
     );
 
@@ -367,8 +367,8 @@ const AccountsReceivable = () => {
       tickets.filter(
         (t) =>
           t.paymentId === p.id &&
-          moment(endDate).diff(moment(t.ticketDate), "days") >= 14 &&
-          moment(endDate).diff(moment(t.ticketDate), "days") < 21
+          moment(endDate).diff(moment(t.ticketDate), "days") >= 15 &&
+          moment(endDate).diff(moment(t.ticketDate), "days") <= 21
       )
     );
     let paidTicketsWithinRangeFlattened = paidTicketsWithinRange.flat();
@@ -398,8 +398,8 @@ const AccountsReceivable = () => {
           moment(p.date).isBefore(moment(endDate).endOf("date")) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
-          overages = p.overage;
-          underages = p.underage;
+          overages = overages + p.overage;
+          underages = underages + p.underage;
         }
       }
     });

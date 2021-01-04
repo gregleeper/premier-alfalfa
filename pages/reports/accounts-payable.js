@@ -218,8 +218,8 @@ const AccountsPayable = () => {
           ) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
-          overages = p.overage;
-          underages = p.underage;
+          overages = overages + p.overage;
+          underages = underages + p.underage;
         }
       }
     });
@@ -344,8 +344,8 @@ const AccountsPayable = () => {
           moment(p.date).isBefore(moment(endDate).endOf("date")) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
-          overages = p.overage;
-          underages = p.underage;
+          overages = overages + p.overage;
+          underages = underages + p.underage;
         }
       }
     });
@@ -418,8 +418,8 @@ const AccountsPayable = () => {
           moment(p.date).isBefore(moment(endDate).endOf("date")) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
-          overages = p.overage;
-          underages = p.underage;
+          overages = overages + p.overage;
+          underages = underages + p.underage;
         }
       }
     });
@@ -524,14 +524,12 @@ const AccountsPayable = () => {
         }
       }
       if (p.tickets.items.length == 0) {
-        console.log("first if", index);
         if (
           moment(p.date).isBefore(moment(endDate).endOf("date")) &&
           (p.underage > 0.01 || p.overage > 0.01)
         ) {
           overages = overages + p.overage;
           underages = underages + p.underage;
-          console.log(overages, contractNumber);
         }
       }
     });
