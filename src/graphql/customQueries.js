@@ -396,6 +396,9 @@ export const invoicesSorted = /* GraphQL */ `
             }
           }
         }
+        contract {
+          contractNumber
+        }
         vendorId
         vendor {
           id

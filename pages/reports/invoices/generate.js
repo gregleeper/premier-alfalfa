@@ -61,7 +61,6 @@ const GenerateInvoices = () => {
       refetchOnWindowFocus: false,
     }
   );
-  console.log(activeSaleContracts);
 
   useEffect(() => {
     if (saleContractsData) {
@@ -74,8 +73,6 @@ const GenerateInvoices = () => {
       compileData();
     }
   }, [activeSaleContracts]);
-
-  console.log(activeSaleContracts);
 
   const compileData = () => {
     let array = [];

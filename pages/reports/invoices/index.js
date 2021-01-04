@@ -60,6 +60,10 @@ const Invoices = () => {
       disableFilters: true,
     },
     {
+      Header: "Contract #",
+      accessor: "contract.contractNumber",
+    },
+    {
       Header: "Invoice Number",
       accessor: "invoiceNumber",
     },
@@ -70,16 +74,12 @@ const Invoices = () => {
       disableFilters: true,
     },
     {
-      Header: "Is Paid",
-      accessor: "isPaid",
-      Cell: ({ value }) => <span>{value ? "Yes" : "No"}</span>,
-    },
-    {
       Header: "Due Date",
       accessor: "dueDate",
       Cell: ({ value }) => <span>{moment(value).format("MM/DD/YY")}</span>,
     },
   ]);
+  console.log(invoices);
 
   return (
     <Layout>
