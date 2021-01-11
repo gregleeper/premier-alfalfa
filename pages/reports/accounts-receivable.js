@@ -38,9 +38,6 @@ const AccountsReceivable = () => {
           contractState: {
             eq: "ACTIVE",
           },
-          salePrice: {
-            gt: 0,
-          },
         },
         limit: 3000,
       },

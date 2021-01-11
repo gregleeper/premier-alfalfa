@@ -47,9 +47,6 @@ const AccountsPayable = () => {
             contractState: {
               eq: "ACTIVE",
             },
-            contractPrice: {
-              gt: 0,
-            },
           },
           limit: 3000,
         },
