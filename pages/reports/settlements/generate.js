@@ -35,7 +35,6 @@ const GenerateSettlements = () => {
           contractType: "PURCHASE",
           filter: {
             contractState: { eq: "ACTIVE" },
-            contractPrice: { gt: 0 },
           },
           ticketFilter: {
             ticketDate: {
@@ -77,9 +76,8 @@ const GenerateSettlements = () => {
     let array = [];
     activePurchaseContracts.map((contract) => {
       if (
-        (contract.tickets.items.length > 0 ||
-          contract.payments.items.length > 0) &&
-        contract.contractPrice > 0
+        contract.tickets.items.length > 0 ||
+        contract.payments.items.length > 0
       ) {
         array.push(contract);
       }

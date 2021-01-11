@@ -37,7 +37,6 @@ const GenerateInvoices = () => {
           contractType: "SALE",
           filter: {
             contractState: { eq: "ACTIVE" },
-            salePrice: { gt: 0 },
           },
           ticketFilter: {
             ticketDate: {
@@ -77,10 +76,7 @@ const GenerateInvoices = () => {
   const compileData = () => {
     let array = [];
     activeSaleContracts.map((contract) => {
-      if (
-        (contract.tickets.items.length > 0 || contract.payments.items.length) &&
-        contract.salePrice > 0
-      ) {
+      if (contract.tickets.items.length > 0 || contract.payments.items.length) {
         array.push(contract);
       }
     });
