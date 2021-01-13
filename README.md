@@ -27,7 +27,7 @@ The API is GraphQL built using Amplify and Appsync and secured via Cognito with 
 
 I used several OSS libraries in this app, including:
 
-- React Query - used for cache management
+- React Query - used for cache management and queries
 - React Table - used for tabulating data easily
 - React Select - used for searchable options in forms
 - React DatePicker - used for date selection in forms
