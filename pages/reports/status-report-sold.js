@@ -73,6 +73,17 @@ const StatusReport = () => {
       });
       commodityTotals.push(commoditySummary);
     });
+    commodityTotals.sort((a, b) => {
+      let nameA = a.commodity;
+      let nameB = b.commodity;
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      return 0;
+    });
     setSummary(commodityTotals);
   };
 

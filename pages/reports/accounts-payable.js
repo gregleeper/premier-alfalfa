@@ -169,6 +169,18 @@ const AccountsPayable = () => {
     let array = [];
     uniqureVendors.map((v) => {
       const myContracts = byVendor.get(v);
+
+      myContracts.sort((a, b) => {
+        let nameA = a.contractNumber;
+        let nameB = b.contractNumber;
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+        return 0;
+      });
       let obj = {};
       obj.company = v;
       obj.contracts = myContracts;

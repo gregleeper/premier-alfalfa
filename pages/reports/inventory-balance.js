@@ -129,7 +129,17 @@ const TotalTons = () => {
       array.sort((a, b) => b.weeklyNetTons - a.weeklyNetTons);
       array.push(contractTotals);
     });
-
+    array.sort((a, b) => {
+      let nameA = a.contractNumber;
+      let nameB = b.contractNumber;
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      return 0;
+    });
     setTotals(array);
   };
 
@@ -140,6 +150,17 @@ const TotalTons = () => {
       if (group.get(c.name)) {
         array.push(group.get(c.name));
       }
+    });
+    array.sort((a, b) => {
+      let nameA = a[0].commodity;
+      let nameB = b[0].commodity;
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      return 0;
     });
     setReportedCommodities(array);
   };

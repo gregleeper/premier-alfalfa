@@ -57,7 +57,7 @@ const StatusReport = () => {
       activeCommodities.push(i[0].commodity.name)
     );
     setCommodities(activeCommodities);
-    console.log(commodities);
+
     let commodityTotals = [];
     activeCommodities.map((c) => {
       const commodity = commoditiesGroup.get(c);
@@ -82,9 +82,21 @@ const StatusReport = () => {
       });
       commodityTotals.push(commoditySummary);
     });
+    commodityTotals.sort((a, b) => {
+      let nameA = a.commodity;
+      let nameB = b.commodity;
+
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      return 0;
+    });
+
     setSummary(commodityTotals);
   };
-  console.log(summary);
 
   useEffect(() => {
     if (activeContractsData) {
@@ -153,9 +165,8 @@ const StatusReport = () => {
                   </thead>
 
                   <tbody>
-                    {c.contracts.map((contract) => (
-                      <tr>
-                        {console.log(c)}
+                    {c.contracts.map((contract, i) => (
+                      <tr key={i}>
                         <td className="px-1">{contract.contractNumber}</td>
                         <td className="px-1">{contract.soldTo}</td>
                         <td className="px-1">{contract.commodity}</td>
