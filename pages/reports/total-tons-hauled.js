@@ -137,10 +137,19 @@ const TotalTons = () => {
         contract.quantity - contractTotals.totalHauled;
       contractTotals.contractTotal = contract.quantity;
 
-      array.sort((a, b) => b.weeklyNetTons - a.weeklyNetTons);
       array.push(contractTotals);
     });
-
+    array.sort((a, b) => {
+      let nameA = a.contractNumber;
+      let nameB = b.contractNumber;
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      return 0;
+    });
     setTotals(array);
   };
 
@@ -183,7 +192,6 @@ const TotalTons = () => {
     computeTotals();
   };
 
-  console.log(weeklyNetTonsGrand);
   return (
     <Layout>
       <div>
