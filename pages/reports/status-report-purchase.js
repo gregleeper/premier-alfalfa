@@ -3,11 +3,6 @@ import ReactToPrint from "react-to-print";
 import { API, withSSRContext } from "aws-amplify";
 import moment from "moment";
 import Layout from "../../components/layout";
-import {
-  listContracts,
-  listCommoditys,
-  listTickets,
-} from "../../src/graphql/queries.ts";
 import { contractsByType } from "../../src/graphql/customQueries";
 import {
   groupBy,
@@ -15,20 +10,29 @@ import {
   computeAvgContractPrice,
   formatMoney,
 } from "../../utils";
-import Table from "../../components/table";
 import { useQuery } from "react-query";
+import DatePicker from "react-datepicker";
 
 const StatusReport = () => {
   let toPrint = useRef(null);
   const [date, setDate] = useState(new Date());
   const [tickets, setTickets] = useState([]);
-
+  const [endDate, setEndDate] = useState(new Date());
   const [activeContracts, setActiveContracts] = useState([]);
   const [ticketsForContracts, setTicketsForContracts] = useState([]);
   const [commodities, setCommodities] = useState([]);
   const [summary, setSummary] = useState([]);
 
-  const { data: activeContractsData, isFetched } = useQuery(
+  const {
+    data: activeContractsData,
+    isFetched,
+    refetch,
+    status,
+    isLoading,
+    isFetching,
+    isSuccess,
+    clear,
+  } = useQuery(
     "activePurchaseContracts",
     async () => {
       const {
@@ -36,6 +40,11 @@ const StatusReport = () => {
       } = await API.graphql({
         query: contractsByType,
         variables: {
+          ticketFilter: {
+            ticketDate: {
+              le: moment(endDate).endOf("date"),
+            },
+          },
           contractType: "PURCHASE",
           filter: {
             contractState: { eq: "ACTIVE" },
@@ -44,6 +53,15 @@ const StatusReport = () => {
         },
       });
       return contracts;
+    },
+    {
+      enabled: false,
+      cacheTime: 1000 * 60 * 59,
+
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchIntervalInBackground: false,
+      refetchOnReconnect: true,
     }
   );
 
@@ -71,7 +89,10 @@ const StatusReport = () => {
         contract.purchasedFrom = i.purchasedFrom;
         contract.commodity = i.commodity.name;
         contract.dueDate = moment(i.endDate).format("MM/DD/YY");
-        contract.daysRemaining = moment(i.endDate).diff(new Date(), "days");
+        contract.daysRemaining = moment(i.endDate).diff(
+          moment(endDate).endOf("date"),
+          "days"
+        );
         contract.contractDate = moment(i.beginDate).format("MM/DD/YY");
         contract.quantity = i.quantity;
         contract.contractPrice = i.contractPrice;
@@ -104,6 +125,17 @@ const StatusReport = () => {
     }
   }, [activeContractsData]);
 
+  const clearReport = () => {
+    setActiveContracts([]);
+    setSummary([]);
+  };
+
+  const handleEndDateChange = (date) => {
+    setEndDate(date);
+    clearReport();
+    clear();
+  };
+
   return (
     <Layout>
       <div className="px-4">
@@ -111,12 +143,27 @@ const StatusReport = () => {
           <h3>Status Report - Purchases</h3>
         </div>
         <div>
-          <div className="mb-8">
-            {!isFetched ? (
+          <span>End Date</span>
+          <DatePicker
+            selected={endDate}
+            onChange={(date) => handleEndDateChange(date)}
+            className="form-input w-full"
+          />
+          <button
+            className="px-3 py-2 ml-3 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:border-red-200"
+            onClick={() => refetch()}
+            disabled={isLoading}
+          >
+            Get Data
+          </button>
+        </div>
+        <div>
+          <div className="mb-8 py-4">
+            {isLoading && !isFetched ? (
               <p>Loading....</p>
             ) : (
               <button
-                className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:border-red-200"
+                className="disabled:opacity-25 px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:border-red-200"
                 onClick={() => computeTotals()}
                 disabled={!isFetched}
               >
@@ -142,7 +189,7 @@ const StatusReport = () => {
             <div className="text-center">
               <h6 className="text-xl">Status Report - Purchases</h6>
               <p className="text-base text-gray-800">
-                {moment().format("MM/DD/YYYY")}
+                {moment(endDate).format("MM/DD/YYYY")}
               </p>
             </div>
             {summary.map((c, i) => (

@@ -11,16 +11,26 @@ import {
   formatMoney,
 } from "../../utils";
 import { useQuery } from "react-query";
+import DatePicker from "react-datepicker";
 
 const StatusReport = () => {
   let toPrint = useRef(null);
-  const [date, setDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
   const [activeContracts, setActiveContracts] = useState([]);
-  const [ticketsForContracts, setTicketsForContracts] = useState([]);
   const [commodities, setCommodities] = useState([]);
   const [summary, setSummary] = useState([]);
 
-  const { data: activeContractsData, isFetched } = useQuery(
+  const {
+    data: activeContractsData,
+    isFetched,
+    status,
+    isLoading,
+    isFetching,
+    isSuccess,
+    refetch,
+
+    clear,
+  } = useQuery(
     "activeSalesContracts",
     async () => {
       const {
@@ -28,6 +38,11 @@ const StatusReport = () => {
       } = await API.graphql({
         query: contractsByType,
         variables: {
+          ticketFilter: {
+            ticketDate: {
+              le: moment(endDate).endOf("date"),
+            },
+          },
           contractType: "SALE",
           filter: {
             contractState: { eq: "ACTIVE" },
@@ -36,6 +51,15 @@ const StatusReport = () => {
         },
       });
       return contracts;
+    },
+    {
+      enabled: false,
+      cacheTime: 1000 * 60 * 59,
+
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchIntervalInBackground: false,
+      refetchOnReconnect: true,
     }
   );
 
@@ -62,7 +86,10 @@ const StatusReport = () => {
         contract.soldTo = i.soldTo;
         contract.commodity = i.commodity.name;
         contract.dueDate = moment(i.endDate).format("MM/DD/YY");
-        contract.daysRemaining = moment(i.endDate).diff(new Date(), "days");
+        contract.daysRemaining = moment(i.endDate).diff(
+          moment(endDate).endOf("date"),
+          "days"
+        );
         contract.contractDate = moment(i.beginDate).format("MM/DD/YY");
         contract.quantity = i.quantity;
         contract.salePrice = i.salePrice;
@@ -93,6 +120,17 @@ const StatusReport = () => {
     }
   }, [activeContractsData]);
 
+  const clearReport = () => {
+    setActiveContracts([]);
+    setSummary([]);
+  };
+
+  const handleEndDateChange = (date) => {
+    setEndDate(date);
+    clearReport();
+    clear();
+  };
+
   return (
     <Layout>
       <div className="px-4">
@@ -100,12 +138,28 @@ const StatusReport = () => {
           <h3>Status Report - Sales</h3>
         </div>
         <div>
-          <div>
-            {!isFetched ? (
+          <span className="pr-2">End Date</span>
+          <DatePicker
+            selected={endDate}
+            onChange={(date) => handleEndDateChange(date)}
+            className="form-input w-full "
+          />
+          <button
+            className="px-3 ml-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:border-red-200"
+            onClick={() => refetch()}
+            disabled={isLoading}
+          >
+            Get Data
+          </button>
+        </div>
+        <div>
+          <div className="py-4">
+            {console.log(isSuccess)}
+            {isLoading && !isFetched ? (
               <p>Loading....</p>
             ) : (
               <button
-                className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:border-red-200 mb-8"
+                className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:border-red-200 mb-8 disabled:opacity-25"
                 onClick={() => computeTotals()}
                 disabled={!isFetched}
               >
@@ -132,7 +186,9 @@ const StatusReport = () => {
               <h6 className="text-gray-900 text-2xl font-semibold text-center">
                 Status Report - Sold
               </h6>
-              <p className="text-center">{moment().format("MM/DD/YYYY")}</p>
+              <p className="text-center">
+                {moment(endDate).format("MM/DD/YYYY")}
+              </p>
             </div>
             {summary.map((c, i) => (
               <div className="mr-4 mb-12" key={i}>

@@ -8,7 +8,6 @@ import { formatMoney, groupBy } from "../../utils";
 import { contractsByType } from "../../src/graphql/customQueries";
 
 import DatePicker from "react-datepicker";
-import { array } from "yup";
 
 const AccountsReceivable = () => {
   const [activeSaleContracts, setActiveSaleContracts] = useState([]);
