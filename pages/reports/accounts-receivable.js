@@ -21,28 +21,37 @@ const AccountsReceivable = () => {
   const [grandTotal, setGrandTotal] = useState(0);
   let toPrint = useRef(null);
 
-  const { data: contractData } = useQuery("activeSaleContracts", async () => {
-    const {
-      data: { contractsByType: myContracts },
-    } = await API.graphql({
-      query: contractsByType,
-      variables: {
-        ticketFilter: {
-          ticketDate: {
-            le: moment(endDate),
+  const { data: contractData, refetch, isFetched, clear } = useQuery(
+    "activeSaleContracts",
+    async () => {
+      const {
+        data: { contractsByType: myContracts },
+      } = await API.graphql({
+        query: contractsByType,
+        variables: {
+          ticketFilter: {
+            ticketDate: {
+              le: moment(endDate),
+            },
           },
-        },
-        contractType: "SALE",
-        filter: {
-          contractState: {
-            eq: "ACTIVE",
+          contractType: "SALE",
+          filter: {
+            contractState: {
+              eq: "ACTIVE",
+            },
           },
+          limit: 3000,
         },
-        limit: 3000,
-      },
-    });
-    return myContracts;
-  });
+      });
+      return myContracts;
+    },
+    {
+      enabled: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   const computeContractTotals = () => {
     let array = [...contractsTotals];
@@ -116,15 +125,22 @@ const AccountsReceivable = () => {
     computeTotalsFromTickets();
   };
 
-  const handleFetchTickets = () => {
+  const handleFetchTickets = async () => {
+    clear();
+    clearReport();
     setContractsTotals([]);
     setVendorTotals([]);
+    await refetch();
     computeContractTotals();
   };
 
-  const clearReport = () => {
+  function clearReport() {
     setContractsTotals([]);
     setVendorTotals([]);
+  }
+
+  const handleEndDateChange = (date) => {
+    setEndDate(date);
   };
 
   useEffect(() => {
@@ -564,11 +580,6 @@ const AccountsReceivable = () => {
     contractTotal.contractNumber = contractNumber;
 
     return calculateTonsBalance(contractTotal);
-  };
-
-  const handleEndDateChange = (date) => {
-    setEndDate(date);
-    clearReport();
   };
 
   return (
