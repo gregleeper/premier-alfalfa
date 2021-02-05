@@ -39,7 +39,7 @@ export function useCommodityAvgPrice(date: Date , days: number): Results  {
   } = useQuery("purchasesLast30Days", async () => {
     const {
       data: { ticketsByDate: tickets },
-    } = await API.graphql({
+    }: any = await API.graphql({
       query: ticketsByDate,
       variables: {
         ticketDate: {
