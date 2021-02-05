@@ -21,7 +21,7 @@ const AccountsReceivable = () => {
   const [grandTotal, setGrandTotal] = useState(0);
   let toPrint = useRef(null);
 
-  const { data: contractData, refetch, isFetched, clear } = useQuery(
+  const { data: contractData, refetch, isFetched, clear, isLoading } = useQuery(
     "activeSaleContracts",
     async () => {
       const {
@@ -126,8 +126,6 @@ const AccountsReceivable = () => {
   };
 
   const handleFetchTickets = async () => {
-    clear();
-    clearReport();
     setContractsTotals([]);
     setVendorTotals([]);
     await refetch();
@@ -138,10 +136,6 @@ const AccountsReceivable = () => {
     setContractsTotals([]);
     setVendorTotals([]);
   }
-
-  const handleEndDateChange = (date) => {
-    setEndDate(date);
-  };
 
   useEffect(() => {
     if (contractData) {
@@ -582,6 +576,12 @@ const AccountsReceivable = () => {
     return calculateTonsBalance(contractTotal);
   };
 
+  function handleEndDateChange(date) {
+    setEndDate(date);
+    clear();
+    clearReport();
+  }
+
   return (
     <Layout>
       <div className="mx-16">
@@ -607,8 +607,9 @@ const AccountsReceivable = () => {
           />
           <div className="mt-4">
             <button
-              className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
+              className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:opacity-25"
               onClick={() => handleFetchTickets()}
+              disabled={isLoading}
             >
               Get Data
             </button>
