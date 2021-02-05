@@ -29,7 +29,7 @@ const AccountsReceivable = () => {
       variables: {
         ticketFilter: {
           ticketDate: {
-            le: moment(endDate).endOf("date"),
+            le: moment(endDate),
           },
         },
         contractType: "SALE",

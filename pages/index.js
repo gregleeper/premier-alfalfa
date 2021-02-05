@@ -4,6 +4,7 @@ import { API, withSSRContext } from "aws-amplify";
 import { listTickets } from "../src/graphql/queries.ts";
 import { useQueryCache, useQuery } from "react-query";
 import { useEffect } from "react";
+import { useCommodityAvgPrice } from "../utils/hooks/useCommodityAvgPrice";
 import {
   ReactQueryDevtools,
   ReactQueryDevtoolsPanel,
@@ -25,6 +26,8 @@ export default function Home() {
       return ticketsData;
     });
   };
+
+  console.log(useCommodityAvgPrice(new Date(), 20));
 
   //   id: "8439e5c1-2e44-421a-86bf-c5391cffdf34"
   // contractId: "c136ab73-5ec0-4278-8eb5-b73ca4196f88"
