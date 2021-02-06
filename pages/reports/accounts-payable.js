@@ -26,7 +26,15 @@ const AccountsPayable = () => {
   const [vendorTotals, setVendorTotals] = useState([]);
   let toPrint = useRef(null);
 
-  const { data: contractData } = useQuery(
+  const {
+    data: contractData,
+    refetch,
+    isSuccess,
+    isFetched,
+    clear,
+    isLoading,
+    status,
+  } = useQuery(
     "activePurchaseContracts",
     async () => {
       const {
@@ -52,6 +60,12 @@ const AccountsPayable = () => {
         },
       });
       return myContracts;
+    },
+    {
+      enabled: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
     }
   );
 
@@ -125,12 +139,6 @@ const AccountsPayable = () => {
     });
 
     computeTotalsFromTickets();
-  };
-
-  const handleFetchTickets = () => {
-    setContractsTotals([]);
-    setVendorTotals([]);
-    computeContractTotals();
   };
 
   const clearReport = () => {
@@ -590,16 +598,45 @@ const AccountsPayable = () => {
     return calculateTonsBalance(contractTotal);
   };
 
+  function handleEndDateChange(date) {
+    setEndDate(date);
+
+    clearReport();
+    clear();
+  }
+
   return (
     <Layout>
-      <div className="mx-16">
+      <div className="mx-16 py-4">
         <div>
-          <span>End Date</span>
+          <span className="pr-2">End Date</span>
           <DatePicker
             selected={endDate}
-            onChange={(date) => setEndDate(date)}
+            onChange={(date) => handleEndDateChange(date)}
             className="form-input w-full"
           />
+
+          <button
+            className="ml-2 px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:opacity-25"
+            onClick={() => refetch()}
+            disabled={isLoading}
+          >
+            Get Data
+          </button>
+        </div>
+        <div className="py-4">
+          {console.log(isSuccess)}
+          {isLoading && !isFetched ? (
+            <p>Loading....</p>
+          ) : (
+            <button
+              className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white disabled:border-red-200 mb-8 disabled:opacity-25"
+              onClick={() => computeTotalsFromTickets()}
+              disabled={!isFetched}
+            >
+              Generate Report
+            </button>
+          )}
         </div>
         <div className="px-12 py-4">
           <ReactToPrint
@@ -613,18 +650,11 @@ const AccountsPayable = () => {
             )}
             content={() => toPrint}
           />
+
           <div className="mt-4">
             <button
               className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
-              onClick={() => handleFetchTickets()}
-            >
-              Get Data
-            </button>
-          </div>
-          <div className="mt-4">
-            <button
-              className="px-3 py-2 border border-gray-800 shadow hover:bg-gray-800 hover:text-white"
-              onClick={() => clearReport()}
+              onClick={() => handleEndDateChange(endDate)}
             >
               Clear
             </button>
