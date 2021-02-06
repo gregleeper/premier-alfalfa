@@ -18,7 +18,7 @@ const StatusReport = () => {
 
   const handleNumberOfDays = (event) => {
     event.preventDefault();
-    if (!event.target) {
+    if (event.target?.value) {
       setDays(event.target.value);
     } else {
       setDays(30);
@@ -26,8 +26,6 @@ const StatusReport = () => {
   };
 
   const { summary, status } = useCommodityAvgPrice(endDate, days);
-
-  console.log(summary, status);
 
   return (
     <Layout>
@@ -48,6 +46,7 @@ const StatusReport = () => {
             Days
           </label>
           <input
+            id="days-input"
             name="days"
             className="form-input"
             type="number"
