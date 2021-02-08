@@ -6,11 +6,7 @@ import ReactToPrint from "react-to-print";
 import Layout from "../../components/layout";
 import { formatMoney, groupBy } from "../../utils";
 import { contractsByType } from "../../src/graphql/customQueries";
-import {
-  invoicesSorted,
-  ticketsByContract,
-  paymentsByContract,
-} from "../../src/graphql/customQueries";
+
 import DatePicker from "react-datepicker";
 
 const AccountsPayable = () => {
@@ -97,6 +93,7 @@ const AccountsPayable = () => {
       );
 
       contractTotals.tickets = contract.tickets.items;
+
       contractTotals.payments = contract.payments.items;
       contractTotals.totalBalanceDue =
         getBalanceDueForContract(
@@ -219,6 +216,8 @@ const AccountsPayable = () => {
     let overages = 0;
     let underages = 0;
 
+    console.log(payments, contractNumber);
+
     payments.map((p) => {
       if (p.tickets.items.length) {
         if (
@@ -251,7 +250,7 @@ const AccountsPayable = () => {
           moment(ticket.ticketDate).endOf("day"),
           "days"
         ) >= 0 &&
-        !ticket.paymentId
+        (!ticket.paymentId || !payments.some((p) => p.id === ticket.paymentId))
     );
     const paymentsBeforeEndDate = payments.filter((p) =>
       moment(p.date).isBefore(moment(endDate).endOf("date"))
@@ -314,7 +313,7 @@ const AccountsPayable = () => {
       (ticket) =>
         moment(endDate).diff(moment(ticket.ticketDate), "days") >= 8 &&
         moment(endDate).diff(moment(ticket.ticketDate), "days") <= 14 &&
-        !ticket.paymentId
+        (!ticket.paymentId || !payments.some((p) => p.id === ticket.paymentId))
     );
 
     const paymentsBeforeEndDate = payments.filter((p) =>
@@ -389,7 +388,7 @@ const AccountsPayable = () => {
       (ticket) =>
         moment(endDate).diff(moment(ticket.ticketDate), "days") >= 15 &&
         moment(endDate).diff(moment(ticket.ticketDate), "days") <= 21 &&
-        !ticket.paymentId
+        (!ticket.paymentId || !payments.some((p) => p.id === ticket.paymentId))
     );
 
     const paymentsBeforeEndDate = payments.filter((p) =>
@@ -460,7 +459,7 @@ const AccountsPayable = () => {
     const myTickets = tickets.filter(
       (ticket) =>
         moment(endDate).diff(moment(ticket.ticketDate), "days") >= 22 &&
-        !ticket.paymentId
+        (!ticket.paymentId || !payments.some((p) => p.id === ticket.paymentId))
     );
 
     const paymentsBeforeEndDate = payments.filter((p) =>
@@ -528,7 +527,6 @@ const AccountsPayable = () => {
     let overages = 0;
     let underages = 0;
     payments.map((p, index) => {
-      console.log(p, contractNumber);
       if (p.tickets.items.length) {
         if (
           moment(endDate).diff(moment(p.tickets.items[0].ticketDate), "days") >=
@@ -556,7 +554,8 @@ const AccountsPayable = () => {
         moment(moment(endDate).endOf("day")).diff(
           moment(ticket.ticketDate).endOf("day"),
           "days"
-        ) >= 0 && !ticket.paymentId
+        ) >= 0 &&
+        (!ticket.paymentId || !payments.some((p) => p.id === ticket.paymentId))
     );
 
     const paymentsBeforeEndDate = payments.filter((p) =>
@@ -625,7 +624,6 @@ const AccountsPayable = () => {
           </button>
         </div>
         <div className="py-4">
-          {console.log(isSuccess)}
           {isLoading && !isFetched ? (
             <p>Loading....</p>
           ) : (
@@ -672,7 +670,6 @@ const AccountsPayable = () => {
             {vendorTotals.length > 0 ? (
               vendorTotals.map((item, index) => (
                 <div className="mr-4" key={index}>
-                  {console.log(item.contracts)}
                   <table className="mb-6">
                     <thead>
                       <tr className="">
