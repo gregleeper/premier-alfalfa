@@ -50,7 +50,7 @@ const StatusReport = () => {
             name="days"
             className="form-input"
             type="number"
-            onChange={(event) => handleNumberOfDays(event)}
+            onBlur={(event) => handleNumberOfDays(event)}
           />
         </div>
 
