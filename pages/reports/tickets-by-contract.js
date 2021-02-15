@@ -200,6 +200,8 @@ const TicketsByContract = () => {
     }
   }, [correspondingContractId]);
 
+  console.log(tickets);
+
   return (
     <Layout>
       <div>
@@ -365,6 +367,9 @@ const TicketsByContract = () => {
                       Net Tons
                     </th>
                     <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
+                      Bale Count
+                    </th>
+                    <th className="px-2 text-gray-800 font-semibold border-b-2 border-gray-800">
                       Corresponding Contract
                     </th>
                   </tr>
@@ -385,6 +390,7 @@ const TicketsByContract = () => {
                           <td className="text-center">{ticket.tareWeight}</td>
                           <td className="text-center">{ticket.netWeight}</td>
                           <td className="text-center">{ticket.netTons}</td>
+                          <td className="text-center">{ticket.baleCount}</td>
                           <td className="text-center">
                             <button
                               className=" text-blue-800 no-underline hover:underline hover:text-blue-600"
