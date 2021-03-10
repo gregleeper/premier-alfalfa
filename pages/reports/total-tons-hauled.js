@@ -99,6 +99,8 @@ const TotalTons = () => {
     }
   }, [totals]);
 
+  console.log(contractsYTD);
+
   const computeTotals = () => {
     let array = [];
 
@@ -109,7 +111,8 @@ const TotalTons = () => {
       contractTotals.company = contract.contractTo.companyReportName;
       const filtered = contract.tickets.items.filter(
         (ticket) =>
-          moment(ticket.ticketDate) >= moment(beginDate).startOf("day")
+          moment(ticket.ticketDate) >= moment(beginDate).startOf("day") &&
+          moment(ticket.ticketDate) <= moment(endDate).endOf("day")
       );
       contractTotals.weeklyNetTons = filtered.reduce(function (
         accumulator,
@@ -150,6 +153,7 @@ const TotalTons = () => {
       }
       return 0;
     });
+
     setTotals(array);
   };
 
